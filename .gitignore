@@ -1,0 +1,11 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+ir_swap_trades.db
+ir_swap_trades.db-wal
+ir_swap_trades.db-shm

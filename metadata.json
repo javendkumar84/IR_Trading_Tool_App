@@ -1,0 +1,6 @@
+{
+  "name": "IR Swap Trading & Risk Platform",
+  "description": "Full-stack Interest Rate Swap trade capture, XML schema processing, SQL database storage, audit trail logging, positions risk matrix, and real-time WebSocket dashboard.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
