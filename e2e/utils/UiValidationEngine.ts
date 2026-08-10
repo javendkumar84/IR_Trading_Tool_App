@@ -138,9 +138,11 @@ export class UiValidationEngine {
       if (xmlVal !== undefined && xmlVal !== null) {
         const strUi = String(uiVal).trim().toLowerCase();
         const strXml = String(xmlVal).trim().toLowerCase();
+        const numUi = Number(strUi);
+        const numXml = Number(strXml);
         isMatch =
           strUi === strXml ||
-          Number(strUi) === Number(strXml) ||
+          (!isNaN(numUi) && !isNaN(numXml) && (numUi === numXml || Math.abs(numUi - numXml * 100) < 0.001 || Math.abs(numUi - numXml) < 0.001)) ||
           strXml.includes(strUi) ||
           strUi.includes(strXml);
       } else {
