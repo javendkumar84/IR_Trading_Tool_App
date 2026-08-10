@@ -104,8 +104,8 @@ export const CashflowScheduleModal: React.FC<CashflowScheduleModalProps> = ({ tr
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-      <div className="bg-[#0d0f12] border border-gray-800 rounded-2xl w-full max-w-7xl max-h-[92vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+    <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4">
+      <div className="bg-[#0d0f12] border border-gray-800 rounded-xl sm:rounded-2xl w-full max-w-7xl max-h-[96vh] sm:max-h-[92vh] flex flex-col overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
 
         {/* Modal Header */}
         <div className="bg-[#0a0b0d] px-6 py-4 border-b border-gray-800 flex items-center justify-between">

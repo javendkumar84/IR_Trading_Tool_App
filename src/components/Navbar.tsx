@@ -1,5 +1,8 @@
-import React from 'react';
-import { Activity, Database, FileCode, BarChart3, ReceiptText, Server, Edit3, TestTubes, CheckSquare, ShieldAlert, Calculator, ShieldCheck, TrendingUp } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  Activity, Database, FileCode, BarChart3, ReceiptText, Server, Edit3,
+  TestTubes, CheckSquare, ShieldAlert, Calculator, ShieldCheck, TrendingUp, Menu, X, ChevronDown
+} from 'lucide-react';
 
 interface NavbarProps {
   activeTab: 'dashboard' | 'xml' | 'blotter' | 'amend' | 'eod-risk' | 'pnl' | 'var' | 'risk-calc' | 'audit' | 'dotnet' | 'qa' | 'validation';
@@ -18,52 +21,77 @@ export const Navbar: React.FC<NavbarProps> = ({
   setTraderUser,
   tradeCount,
 }) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navigationItems = [
+    { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+    { id: 'xml', label: 'Trade Capture', icon: FileCode },
+    { id: 'blotter', label: 'Blotter', icon: ReceiptText },
+    { id: 'amend', label: 'Amend Trade', icon: Edit3 },
+    { id: 'eod-risk', label: 'EOD Risk', icon: ShieldAlert },
+    { id: 'pnl', label: 'PnL', icon: TrendingUp },
+    { id: 'var', label: 'VaR', icon: ShieldCheck },
+    { id: 'risk-calc', label: 'Risk Calc', icon: Calculator },
+    { id: 'audit', label: 'Audit Trail', icon: ShieldCheck },
+    { id: 'dotnet', label: '.NET Models', icon: Server },
+    { id: 'qa', label: 'QA Suite', icon: TestTubes },
+    { id: 'validation', label: 'Validation', icon: CheckSquare },
+  ] as const;
+
+  const handleTabClick = (id: typeof activeTab) => {
+    setActiveTab(id);
+    setMobileMenuOpen(false);
+  };
+
   return (
     <header id="main-app-header" className="bg-[#0b0f19] border-b border-[#232d42] text-[#f8fafc] sticky top-0 z-50 shadow-md">
-      <div id="header-container" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div id="header-top-bar" className="flex items-center justify-between h-14">
+      <div id="header-container" className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        
+        {/* Top Header Bar */}
+        <div id="header-top-bar" className="flex items-center justify-between h-14 gap-2">
           
-          {/* Brand Title (Two-Color Precision Style) */}
-          <div id="brand-section" className="flex items-center gap-2.5">
-            <div id="brand-logo-icon" className="p-1.5 bg-[#151b28] rounded border border-[#2563eb]/40 text-[#2563eb]">
+          {/* Brand Logo & Title */}
+          <div id="brand-section" className="flex items-center gap-2">
+            <div id="brand-logo-icon" className="p-1.5 bg-[#151b28] rounded border border-[#2563eb]/40 text-[#2563eb] shrink-0">
               <Activity className="w-4 h-4" />
             </div>
-            <div className="flex items-baseline gap-2">
-              <h1 className="text-sm font-bold tracking-tight text-white font-sans">
+            <div className="flex items-baseline gap-1.5 min-w-0">
+              <h1 className="text-xs sm:text-sm font-bold tracking-tight text-white font-sans truncate">
                 IR Swap <span className="text-[#2563eb]">Trade Capture</span>
               </h1>
-              <span className="text-[10px] px-1.5 py-0.5 rounded font-mono bg-[#151b28] border border-[#232d42] text-slate-400">
-                v2.6 .NET Core
+              <span className="hidden sm:inline-block text-[10px] px-1.5 py-0.5 rounded font-mono bg-[#151b28] border border-[#232d42] text-slate-400">
+                v2.6 .NET
               </span>
             </div>
           </div>
 
-          {/* Right Status Controls */}
-          <div id="header-controls" className="flex items-center gap-3">
+          {/* Controls & Mobile Hamburger Menu Button */}
+          <div id="header-controls" className="flex items-center gap-2 sm:gap-3">
             
             {/* WebSocket Indicator */}
             <div
               id="ws-status-badge"
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded border border-[#232d42] bg-[#151b28] text-xs font-mono"
+              className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded border border-[#232d42] bg-[#151b28] text-[11px] font-mono"
             >
-              <span className={`w-2 h-2 rounded-full ${isWsConnected ? 'bg-[#2563eb]' : 'bg-slate-500'}`} />
-              <span className="text-[10px] font-bold text-slate-300">{isWsConnected ? 'WS LIVE' : 'WS OFFLINE'}</span>
+              <span className={`w-2 h-2 rounded-full shrink-0 ${isWsConnected ? 'bg-[#2563eb]' : 'bg-slate-500'}`} />
+              <span className="text-[10px] font-bold text-slate-300 hidden sm:inline">{isWsConnected ? 'WS LIVE' : 'WS OFFLINE'}</span>
+              <span className="text-[9px] font-bold text-slate-300 sm:hidden">{isWsConnected ? 'LIVE' : 'OFF'}</span>
             </div>
 
-            {/* Trade Count Badge */}
-            <div id="trade-count-pill" className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#151b28] border border-[#232d42] text-slate-300 text-xs">
+            {/* Trade Count Badge (Tablet + Desktop) */}
+            <div id="trade-count-pill" className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#151b28] border border-[#232d42] text-slate-300 text-xs">
               <Database className="w-3.5 h-3.5 text-[#2563eb]" />
               <span className="text-[11px]">Trades: <strong className="text-white font-mono">{tradeCount}</strong></span>
             </div>
 
-            {/* Trader User Switcher */}
-            <div id="user-selector" className="flex items-center gap-2 bg-[#151b28] border border-[#232d42] rounded px-2 py-1 text-xs">
-              <span className="text-slate-400 text-[11px] hidden md:inline">Trader:</span>
+            {/* Trader Selector */}
+            <div id="user-selector" className="flex items-center gap-1 bg-[#151b28] border border-[#232d42] rounded px-2 py-1 text-xs">
+              <span className="text-slate-400 text-[11px] hidden lg:inline">Trader:</span>
               <select
                 id="trader-user-dropdown"
                 value={traderUser}
                 onChange={(e) => setTraderUser(e.target.value)}
-                className="bg-transparent text-white focus:outline-none font-medium text-[11px] cursor-pointer"
+                className="bg-transparent text-white focus:outline-none font-medium text-[11px] cursor-pointer max-w-[100px] sm:max-w-[150px] md:max-w-none truncate"
               >
                 <option value="J. Doe (Head Rates Trader)" className="bg-[#0b0f19] text-white">J. Doe (Head Rates)</option>
                 <option value="A. Smith (Senior Trader)" className="bg-[#0b0f19] text-white">A. Smith (Senior)</option>
@@ -72,169 +100,64 @@ export const Navbar: React.FC<NavbarProps> = ({
               </select>
             </div>
 
+            {/* Mobile Drawer Toggle Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-1.5 rounded-lg bg-[#151b28] border border-[#232d42] text-slate-300 hover:text-white transition-colors cursor-pointer"
+              aria-label="Toggle Menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+
           </div>
         </div>
 
-        {/* Navigation Tabs (Strict 2-Color Monochromatic Slate + Blue Highlight) */}
-        <div id="nav-tabs-bar" className="flex items-center justify-between gap-1 py-1 border-t border-[#232d42]">
-          
-          <button
-            id="tab-btn-dashboard"
-            onClick={() => setActiveTab('dashboard')}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'dashboard'
-                ? 'bg-[#2563eb] text-white font-bold'
-                : 'text-slate-400 hover:text-white hover:bg-[#151b28]'
-            }`}
-          >
-            <BarChart3 className="w-3.5 h-3.5" />
-            Dashboard
-          </button>
-
-          <button
-            id="tab-btn-xml"
-            onClick={() => setActiveTab('xml')}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'xml'
-                ? 'bg-[#2563eb] text-white font-bold'
-                : 'text-slate-400 hover:text-white hover:bg-[#151b28]'
-            }`}
-          >
-            <FileCode className="w-3.5 h-3.5" />
-            Trade Capture
-          </button>
-
-          <button
-            id="tab-btn-blotter"
-            onClick={() => setActiveTab('blotter')}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'blotter'
-                ? 'bg-[#2563eb] text-white font-bold'
-                : 'text-slate-400 hover:text-white hover:bg-[#151b28]'
-            }`}
-          >
-            <ReceiptText className="w-3.5 h-3.5" />
-            Blotter
-          </button>
-
-          <button
-            id="tab-btn-amend"
-            onClick={() => setActiveTab('amend')}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'amend'
-                ? 'bg-[#2563eb] text-white font-bold'
-                : 'text-slate-400 hover:text-white hover:bg-[#151b28]'
-            }`}
-          >
-            <Edit3 className="w-3.5 h-3.5" />
-            Amend Trade
-          </button>
-
-          <button
-            id="tab-btn-eod-risk"
-            onClick={() => setActiveTab('eod-risk')}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'eod-risk'
-                ? 'bg-[#2563eb] text-white font-bold'
-                : 'text-slate-400 hover:text-white hover:bg-[#151b28]'
-            }`}
-          >
-            <ShieldAlert className="w-3.5 h-3.5" />
-            EOD Risk
-          </button>
-
-          <button
-            id="tab-btn-pnl"
-            onClick={() => setActiveTab('pnl')}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'pnl'
-                ? 'bg-[#2563eb] text-white font-bold'
-                : 'text-slate-400 hover:text-white hover:bg-[#151b28]'
-            }`}
-          >
-            <TrendingUp className="w-3.5 h-3.5" />
-            PnL
-          </button>
-
-          <button
-            id="tab-btn-var"
-            onClick={() => setActiveTab('var')}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'var'
-                ? 'bg-[#2563eb] text-white font-bold'
-                : 'text-slate-400 hover:text-white hover:bg-[#151b28]'
-            }`}
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-rose-400" />
-            VaR
-          </button>
-
-          <button
-            id="tab-btn-risk-calc"
-            onClick={() => setActiveTab('risk-calc')}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'risk-calc'
-                ? 'bg-[#2563eb] text-white font-bold'
-                : 'text-slate-400 hover:text-white hover:bg-[#151b28]'
-            }`}
-          >
-            <Calculator className="w-3.5 h-3.5" />
-            Risk Calculation
-          </button>
-
-          <button
-            id="tab-btn-audit"
-            onClick={() => setActiveTab('audit')}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'audit'
-                ? 'bg-[#2563eb] text-white font-bold'
-                : 'text-slate-400 hover:text-white hover:bg-[#151b28]'
-            }`}
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            Audit Trail
-          </button>
-
-          <button
-            id="tab-btn-dotnet"
-            onClick={() => setActiveTab('dotnet')}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'dotnet'
-                ? 'bg-[#2563eb] text-white font-bold'
-                : 'text-slate-400 hover:text-white hover:bg-[#151b28]'
-            }`}
-          >
-            <Server className="w-3.5 h-3.5" />
-            .NET Models
-          </button>
-
-          <button
-            id="tab-btn-qa"
-            onClick={() => setActiveTab('qa')}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'qa'
-                ? 'bg-[#2563eb] text-white font-bold'
-                : 'text-slate-400 hover:text-white hover:bg-[#151b28]'
-            }`}
-          >
-            <TestTubes className="w-3.5 h-3.5" />
-            QA Suite
-          </button>
-
-          <button
-            id="tab-btn-validation"
-            onClick={() => setActiveTab('validation')}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
-              activeTab === 'validation'
-                ? 'bg-[#2563eb] text-white font-bold'
-                : 'text-slate-400 hover:text-white hover:bg-[#151b28]'
-            }`}
-          >
-            <CheckSquare className="w-3.5 h-3.5" />
-            Validation
-          </button>
-
+        {/* Desktop & Tablet Navigation Bar (Horizontally scrollable with scrollbar hidden) */}
+        <div id="nav-tabs-bar" className="hidden lg:flex items-center justify-between gap-1 py-1 border-t border-[#232d42] overflow-x-auto scrollbar-none">
+          {navigationItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                id={`tab-btn-${item.id}`}
+                onClick={() => handleTabClick(item.id)}
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-semibold transition-all whitespace-nowrap cursor-pointer ${
+                  isActive
+                    ? 'bg-[#2563eb] text-white font-bold shadow-md'
+                    : 'text-slate-400 hover:text-white hover:bg-[#151b28]'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5 shrink-0" />
+                <span>{item.label}</span>
+              </button>
+            );
+          })}
         </div>
+
+        {/* Mobile Navigation Drawer Dropdown */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden py-3 border-t border-[#232d42] bg-[#0b0f19] grid grid-cols-2 sm:grid-cols-3 gap-2 font-sans animate-in slide-in-from-top-2 duration-200">
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleTabClick(item.id)}
+                  className={`flex items-center gap-2 p-2.5 rounded-lg text-xs font-medium transition-all text-left cursor-pointer ${
+                    isActive
+                      ? 'bg-[#2563eb] text-white font-bold'
+                      : 'bg-[#151b28] text-slate-300 hover:text-white border border-[#232d42]'
+                  }`}
+                >
+                  <Icon className="w-4 h-4 shrink-0 text-[#2563eb]" />
+                  <span className="truncate">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
       </div>
     </header>
