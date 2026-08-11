@@ -4802,6 +4802,20 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                 </div>
 
                 <div>
+                  <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">FX Forward Tenor</label>
+                  <select
+                    value={floatingTenor}
+                    onChange={(e) => setFloatingTenor(e.target.value as IndexTenor)}
+                    className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-mono font-bold"
+                  >
+                    <option value="1M">1 Month (1M Forward)</option>
+                    <option value="3M">3 Months (3M Forward)</option>
+                    <option value="6M">6 Months (6M Forward)</option>
+                    <option value="12M">12 Months / 1 Year (1Y Forward)</option>
+                  </select>
+                </div>
+
+                <div>
                   <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Counter Currency</label>
                   <select
                     value={fxCounterCurrency}
@@ -5647,6 +5661,20 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   >
                     <option value="CALL">CALL OPTION</option>
                     <option value="PUT">PUT OPTION</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-pink-300 mb-1">Option Expiry Tenor</label>
+                  <select
+                    value={floatingTenor}
+                    onChange={(e) => setFloatingTenor(e.target.value as IndexTenor)}
+                    className="w-full bg-[#16181d] border border-pink-600/80 rounded p-2 text-sm text-white font-mono font-bold"
+                  >
+                    <option value="1M">1 Month (1M Expiry)</option>
+                    <option value="3M">3 Months (3M Expiry)</option>
+                    <option value="6M">6 Months (6M Expiry)</option>
+                    <option value="12M">12 Months / 1 Year (1Y Expiry)</option>
                   </select>
                 </div>
 
