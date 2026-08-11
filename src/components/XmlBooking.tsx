@@ -1513,6 +1513,81 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
       };
       tempTrade.dualDigitalDetails = details;
       tempTrade.notionalUsd = ddNotional;
+    } else if (selectedProduct === 'BOND') {
+      const details: import('../types').BondDetails = {
+        bondType,
+        isin: bondIsin,
+        issuer: bondIssuer,
+        couponRate: bondCouponRate,
+        couponFrequency: bondCouponFreq,
+        faceValue: 100,
+        cleanPrice: bondCleanPrice,
+        dirtyPrice: bondCleanPrice + (bondCouponRate * 0.25),
+        yieldToMaturity: bondYtm,
+        currency,
+        notional: bondNotional,
+        dayCount: bondDayCount,
+        accrualCalendar: leg1AccrualCalendar,
+        paymentCalendar: leg1PaymentCalendar,
+        accrualRollConvention: leg1AccrualRoll,
+        paymentRollConvention: leg1PaymentRoll,
+      };
+      tempTrade.bondDetails = details;
+      tempTrade.notionalUsd = bondNotional;
+    } else if (selectedProduct === 'FRA') {
+      const details: import('../types').FraDetails = {
+        fraRate,
+        fixingIndex: fraIndex,
+        indexTenor: fraTenor,
+        fixingDate: fraFixingDate,
+        paymentDate: fraPaymentDate,
+        settlementType: 'CASH',
+        currency,
+        notional: fraNotional,
+        dayCount: fraDayCount,
+        accrualCalendar: leg1AccrualCalendar,
+        paymentCalendar: leg1PaymentCalendar,
+        accrualRollConvention: leg1AccrualRoll,
+        paymentRollConvention: leg1PaymentRoll,
+      };
+      tempTrade.fraDetails = details;
+      tempTrade.notionalUsd = fraNotional;
+    } else if (selectedProduct === 'DEPOSIT') {
+      const details: import('../types').DepositDetails = {
+        direction: depositDirection,
+        depositRate,
+        termDays: depositTermDays,
+        interestAmount: (depositNotional * depositRate * depositTermDays) / (360 * 100),
+        compoundingFrequency: 'NONE',
+        currency,
+        notional: depositNotional,
+        dayCount: depositDayCount,
+        accrualCalendar: leg1AccrualCalendar,
+        paymentCalendar: leg1PaymentCalendar,
+        accrualRollConvention: leg1AccrualRoll,
+        paymentRollConvention: leg1PaymentRoll,
+      };
+      tempTrade.depositDetails = details;
+      tempTrade.notionalUsd = depositNotional;
+    } else if (selectedProduct === 'REPO') {
+      const details: import('../types').RepoDetails = {
+        repoType,
+        collateralIsin: repoCollateralIsin,
+        collateralDescription: `${currency} Sovereign Collateral`,
+        repoRate,
+        haircutPct: repoHaircut,
+        purchasePrice: repoNotional,
+        repurchasePrice: repoNotional * (1 + (repoRate * 0.01 * 30 / 360)),
+        currency,
+        notional: repoNotional,
+        dayCount: repoDayCount,
+        accrualCalendar: leg1AccrualCalendar,
+        paymentCalendar: leg1PaymentCalendar,
+        accrualRollConvention: leg1AccrualRoll,
+        paymentRollConvention: leg1PaymentRoll,
+      };
+      tempTrade.repoDetails = details;
+      tempTrade.notionalUsd = repoNotional;
     }
 
     if (Object.keys(scheduleDateOverrides).length > 0) {
@@ -4793,6 +4868,633 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                     value={fxSettlementDate}
                     onChange={(e) => setFxSettlementDate(e.target.value)}
                     className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-xs text-white font-mono"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-blue-300 mb-1">Accrual Calendar</label>
+                  <select
+                    value={leg1AccrualCalendar}
+                    onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="USNY">USNY (New York)</option>
+                    <option value="GBLO">GBLO (London)</option>
+                    <option value="EUTA">EUTA (TARGET/Euro)</option>
+                    <option value="JPTO">JPTO (Tokyo)</option>
+                    <option value="CATO">CATO (Toronto)</option>
+                    <option value="AUSY">AUSY (Sydney)</option>
+                    <option value="CHZH">CHZH (Zurich)</option>
+                    <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-emerald-300 mb-1">Payment Calendar</label>
+                  <select
+                    value={leg1PaymentCalendar}
+                    onChange={(e) => setLeg1PaymentCalendar(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-emerald-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="USNY">USNY (New York)</option>
+                    <option value="GBLO">GBLO (London)</option>
+                    <option value="EUTA">EUTA (TARGET/Euro)</option>
+                    <option value="JPTO">JPTO (Tokyo)</option>
+                    <option value="CATO">CATO (Toronto)</option>
+                    <option value="AUSY">AUSY (Sydney)</option>
+                    <option value="CHZH">CHZH (Zurich)</option>
+                    <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-amber-300 mb-1">Accrual Roll Convention</label>
+                  <select
+                    value={leg1AccrualRoll}
+                    onChange={(e) => setLeg1AccrualRoll(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-amber-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                    <option value="FOLLOWING">FOLLOWING</option>
+                    <option value="PRECEDING">PRECEDING</option>
+                    <option value="MODPRECEDING">MODPRECEDING</option>
+                    <option value="NONE">NONE (No Adjustment)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">Payment Roll Convention</label>
+                  <select
+                    value={leg1PaymentRoll}
+                    onChange={(e) => setLeg1PaymentRoll(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                    <option value="FOLLOWING">FOLLOWING</option>
+                    <option value="PRECEDING">PRECEDING</option>
+                    <option value="MODPRECEDING">MODPRECEDING</option>
+                    <option value="NONE">NONE (No Adjustment)</option>
+                  </select>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* PRODUCT 10: FIXED INCOME BOND */}
+          {selectedProduct === 'BOND' && (
+            <>
+              <h3 className="text-xs font-bold text-emerald-400 uppercase tracking-widest border-b border-gray-800 pb-2 pt-2">
+                2. Fixed Income Bond Parameters
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Bond Type</label>
+                  <select
+                    value={bondType}
+                    onChange={(e) => setBondType(e.target.value as 'SOVEREIGN' | 'CORPORATE')}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="SOVEREIGN">SOVEREIGN (Treasury / Sovereign)</option>
+                    <option value="CORPORATE">CORPORATE (Corporate Bond)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">ISIN Code</label>
+                  <input
+                    type="text"
+                    value={bondIsin}
+                    onChange={(e) => setBondIsin(e.target.value)}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono uppercase"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Issuer Name</label>
+                  <input
+                    type="text"
+                    value={bondIssuer}
+                    onChange={(e) => setBondIssuer(e.target.value)}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-bold"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-emerald-400 mb-1">Coupon Rate (%)</label>
+                  <input
+                    type="number"
+                    step="0.05"
+                    value={bondCouponRate}
+                    onChange={(e) => setBondCouponRate(Number(e.target.value))}
+                    className="w-full bg-[#16181d] border border-emerald-500/80 rounded p-2 text-sm text-emerald-300 font-mono font-bold"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Benchmark / Reference Floating Index</label>
+                  <select
+                    value={floatingIndex}
+                    onChange={(e) => setFloatingIndex(e.target.value as FloatingIndex)}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold"
+                  >
+                    <option value="SOFR">SOFR (US Treasury Benchmark)</option>
+                    <option value="EURIBOR">EURIBOR (Euro Benchmark)</option>
+                    <option value="SONIA">SONIA (UK Gilt Benchmark)</option>
+                    <option value="TONA">TONA (JGB Benchmark)</option>
+                    <option value="LIBOR-3M">LIBOR-3M</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Coupon Frequency</label>
+                  <select
+                    value={bondCouponFreq}
+                    onChange={(e) => setBondCouponFreq(e.target.value as PaymentFrequency)}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono"
+                  >
+                    <option value="6M">Semi-Annual (6M)</option>
+                    <option value="1Y">Annual (1Y)</option>
+                    <option value="3M">Quarterly (3M)</option>
+                    <option value="1M">Monthly (1M)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Clean Price (% Par)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={bondCleanPrice}
+                    onChange={(e) => setBondCleanPrice(Number(e.target.value))}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Yield to Maturity (YTM %)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={bondYtm}
+                    onChange={(e) => setBondYtm(Number(e.target.value))}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Face Value / Par ({currency})</label>
+                  <input
+                    type="number"
+                    value={bondNotional}
+                    onChange={(e) => setBondNotional(Number(e.target.value))}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-blue-300 mb-1">Accrual Calendar</label>
+                  <select
+                    value={leg1AccrualCalendar}
+                    onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="USNY">USNY (New York)</option>
+                    <option value="GBLO">GBLO (London)</option>
+                    <option value="EUTA">EUTA (TARGET/Euro)</option>
+                    <option value="JPTO">JPTO (Tokyo)</option>
+                    <option value="CATO">CATO (Toronto)</option>
+                    <option value="AUSY">AUSY (Sydney)</option>
+                    <option value="CHZH">CHZH (Zurich)</option>
+                    <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-emerald-300 mb-1">Payment Calendar</label>
+                  <select
+                    value={leg1PaymentCalendar}
+                    onChange={(e) => setLeg1PaymentCalendar(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-emerald-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="USNY">USNY (New York)</option>
+                    <option value="GBLO">GBLO (London)</option>
+                    <option value="EUTA">EUTA (TARGET/Euro)</option>
+                    <option value="JPTO">JPTO (Tokyo)</option>
+                    <option value="CATO">CATO (Toronto)</option>
+                    <option value="AUSY">AUSY (Sydney)</option>
+                    <option value="CHZH">CHZH (Zurich)</option>
+                    <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-amber-300 mb-1">Accrual Roll Convention</label>
+                  <select
+                    value={leg1AccrualRoll}
+                    onChange={(e) => setLeg1AccrualRoll(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-amber-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                    <option value="FOLLOWING">FOLLOWING</option>
+                    <option value="PRECEDING">PRECEDING</option>
+                    <option value="MODPRECEDING">MODPRECEDING</option>
+                    <option value="NONE">NONE (No Adjustment)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">Payment Roll Convention</label>
+                  <select
+                    value={leg1PaymentRoll}
+                    onChange={(e) => setLeg1PaymentRoll(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                    <option value="FOLLOWING">FOLLOWING</option>
+                    <option value="PRECEDING">PRECEDING</option>
+                    <option value="MODPRECEDING">MODPRECEDING</option>
+                    <option value="NONE">NONE (No Adjustment)</option>
+                  </select>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* PRODUCT 11: FORWARD RATE AGREEMENT (FRA) */}
+          {selectedProduct === 'FRA' && (
+            <>
+              <h3 className="text-xs font-bold text-cyan-400 uppercase tracking-widest border-b border-gray-800 pb-2 pt-2">
+                2. Forward Rate Agreement (FRA) Parameters
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-cyan-300 mb-1">Underlying Floating Index</label>
+                  <select
+                    value={fraIndex}
+                    onChange={(e) => setFraIndex(e.target.value as FloatingIndex)}
+                    className="w-full bg-[#16181d] border border-cyan-500/80 rounded p-2 text-sm text-cyan-300 font-mono font-bold"
+                  >
+                    <option value="SOFR">SOFR</option>
+                    <option value="EURIBOR">EURIBOR</option>
+                    <option value="SONIA">SONIA</option>
+                    <option value="TONA">TONA</option>
+                    <option value="LIBOR-3M">LIBOR-3M</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Forward Index Tenor</label>
+                  <select
+                    value={fraTenor}
+                    onChange={(e) => setFraTenor(e.target.value as IndexTenor)}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono"
+                  >
+                    <option value="3M">3 Months (3x6 FRA)</option>
+                    <option value="6M">6 Months (6x12 FRA)</option>
+                    <option value="1M">1 Month (1x2 FRA)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-cyan-400 mb-1">Agreed FRA Rate (%)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={fraRate}
+                    onChange={(e) => setFraRate(Number(e.target.value))}
+                    className="w-full bg-[#16181d] border border-cyan-500/80 rounded p-2 text-sm text-cyan-300 font-mono font-bold"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Fixing Date</label>
+                  <input
+                    type="date"
+                    value={fraFixingDate}
+                    onChange={(e) => setFraFixingDate(e.target.value)}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-xs text-white font-mono"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Settlement Date</label>
+                  <input
+                    type="date"
+                    value={fraPaymentDate}
+                    onChange={(e) => setFraPaymentDate(e.target.value)}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-xs text-white font-mono"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Notional Amount ({currency})</label>
+                  <input
+                    type="number"
+                    step="100000"
+                    value={fraNotional}
+                    onChange={(e) => setFraNotional(Number(e.target.value))}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-blue-300 mb-1">Accrual Calendar</label>
+                  <select
+                    value={leg1AccrualCalendar}
+                    onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="USNY">USNY (New York)</option>
+                    <option value="GBLO">GBLO (London)</option>
+                    <option value="EUTA">EUTA (TARGET/Euro)</option>
+                    <option value="JPTO">JPTO (Tokyo)</option>
+                    <option value="CATO">CATO (Toronto)</option>
+                    <option value="AUSY">AUSY (Sydney)</option>
+                    <option value="CHZH">CHZH (Zurich)</option>
+                    <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-emerald-300 mb-1">Payment Calendar</label>
+                  <select
+                    value={leg1PaymentCalendar}
+                    onChange={(e) => setLeg1PaymentCalendar(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-emerald-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="USNY">USNY (New York)</option>
+                    <option value="GBLO">GBLO (London)</option>
+                    <option value="EUTA">EUTA (TARGET/Euro)</option>
+                    <option value="JPTO">JPTO (Tokyo)</option>
+                    <option value="CATO">CATO (Toronto)</option>
+                    <option value="AUSY">AUSY (Sydney)</option>
+                    <option value="CHZH">CHZH (Zurich)</option>
+                    <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-amber-300 mb-1">Accrual Roll Convention</label>
+                  <select
+                    value={leg1AccrualRoll}
+                    onChange={(e) => setLeg1AccrualRoll(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-amber-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                    <option value="FOLLOWING">FOLLOWING</option>
+                    <option value="PRECEDING">PRECEDING</option>
+                    <option value="MODPRECEDING">MODPRECEDING</option>
+                    <option value="NONE">NONE (No Adjustment)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">Payment Roll Convention</label>
+                  <select
+                    value={leg1PaymentRoll}
+                    onChange={(e) => setLeg1PaymentRoll(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                    <option value="FOLLOWING">FOLLOWING</option>
+                    <option value="PRECEDING">PRECEDING</option>
+                    <option value="MODPRECEDING">MODPRECEDING</option>
+                    <option value="NONE">NONE (No Adjustment)</option>
+                  </select>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* PRODUCT 12: TERM DEPOSIT / LOAN */}
+          {selectedProduct === 'DEPOSIT' && (
+            <>
+              <h3 className="text-xs font-bold text-yellow-400 uppercase tracking-widest border-b border-gray-800 pb-2 pt-2">
+                2. Cash Term Deposit / Loan Parameters
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Direction</label>
+                  <select
+                    value={depositDirection}
+                    onChange={(e) => setDepositDirection(e.target.value as 'LEND' | 'BORROW')}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="LEND">LEND (Place Deposit)</option>
+                    <option value="BORROW">BORROW (Take Deposit)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-yellow-400 mb-1">Deposit Rate (%)</label>
+                  <input
+                    type="number"
+                    step="0.05"
+                    value={depositRate}
+                    onChange={(e) => setDepositRate(Number(e.target.value))}
+                    className="w-full bg-[#16181d] border border-yellow-500/80 rounded p-2 text-sm text-yellow-300 font-mono font-bold"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Benchmark Floating Index</label>
+                  <select
+                    value={floatingIndex}
+                    onChange={(e) => setFloatingIndex(e.target.value as FloatingIndex)}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold"
+                  >
+                    <option value="SOFR">SOFR</option>
+                    <option value="EURIBOR">EURIBOR</option>
+                    <option value="SONIA">SONIA</option>
+                    <option value="TONA">TONA</option>
+                    <option value="LIBOR-3M">LIBOR-3M</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Term Length (Days)</label>
+                  <input
+                    type="number"
+                    value={depositTermDays}
+                    onChange={(e) => setDepositTermDays(Number(e.target.value))}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Principal Amount ({currency})</label>
+                  <input
+                    type="number"
+                    step="100000"
+                    value={depositNotional}
+                    onChange={(e) => setDepositNotional(Number(e.target.value))}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-blue-300 mb-1">Accrual Calendar</label>
+                  <select
+                    value={leg1AccrualCalendar}
+                    onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="USNY">USNY (New York)</option>
+                    <option value="GBLO">GBLO (London)</option>
+                    <option value="EUTA">EUTA (TARGET/Euro)</option>
+                    <option value="JPTO">JPTO (Tokyo)</option>
+                    <option value="CATO">CATO (Toronto)</option>
+                    <option value="AUSY">AUSY (Sydney)</option>
+                    <option value="CHZH">CHZH (Zurich)</option>
+                    <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-emerald-300 mb-1">Payment Calendar</label>
+                  <select
+                    value={leg1PaymentCalendar}
+                    onChange={(e) => setLeg1PaymentCalendar(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-emerald-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="USNY">USNY (New York)</option>
+                    <option value="GBLO">GBLO (London)</option>
+                    <option value="EUTA">EUTA (TARGET/Euro)</option>
+                    <option value="JPTO">JPTO (Tokyo)</option>
+                    <option value="CATO">CATO (Toronto)</option>
+                    <option value="AUSY">AUSY (Sydney)</option>
+                    <option value="CHZH">CHZH (Zurich)</option>
+                    <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-amber-300 mb-1">Accrual Roll Convention</label>
+                  <select
+                    value={leg1AccrualRoll}
+                    onChange={(e) => setLeg1AccrualRoll(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-amber-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                    <option value="FOLLOWING">FOLLOWING</option>
+                    <option value="PRECEDING">PRECEDING</option>
+                    <option value="MODPRECEDING">MODPRECEDING</option>
+                    <option value="NONE">NONE (No Adjustment)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">Payment Roll Convention</label>
+                  <select
+                    value={leg1PaymentRoll}
+                    onChange={(e) => setLeg1PaymentRoll(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                    <option value="FOLLOWING">FOLLOWING</option>
+                    <option value="PRECEDING">PRECEDING</option>
+                    <option value="MODPRECEDING">MODPRECEDING</option>
+                    <option value="NONE">NONE (No Adjustment)</option>
+                  </select>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* PRODUCT 13: REPURCHASE AGREEMENT (REPO) */}
+          {selectedProduct === 'REPO' && (
+            <>
+              <h3 className="text-xs font-bold text-emerald-400 uppercase tracking-widest border-b border-gray-800 pb-2 pt-2">
+                2. Repurchase Agreement (Repo) Parameters
+              </h3>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Repo Structure</label>
+                  <select
+                    value={repoType}
+                    onChange={(e) => setRepoType(e.target.value as 'CLASSIC_REPO' | 'REVERSE_REPO')}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="CLASSIC_REPO">CLASSIC REPO (Cash Receiver / Collateral Provider)</option>
+                    <option value="REVERSE_REPO">REVERSE REPO (Cash Provider / Collateral Receiver)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-emerald-400 mb-1">Repo Rate (%)</label>
+                  <input
+                    type="number"
+                    step="0.05"
+                    value={repoRate}
+                    onChange={(e) => setRepoRate(Number(e.target.value))}
+                    className="w-full bg-[#16181d] border border-emerald-500/80 rounded p-2 text-sm text-emerald-300 font-mono font-bold"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Benchmark Floating Index</label>
+                  <select
+                    value={floatingIndex}
+                    onChange={(e) => setFloatingIndex(e.target.value as FloatingIndex)}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold"
+                  >
+                    <option value="SOFR">SOFR (US Repo Benchmark)</option>
+                    <option value="ESTR">ESTR (Euro Repo Benchmark)</option>
+                    <option value="SONIA">SONIA (UK Repo Benchmark)</option>
+                    <option value="TONA">TONA</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Collateral ISIN</label>
+                  <input
+                    type="text"
+                    value={repoCollateralIsin}
+                    onChange={(e) => setRepoCollateralIsin(e.target.value)}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono uppercase"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Haircut (%)</label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    value={repoHaircut}
+                    onChange={(e) => setRepoHaircut(Number(e.target.value))}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Purchase Cash Notional ({currency})</label>
+                  <input
+                    type="number"
+                    step="100000"
+                    value={repoNotional}
+                    onChange={(e) => setRepoNotional(Number(e.target.value))}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold"
                     required
                   />
                 </div>
