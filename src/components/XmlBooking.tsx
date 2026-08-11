@@ -1206,6 +1206,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
         dayCount: fixedDayCount,
         frequency: fixedFreq,
         businessDayConvention: 'MODFOLLOWING',
+        accrualCalendar: leg1AccrualCalendar,
+        paymentCalendar: leg1PaymentCalendar,
+        accrualRollConvention: leg1AccrualRoll,
+        paymentRollConvention: leg1PaymentRoll,
       };
       tempTrade.floatingLeg = {
         direction: leg2Direction === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED',
@@ -1218,6 +1222,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
         dayCount: floatingDayCount,
         frequency: floatingFreq,
         businessDayConvention: 'MODFOLLOWING',
+        accrualCalendar: leg2AccrualCalendar,
+        paymentCalendar: leg2PaymentCalendar,
+        accrualRollConvention: leg2AccrualRoll,
+        paymentRollConvention: leg2PaymentRoll,
       };
       tempTrade.notionalUsd = notional;
     } else if (selectedProduct === 'CAP_FLOOR') {
@@ -1232,6 +1240,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
         premiumAmount: capFloorPremium,
         paymentFrequency: capFloorFreq,
         dayCount: capFloorDayCount,
+        accrualCalendar: leg1AccrualCalendar,
+        paymentCalendar: leg1PaymentCalendar,
+        accrualRollConvention: leg1AccrualRoll,
+        paymentRollConvention: leg1PaymentRoll,
       };
       tempTrade.capFloorDetails = details;
       tempTrade.notionalUsd = capFloorNotional;
@@ -1243,6 +1255,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
         dayCount: capFloorDayCount,
         frequency: capFloorFreq,
         businessDayConvention: 'MODFOLLOWING',
+        accrualCalendar: leg1AccrualCalendar,
+        paymentCalendar: leg1PaymentCalendar,
+        accrualRollConvention: leg1AccrualRoll,
+        paymentRollConvention: leg1PaymentRoll,
       };
     } else if (selectedProduct === 'SWAPTION') {
       const details: SwaptionDetails = {
@@ -1256,7 +1272,11 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
         currency,
         notional: swaptionNotional,
         premiumAmount: swaptionPremium,
-        underlyingFloatingIndex: 'SOFR',
+        underlyingFloatingIndex: floatingIndex,
+        accrualCalendar: leg1AccrualCalendar,
+        paymentCalendar: leg1PaymentCalendar,
+        accrualRollConvention: leg1AccrualRoll,
+        paymentRollConvention: leg1PaymentRoll,
       };
       tempTrade.swaptionDetails = details;
       tempTrade.notionalUsd = swaptionNotional;
@@ -1270,17 +1290,25 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
         dayCount: swaptionFixedDayCount,
         frequency: swaptionFixedFreq,
         businessDayConvention: 'MODFOLLOWING',
+        accrualCalendar: leg1AccrualCalendar,
+        paymentCalendar: leg1PaymentCalendar,
+        accrualRollConvention: leg1AccrualRoll,
+        paymentRollConvention: leg1PaymentRoll,
       };
       tempTrade.floatingLeg = {
         direction: swaptionType === 'PAYER' ? 'RECEIVE_FIXED' : 'PAY_FIXED',
         notional: swaptionNotional,
         currency,
-        index: 'SOFR',
+        index: floatingIndex,
         indexTenor: '3M',
         spreadBps: 0,
         dayCount: swaptionFloatDayCount,
         frequency: swaptionFloatFreq,
         businessDayConvention: 'MODFOLLOWING',
+        accrualCalendar: leg2AccrualCalendar,
+        paymentCalendar: leg2PaymentCalendar,
+        accrualRollConvention: leg2AccrualRoll,
+        paymentRollConvention: leg2PaymentRoll,
       };
     } else if (selectedProduct === 'FX_FORWARD') {
       const details: FxForwardDetails = {
@@ -1293,6 +1321,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
         forwardRate: fxForwardRate,
         spotRate: fxSpotRate,
         settlementDate: fxSettlementDate,
+        accrualCalendar: leg1AccrualCalendar,
+        paymentCalendar: leg1PaymentCalendar,
+        accrualRollConvention: leg1AccrualRoll,
+        paymentRollConvention: leg1PaymentRoll,
       };
       tempTrade.fxForwardDetails = details;
       tempTrade.notionalUsd = fxBaseAmount;
@@ -1312,6 +1344,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
         expiryCut: '15:00 NY Cut',
         settlementDate: fxOptSettlementDate,
         premiumAmount: fxOptPremium,
+        accrualCalendar: leg1AccrualCalendar,
+        paymentCalendar: leg1PaymentCalendar,
+        accrualRollConvention: leg1AccrualRoll,
+        paymentRollConvention: leg1PaymentRoll,
       };
       tempTrade.fxOptionDetails = details;
       tempTrade.notionalUsd = fxOptCallAmount;
@@ -1329,6 +1365,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
         observationFrequency: rangeObservationFreq,
         paymentFrequency: rangeFreq,
         dayCount: rangeDayCount,
+        accrualCalendar: leg1AccrualCalendar,
+        paymentCalendar: leg1PaymentCalendar,
+        accrualRollConvention: leg1AccrualRoll,
+        paymentRollConvention: leg1PaymentRoll,
         fundingLegType: rangeFundingLegType,
         fundingDirection: rangeDirection === 'RECEIVE' ? 'PAY' : 'RECEIVE',
         fundingIndex: rangeFundingIndex,
@@ -1339,6 +1379,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
         fundingNotional: rangeNotional,
         fundingDayCount: rangeFundingDayCount,
         fundingPaymentFrequency: rangeFundingFreq,
+        fundingAccrualCalendar: leg2AccrualCalendar,
+        fundingPaymentCalendar: leg2PaymentCalendar,
+        fundingAccrualRollConvention: leg2AccrualRoll,
+        fundingPaymentRollConvention: leg2PaymentRoll,
       };
       tempTrade.rangeAccrualDetails = details;
       tempTrade.notionalUsd = rangeNotional;
@@ -1356,6 +1400,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
         observationFrequency: snowObsFreq,
         paymentFrequency: snowPayFreq,
         dayCount: snowDayCount,
+        accrualCalendar: leg1AccrualCalendar,
+        paymentCalendar: leg1PaymentCalendar,
+        accrualRollConvention: leg1AccrualRoll,
+        paymentRollConvention: leg1PaymentRoll,
         fundingLegType: snowFundingLegType,
         fundingDirection: rangeDirection === 'RECEIVE' ? 'PAY' : 'RECEIVE',
         fundingIndex: snowFundingIndex,
@@ -1365,6 +1413,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
         fundingNotional: snowNotional,
         fundingDayCount: snowFundingDayCount,
         fundingPaymentFrequency: snowFundingFreq,
+        fundingAccrualCalendar: leg2AccrualCalendar,
+        fundingPaymentCalendar: leg2PaymentCalendar,
+        fundingAccrualRollConvention: leg2AccrualRoll,
+        fundingPaymentRollConvention: leg2PaymentRoll,
       };
       tempTrade.snowRangeDetails = details;
       tempTrade.notionalUsd = snowNotional;
@@ -1382,6 +1434,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
         notional: tarnNotional,
         paymentFrequency: tarnPayFreq,
         dayCount: tarnDayCount,
+        accrualCalendar: leg1AccrualCalendar,
+        paymentCalendar: leg1PaymentCalendar,
+        accrualRollConvention: leg1AccrualRoll,
+        paymentRollConvention: leg1PaymentRoll,
         fundingLegType: tarnFundingLegType,
         fundingDirection: tarnDirection === 'RECEIVE' ? 'PAY' : 'RECEIVE',
         fundingIndex: tarnFundingIndex,
@@ -1391,6 +1447,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
         fundingNotional: tarnNotional,
         fundingDayCount: tarnFundingDayCount,
         fundingPaymentFrequency: tarnFundingFreq,
+        fundingAccrualCalendar: leg2AccrualCalendar,
+        fundingPaymentCalendar: leg2PaymentCalendar,
+        fundingAccrualRollConvention: leg2AccrualRoll,
+        fundingPaymentRollConvention: leg2PaymentRoll,
       };
       tempTrade.tarnDetails = details;
       tempTrade.notionalUsd = tarnNotional;
@@ -1407,6 +1467,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
         notional: sbNotional,
         paymentFrequency: sbPayFreq,
         dayCount: sbDayCount,
+        accrualCalendar: leg1AccrualCalendar,
+        paymentCalendar: leg1PaymentCalendar,
+        accrualRollConvention: leg1AccrualRoll,
+        paymentRollConvention: leg1PaymentRoll,
         fundingLegType: sbFundingLegType,
         fundingDirection: sbDirection === 'RECEIVE' ? 'PAY' : 'RECEIVE',
         fundingIndex: sbFundingIndex,
@@ -1416,6 +1480,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
         fundingNotional: sbNotional,
         fundingDayCount: sbFundingDayCount,
         fundingPaymentFrequency: sbFundingFreq,
+        fundingAccrualCalendar: leg2AccrualCalendar,
+        fundingPaymentCalendar: leg2PaymentCalendar,
+        fundingAccrualRollConvention: leg2AccrualRoll,
+        fundingPaymentRollConvention: leg2PaymentRoll,
       };
       tempTrade.snowballDetails = details;
       tempTrade.notionalUsd = sbNotional;
@@ -1438,6 +1506,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
         notional: ddNotional,
         dayCount: ddDayCount,
         paymentFrequency: '1Y',
+        accrualCalendar: leg1AccrualCalendar,
+        paymentCalendar: leg1PaymentCalendar,
+        accrualRollConvention: leg1AccrualRoll,
+        paymentRollConvention: leg1PaymentRoll,
       };
       tempTrade.dualDigitalDetails = details;
       tempTrade.notionalUsd = ddNotional;
@@ -3023,6 +3095,72 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                     <option value="1Y">1 Year (1Y)</option>
                   </select>
                 </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-blue-300 mb-1">Accrual Calendar</label>
+                  <select
+                    value={leg1AccrualCalendar}
+                    onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="USNY">USNY (New York)</option>
+                    <option value="GBLO">GBLO (London)</option>
+                    <option value="EUTA">EUTA (TARGET/Euro)</option>
+                    <option value="JPTO">JPTO (Tokyo)</option>
+                    <option value="CATO">CATO (Toronto)</option>
+                    <option value="AUSY">AUSY (Sydney)</option>
+                    <option value="CHZH">CHZH (Zurich)</option>
+                    <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-emerald-300 mb-1">Payment Calendar</label>
+                  <select
+                    value={leg1PaymentCalendar}
+                    onChange={(e) => setLeg1PaymentCalendar(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-emerald-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="USNY">USNY (New York)</option>
+                    <option value="GBLO">GBLO (London)</option>
+                    <option value="EUTA">EUTA (TARGET/Euro)</option>
+                    <option value="JPTO">JPTO (Tokyo)</option>
+                    <option value="CATO">CATO (Toronto)</option>
+                    <option value="AUSY">AUSY (Sydney)</option>
+                    <option value="CHZH">CHZH (Zurich)</option>
+                    <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-amber-300 mb-1">Accrual Roll Convention</label>
+                  <select
+                    value={leg1AccrualRoll}
+                    onChange={(e) => setLeg1AccrualRoll(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-amber-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                    <option value="FOLLOWING">FOLLOWING</option>
+                    <option value="PRECEDING">PRECEDING</option>
+                    <option value="MODPRECEDING">MODPRECEDING</option>
+                    <option value="NONE">NONE (No Adjustment)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">Payment Roll Convention</label>
+                  <select
+                    value={leg1PaymentRoll}
+                    onChange={(e) => setLeg1PaymentRoll(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                    <option value="FOLLOWING">FOLLOWING</option>
+                    <option value="PRECEDING">PRECEDING</option>
+                    <option value="MODPRECEDING">MODPRECEDING</option>
+                    <option value="NONE">NONE (No Adjustment)</option>
+                  </select>
+                </div>
               </div>
             </>
           )}
@@ -3182,6 +3320,87 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                     <option value="1M">1 Month (1M)</option>
                   </select>
                 </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-amber-400 mb-1">Underlying Benchmark Index</label>
+                  <select
+                    value={floatingIndex}
+                    onChange={(e) => setFloatingIndex(e.target.value as FloatingIndex)}
+                    className="w-full bg-[#16181d] border border-amber-500 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="SOFR">SOFR</option>
+                    <option value="EURIBOR">EURIBOR</option>
+                    <option value="SONIA">SONIA</option>
+                    <option value="TONA">TONA</option>
+                    <option value="LIBOR-3M">LIBOR-3M</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-blue-300 mb-1">Accrual Calendar</label>
+                  <select
+                    value={leg1AccrualCalendar}
+                    onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="USNY">USNY (New York)</option>
+                    <option value="GBLO">GBLO (London)</option>
+                    <option value="EUTA">EUTA (TARGET/Euro)</option>
+                    <option value="JPTO">JPTO (Tokyo)</option>
+                    <option value="CATO">CATO (Toronto)</option>
+                    <option value="AUSY">AUSY (Sydney)</option>
+                    <option value="CHZH">CHZH (Zurich)</option>
+                    <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-emerald-300 mb-1">Payment Calendar</label>
+                  <select
+                    value={leg1PaymentCalendar}
+                    onChange={(e) => setLeg1PaymentCalendar(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-emerald-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="USNY">USNY (New York)</option>
+                    <option value="GBLO">GBLO (London)</option>
+                    <option value="EUTA">EUTA (TARGET/Euro)</option>
+                    <option value="JPTO">JPTO (Tokyo)</option>
+                    <option value="CATO">CATO (Toronto)</option>
+                    <option value="AUSY">AUSY (Sydney)</option>
+                    <option value="CHZH">CHZH (Zurich)</option>
+                    <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-amber-300 mb-1">Accrual Roll Convention</label>
+                  <select
+                    value={leg1AccrualRoll}
+                    onChange={(e) => setLeg1AccrualRoll(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-amber-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                    <option value="FOLLOWING">FOLLOWING</option>
+                    <option value="PRECEDING">PRECEDING</option>
+                    <option value="MODPRECEDING">MODPRECEDING</option>
+                    <option value="NONE">NONE (No Adjustment)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">Payment Roll Convention</label>
+                  <select
+                    value={leg1PaymentRoll}
+                    onChange={(e) => setLeg1PaymentRoll(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                    <option value="FOLLOWING">FOLLOWING</option>
+                    <option value="PRECEDING">PRECEDING</option>
+                    <option value="MODPRECEDING">MODPRECEDING</option>
+                    <option value="NONE">NONE (No Adjustment)</option>
+                  </select>
+                </div>
               </div>
             </>
           )}
@@ -3323,6 +3542,72 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                       <option value="1Y">1 Year (1Y)</option>
                     </select>
                   </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-blue-300 mb-1">Leg 1 Accrual Calendar</label>
+                    <select
+                      value={leg1AccrualCalendar}
+                      onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="USNY">USNY (New York)</option>
+                      <option value="GBLO">GBLO (London)</option>
+                      <option value="EUTA">EUTA (TARGET/Euro)</option>
+                      <option value="JPTO">JPTO (Tokyo)</option>
+                      <option value="CATO">CATO (Toronto)</option>
+                      <option value="AUSY">AUSY (Sydney)</option>
+                      <option value="CHZH">CHZH (Zurich)</option>
+                      <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-emerald-300 mb-1">Leg 1 Payment Calendar</label>
+                    <select
+                      value={leg1PaymentCalendar}
+                      onChange={(e) => setLeg1PaymentCalendar(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-emerald-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="USNY">USNY (New York)</option>
+                      <option value="GBLO">GBLO (London)</option>
+                      <option value="EUTA">EUTA (TARGET/Euro)</option>
+                      <option value="JPTO">JPTO (Tokyo)</option>
+                      <option value="CATO">CATO (Toronto)</option>
+                      <option value="AUSY">AUSY (Sydney)</option>
+                      <option value="CHZH">CHZH (Zurich)</option>
+                      <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-amber-300 mb-1">Leg 1 Accrual Roll Convention</label>
+                    <select
+                      value={leg1AccrualRoll}
+                      onChange={(e) => setLeg1AccrualRoll(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-amber-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                      <option value="FOLLOWING">FOLLOWING</option>
+                      <option value="PRECEDING">PRECEDING</option>
+                      <option value="MODPRECEDING">MODPRECEDING</option>
+                      <option value="NONE">NONE (No Adjustment)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">Leg 1 Payment Roll Convention</label>
+                    <select
+                      value={leg1PaymentRoll}
+                      onChange={(e) => setLeg1PaymentRoll(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                      <option value="FOLLOWING">FOLLOWING</option>
+                      <option value="PRECEDING">PRECEDING</option>
+                      <option value="MODPRECEDING">MODPRECEDING</option>
+                      <option value="NONE">NONE (No Adjustment)</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -3444,6 +3729,72 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                       <option value="3M">3 Months (3M)</option>
                       <option value="6M">6 Months (6M)</option>
                       <option value="1M">1 Month (1M)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-blue-300 mb-1">Leg 2 Accrual Calendar</label>
+                    <select
+                      value={leg2AccrualCalendar}
+                      onChange={(e) => setLeg2AccrualCalendar(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="USNY">USNY (New York)</option>
+                      <option value="GBLO">GBLO (London)</option>
+                      <option value="EUTA">EUTA (TARGET/Euro)</option>
+                      <option value="JPTO">JPTO (Tokyo)</option>
+                      <option value="CATO">CATO (Toronto)</option>
+                      <option value="AUSY">AUSY (Sydney)</option>
+                      <option value="CHZH">CHZH (Zurich)</option>
+                      <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-emerald-300 mb-1">Leg 2 Payment Calendar</label>
+                    <select
+                      value={leg2PaymentCalendar}
+                      onChange={(e) => setLeg2PaymentCalendar(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-emerald-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="USNY">USNY (New York)</option>
+                      <option value="GBLO">GBLO (London)</option>
+                      <option value="EUTA">EUTA (TARGET/Euro)</option>
+                      <option value="JPTO">JPTO (Tokyo)</option>
+                      <option value="CATO">CATO (Toronto)</option>
+                      <option value="AUSY">AUSY (Sydney)</option>
+                      <option value="CHZH">CHZH (Zurich)</option>
+                      <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-amber-300 mb-1">Leg 2 Accrual Roll Convention</label>
+                    <select
+                      value={leg2AccrualRoll}
+                      onChange={(e) => setLeg2AccrualRoll(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-amber-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                      <option value="FOLLOWING">FOLLOWING</option>
+                      <option value="PRECEDING">PRECEDING</option>
+                      <option value="MODPRECEDING">MODPRECEDING</option>
+                      <option value="NONE">NONE (No Adjustment)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">Leg 2 Payment Roll Convention</label>
+                    <select
+                      value={leg2PaymentRoll}
+                      onChange={(e) => setLeg2PaymentRoll(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                      <option value="FOLLOWING">FOLLOWING</option>
+                      <option value="PRECEDING">PRECEDING</option>
+                      <option value="MODPRECEDING">MODPRECEDING</option>
+                      <option value="NONE">NONE (No Adjustment)</option>
                     </select>
                   </div>
                 </div>
@@ -3571,6 +3922,72 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                       <option value="1M">1 Month (1M)</option>
                     </select>
                   </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-blue-300 mb-1">Leg 1 Accrual Calendar</label>
+                    <select
+                      value={leg1AccrualCalendar}
+                      onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="USNY">USNY (New York)</option>
+                      <option value="GBLO">GBLO (London)</option>
+                      <option value="EUTA">EUTA (TARGET/Euro)</option>
+                      <option value="JPTO">JPTO (Tokyo)</option>
+                      <option value="CATO">CATO (Toronto)</option>
+                      <option value="AUSY">AUSY (Sydney)</option>
+                      <option value="CHZH">CHZH (Zurich)</option>
+                      <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-emerald-300 mb-1">Leg 1 Payment Calendar</label>
+                    <select
+                      value={leg1PaymentCalendar}
+                      onChange={(e) => setLeg1PaymentCalendar(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-emerald-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="USNY">USNY (New York)</option>
+                      <option value="GBLO">GBLO (London)</option>
+                      <option value="EUTA">EUTA (TARGET/Euro)</option>
+                      <option value="JPTO">JPTO (Tokyo)</option>
+                      <option value="CATO">CATO (Toronto)</option>
+                      <option value="AUSY">AUSY (Sydney)</option>
+                      <option value="CHZH">CHZH (Zurich)</option>
+                      <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-amber-300 mb-1">Leg 1 Accrual Roll Convention</label>
+                    <select
+                      value={leg1AccrualRoll}
+                      onChange={(e) => setLeg1AccrualRoll(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-amber-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                      <option value="FOLLOWING">FOLLOWING</option>
+                      <option value="PRECEDING">PRECEDING</option>
+                      <option value="MODPRECEDING">MODPRECEDING</option>
+                      <option value="NONE">NONE (No Adjustment)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">Leg 1 Payment Roll Convention</label>
+                    <select
+                      value={leg1PaymentRoll}
+                      onChange={(e) => setLeg1PaymentRoll(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                      <option value="FOLLOWING">FOLLOWING</option>
+                      <option value="PRECEDING">PRECEDING</option>
+                      <option value="MODPRECEDING">MODPRECEDING</option>
+                      <option value="NONE">NONE (No Adjustment)</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -3612,6 +4029,72 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                       onChange={(e) => setSnowFundingSpreadBps(Number(e.target.value))}
                       className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-blue-300 mb-1">Leg 2 Accrual Calendar</label>
+                    <select
+                      value={leg2AccrualCalendar}
+                      onChange={(e) => setLeg2AccrualCalendar(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="USNY">USNY (New York)</option>
+                      <option value="GBLO">GBLO (London)</option>
+                      <option value="EUTA">EUTA (TARGET/Euro)</option>
+                      <option value="JPTO">JPTO (Tokyo)</option>
+                      <option value="CATO">CATO (Toronto)</option>
+                      <option value="AUSY">AUSY (Sydney)</option>
+                      <option value="CHZH">CHZH (Zurich)</option>
+                      <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-emerald-300 mb-1">Leg 2 Payment Calendar</label>
+                    <select
+                      value={leg2PaymentCalendar}
+                      onChange={(e) => setLeg2PaymentCalendar(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-emerald-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="USNY">USNY (New York)</option>
+                      <option value="GBLO">GBLO (London)</option>
+                      <option value="EUTA">EUTA (TARGET/Euro)</option>
+                      <option value="JPTO">JPTO (Tokyo)</option>
+                      <option value="CATO">CATO (Toronto)</option>
+                      <option value="AUSY">AUSY (Sydney)</option>
+                      <option value="CHZH">CHZH (Zurich)</option>
+                      <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-amber-300 mb-1">Leg 2 Accrual Roll Convention</label>
+                    <select
+                      value={leg2AccrualRoll}
+                      onChange={(e) => setLeg2AccrualRoll(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-amber-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                      <option value="FOLLOWING">FOLLOWING</option>
+                      <option value="PRECEDING">PRECEDING</option>
+                      <option value="MODPRECEDING">MODPRECEDING</option>
+                      <option value="NONE">NONE (No Adjustment)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">Leg 2 Payment Roll Convention</label>
+                    <select
+                      value={leg2PaymentRoll}
+                      onChange={(e) => setLeg2PaymentRoll(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                      <option value="FOLLOWING">FOLLOWING</option>
+                      <option value="PRECEDING">PRECEDING</option>
+                      <option value="MODPRECEDING">MODPRECEDING</option>
+                      <option value="NONE">NONE (No Adjustment)</option>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -3738,6 +4221,72 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                       <option value="1M">1 Month (1M)</option>
                     </select>
                   </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-blue-300 mb-1">Leg 1 Accrual Calendar</label>
+                    <select
+                      value={leg1AccrualCalendar}
+                      onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="USNY">USNY (New York)</option>
+                      <option value="GBLO">GBLO (London)</option>
+                      <option value="EUTA">EUTA (TARGET/Euro)</option>
+                      <option value="JPTO">JPTO (Tokyo)</option>
+                      <option value="CATO">CATO (Toronto)</option>
+                      <option value="AUSY">AUSY (Sydney)</option>
+                      <option value="CHZH">CHZH (Zurich)</option>
+                      <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-emerald-300 mb-1">Leg 1 Payment Calendar</label>
+                    <select
+                      value={leg1PaymentCalendar}
+                      onChange={(e) => setLeg1PaymentCalendar(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-emerald-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="USNY">USNY (New York)</option>
+                      <option value="GBLO">GBLO (London)</option>
+                      <option value="EUTA">EUTA (TARGET/Euro)</option>
+                      <option value="JPTO">JPTO (Tokyo)</option>
+                      <option value="CATO">CATO (Toronto)</option>
+                      <option value="AUSY">AUSY (Sydney)</option>
+                      <option value="CHZH">CHZH (Zurich)</option>
+                      <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-amber-300 mb-1">Leg 1 Accrual Roll Convention</label>
+                    <select
+                      value={leg1AccrualRoll}
+                      onChange={(e) => setLeg1AccrualRoll(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-amber-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                      <option value="FOLLOWING">FOLLOWING</option>
+                      <option value="PRECEDING">PRECEDING</option>
+                      <option value="MODPRECEDING">MODPRECEDING</option>
+                      <option value="NONE">NONE (No Adjustment)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">Leg 1 Payment Roll Convention</label>
+                    <select
+                      value={leg1PaymentRoll}
+                      onChange={(e) => setLeg1PaymentRoll(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                      <option value="FOLLOWING">FOLLOWING</option>
+                      <option value="PRECEDING">PRECEDING</option>
+                      <option value="MODPRECEDING">MODPRECEDING</option>
+                      <option value="NONE">NONE (No Adjustment)</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -3779,6 +4328,72 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                       onChange={(e) => setTarnFundingSpreadBps(Number(e.target.value))}
                       className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-blue-300 mb-1">Leg 2 Accrual Calendar</label>
+                    <select
+                      value={leg2AccrualCalendar}
+                      onChange={(e) => setLeg2AccrualCalendar(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="USNY">USNY (New York)</option>
+                      <option value="GBLO">GBLO (London)</option>
+                      <option value="EUTA">EUTA (TARGET/Euro)</option>
+                      <option value="JPTO">JPTO (Tokyo)</option>
+                      <option value="CATO">CATO (Toronto)</option>
+                      <option value="AUSY">AUSY (Sydney)</option>
+                      <option value="CHZH">CHZH (Zurich)</option>
+                      <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-emerald-300 mb-1">Leg 2 Payment Calendar</label>
+                    <select
+                      value={leg2PaymentCalendar}
+                      onChange={(e) => setLeg2PaymentCalendar(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-emerald-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="USNY">USNY (New York)</option>
+                      <option value="GBLO">GBLO (London)</option>
+                      <option value="EUTA">EUTA (TARGET/Euro)</option>
+                      <option value="JPTO">JPTO (Tokyo)</option>
+                      <option value="CATO">CATO (Toronto)</option>
+                      <option value="AUSY">AUSY (Sydney)</option>
+                      <option value="CHZH">CHZH (Zurich)</option>
+                      <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-amber-300 mb-1">Leg 2 Accrual Roll Convention</label>
+                    <select
+                      value={leg2AccrualRoll}
+                      onChange={(e) => setLeg2AccrualRoll(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-amber-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                      <option value="FOLLOWING">FOLLOWING</option>
+                      <option value="PRECEDING">PRECEDING</option>
+                      <option value="MODPRECEDING">MODPRECEDING</option>
+                      <option value="NONE">NONE (No Adjustment)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">Leg 2 Payment Roll Convention</label>
+                    <select
+                      value={leg2PaymentRoll}
+                      onChange={(e) => setLeg2PaymentRoll(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                      <option value="FOLLOWING">FOLLOWING</option>
+                      <option value="PRECEDING">PRECEDING</option>
+                      <option value="MODPRECEDING">MODPRECEDING</option>
+                      <option value="NONE">NONE (No Adjustment)</option>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -3892,6 +4507,72 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                       <option value="1M">1 Month (1M)</option>
                     </select>
                   </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-blue-300 mb-1">Leg 1 Accrual Calendar</label>
+                    <select
+                      value={leg1AccrualCalendar}
+                      onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="USNY">USNY (New York)</option>
+                      <option value="GBLO">GBLO (London)</option>
+                      <option value="EUTA">EUTA (TARGET/Euro)</option>
+                      <option value="JPTO">JPTO (Tokyo)</option>
+                      <option value="CATO">CATO (Toronto)</option>
+                      <option value="AUSY">AUSY (Sydney)</option>
+                      <option value="CHZH">CHZH (Zurich)</option>
+                      <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-emerald-300 mb-1">Leg 1 Payment Calendar</label>
+                    <select
+                      value={leg1PaymentCalendar}
+                      onChange={(e) => setLeg1PaymentCalendar(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-emerald-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="USNY">USNY (New York)</option>
+                      <option value="GBLO">GBLO (London)</option>
+                      <option value="EUTA">EUTA (TARGET/Euro)</option>
+                      <option value="JPTO">JPTO (Tokyo)</option>
+                      <option value="CATO">CATO (Toronto)</option>
+                      <option value="AUSY">AUSY (Sydney)</option>
+                      <option value="CHZH">CHZH (Zurich)</option>
+                      <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-amber-300 mb-1">Leg 1 Accrual Roll Convention</label>
+                    <select
+                      value={leg1AccrualRoll}
+                      onChange={(e) => setLeg1AccrualRoll(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-amber-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                      <option value="FOLLOWING">FOLLOWING</option>
+                      <option value="PRECEDING">PRECEDING</option>
+                      <option value="MODPRECEDING">MODPRECEDING</option>
+                      <option value="NONE">NONE (No Adjustment)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">Leg 1 Payment Roll Convention</label>
+                    <select
+                      value={leg1PaymentRoll}
+                      onChange={(e) => setLeg1PaymentRoll(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                      <option value="FOLLOWING">FOLLOWING</option>
+                      <option value="PRECEDING">PRECEDING</option>
+                      <option value="MODPRECEDING">MODPRECEDING</option>
+                      <option value="NONE">NONE (No Adjustment)</option>
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -3933,6 +4614,72 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                       onChange={(e) => setSbFundingSpreadBps(Number(e.target.value))}
                       className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-blue-300 mb-1">Leg 2 Accrual Calendar</label>
+                    <select
+                      value={leg2AccrualCalendar}
+                      onChange={(e) => setLeg2AccrualCalendar(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="USNY">USNY (New York)</option>
+                      <option value="GBLO">GBLO (London)</option>
+                      <option value="EUTA">EUTA (TARGET/Euro)</option>
+                      <option value="JPTO">JPTO (Tokyo)</option>
+                      <option value="CATO">CATO (Toronto)</option>
+                      <option value="AUSY">AUSY (Sydney)</option>
+                      <option value="CHZH">CHZH (Zurich)</option>
+                      <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-emerald-300 mb-1">Leg 2 Payment Calendar</label>
+                    <select
+                      value={leg2PaymentCalendar}
+                      onChange={(e) => setLeg2PaymentCalendar(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-emerald-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="USNY">USNY (New York)</option>
+                      <option value="GBLO">GBLO (London)</option>
+                      <option value="EUTA">EUTA (TARGET/Euro)</option>
+                      <option value="JPTO">JPTO (Tokyo)</option>
+                      <option value="CATO">CATO (Toronto)</option>
+                      <option value="AUSY">AUSY (Sydney)</option>
+                      <option value="CHZH">CHZH (Zurich)</option>
+                      <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-amber-300 mb-1">Leg 2 Accrual Roll Convention</label>
+                    <select
+                      value={leg2AccrualRoll}
+                      onChange={(e) => setLeg2AccrualRoll(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-amber-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                      <option value="FOLLOWING">FOLLOWING</option>
+                      <option value="PRECEDING">PRECEDING</option>
+                      <option value="MODPRECEDING">MODPRECEDING</option>
+                      <option value="NONE">NONE (No Adjustment)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">Leg 2 Payment Roll Convention</label>
+                    <select
+                      value={leg2PaymentRoll}
+                      onChange={(e) => setLeg2PaymentRoll(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                      <option value="FOLLOWING">FOLLOWING</option>
+                      <option value="PRECEDING">PRECEDING</option>
+                      <option value="MODPRECEDING">MODPRECEDING</option>
+                      <option value="NONE">NONE (No Adjustment)</option>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -4048,6 +4795,72 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                     className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-xs text-white font-mono"
                     required
                   />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-blue-300 mb-1">Accrual Calendar</label>
+                  <select
+                    value={leg1AccrualCalendar}
+                    onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="USNY">USNY (New York)</option>
+                    <option value="GBLO">GBLO (London)</option>
+                    <option value="EUTA">EUTA (TARGET/Euro)</option>
+                    <option value="JPTO">JPTO (Tokyo)</option>
+                    <option value="CATO">CATO (Toronto)</option>
+                    <option value="AUSY">AUSY (Sydney)</option>
+                    <option value="CHZH">CHZH (Zurich)</option>
+                    <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-emerald-300 mb-1">Payment Calendar</label>
+                  <select
+                    value={leg1PaymentCalendar}
+                    onChange={(e) => setLeg1PaymentCalendar(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-emerald-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="USNY">USNY (New York)</option>
+                    <option value="GBLO">GBLO (London)</option>
+                    <option value="EUTA">EUTA (TARGET/Euro)</option>
+                    <option value="JPTO">JPTO (Tokyo)</option>
+                    <option value="CATO">CATO (Toronto)</option>
+                    <option value="AUSY">AUSY (Sydney)</option>
+                    <option value="CHZH">CHZH (Zurich)</option>
+                    <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-amber-300 mb-1">Accrual Roll Convention</label>
+                  <select
+                    value={leg1AccrualRoll}
+                    onChange={(e) => setLeg1AccrualRoll(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-amber-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                    <option value="FOLLOWING">FOLLOWING</option>
+                    <option value="PRECEDING">PRECEDING</option>
+                    <option value="MODPRECEDING">MODPRECEDING</option>
+                    <option value="NONE">NONE (No Adjustment)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">Payment Roll Convention</label>
+                  <select
+                    value={leg1PaymentRoll}
+                    onChange={(e) => setLeg1PaymentRoll(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                    <option value="FOLLOWING">FOLLOWING</option>
+                    <option value="PRECEDING">PRECEDING</option>
+                    <option value="MODPRECEDING">MODPRECEDING</option>
+                    <option value="NONE">NONE (No Adjustment)</option>
+                  </select>
                 </div>
               </div>
             </>
@@ -4188,6 +5001,72 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   >
                     <option value="EUROPEAN">EUROPEAN</option>
                     <option value="AMERICAN">AMERICAN</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-blue-300 mb-1">Accrual Calendar</label>
+                  <select
+                    value={leg1AccrualCalendar}
+                    onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="USNY">USNY (New York)</option>
+                    <option value="GBLO">GBLO (London)</option>
+                    <option value="EUTA">EUTA (TARGET/Euro)</option>
+                    <option value="JPTO">JPTO (Tokyo)</option>
+                    <option value="CATO">CATO (Toronto)</option>
+                    <option value="AUSY">AUSY (Sydney)</option>
+                    <option value="CHZH">CHZH (Zurich)</option>
+                    <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-emerald-300 mb-1">Payment Calendar</label>
+                  <select
+                    value={leg1PaymentCalendar}
+                    onChange={(e) => setLeg1PaymentCalendar(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-emerald-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="USNY">USNY (New York)</option>
+                    <option value="GBLO">GBLO (London)</option>
+                    <option value="EUTA">EUTA (TARGET/Euro)</option>
+                    <option value="JPTO">JPTO (Tokyo)</option>
+                    <option value="CATO">CATO (Toronto)</option>
+                    <option value="AUSY">AUSY (Sydney)</option>
+                    <option value="CHZH">CHZH (Zurich)</option>
+                    <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-amber-300 mb-1">Accrual Roll Convention</label>
+                  <select
+                    value={leg1AccrualRoll}
+                    onChange={(e) => setLeg1AccrualRoll(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-amber-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                    <option value="FOLLOWING">FOLLOWING</option>
+                    <option value="PRECEDING">PRECEDING</option>
+                    <option value="MODPRECEDING">MODPRECEDING</option>
+                    <option value="NONE">NONE (No Adjustment)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">Payment Roll Convention</label>
+                  <select
+                    value={leg1PaymentRoll}
+                    onChange={(e) => setLeg1PaymentRoll(e.target.value as any)}
+                    className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-bold"
+                  >
+                    <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                    <option value="FOLLOWING">FOLLOWING</option>
+                    <option value="PRECEDING">PRECEDING</option>
+                    <option value="MODPRECEDING">MODPRECEDING</option>
+                    <option value="NONE">NONE (No Adjustment)</option>
                   </select>
                 </div>
               </div>
@@ -4404,6 +5283,72 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                       className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold"
                       required
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-blue-300 mb-1">Accrual Calendar</label>
+                    <select
+                      value={leg1AccrualCalendar}
+                      onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="USNY">USNY (New York)</option>
+                      <option value="GBLO">GBLO (London)</option>
+                      <option value="EUTA">EUTA (TARGET/Euro)</option>
+                      <option value="JPTO">JPTO (Tokyo)</option>
+                      <option value="CATO">CATO (Toronto)</option>
+                      <option value="AUSY">AUSY (Sydney)</option>
+                      <option value="CHZH">CHZH (Zurich)</option>
+                      <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-emerald-300 mb-1">Payment Calendar</label>
+                    <select
+                      value={leg1PaymentCalendar}
+                      onChange={(e) => setLeg1PaymentCalendar(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-emerald-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="USNY">USNY (New York)</option>
+                      <option value="GBLO">GBLO (London)</option>
+                      <option value="EUTA">EUTA (TARGET/Euro)</option>
+                      <option value="JPTO">JPTO (Tokyo)</option>
+                      <option value="CATO">CATO (Toronto)</option>
+                      <option value="AUSY">AUSY (Sydney)</option>
+                      <option value="CHZH">CHZH (Zurich)</option>
+                      <option value="USNY+GBLO">USNY + GBLO Joint</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-amber-300 mb-1">Accrual Roll Convention</label>
+                    <select
+                      value={leg1AccrualRoll}
+                      onChange={(e) => setLeg1AccrualRoll(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-amber-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                      <option value="FOLLOWING">FOLLOWING</option>
+                      <option value="PRECEDING">PRECEDING</option>
+                      <option value="MODPRECEDING">MODPRECEDING</option>
+                      <option value="NONE">NONE (No Adjustment)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">Payment Roll Convention</label>
+                    <select
+                      value={leg1PaymentRoll}
+                      onChange={(e) => setLeg1PaymentRoll(e.target.value as any)}
+                      className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
+                      <option value="FOLLOWING">FOLLOWING</option>
+                      <option value="PRECEDING">PRECEDING</option>
+                      <option value="MODPRECEDING">MODPRECEDING</option>
+                      <option value="NONE">NONE (No Adjustment)</option>
+                    </select>
                   </div>
                 </div>
               </div>
