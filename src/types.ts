@@ -1,4 +1,4 @@
-export type ProductType = 'IRS' | 'CAP_FLOOR' | 'SWAPTION' | 'FX_FORWARD' | 'FX_OPTION' | 'RANGE_ACCRUAL' | 'SNOW_RANGE' | 'TARN' | 'SNOWBALL' | 'BOND' | 'FRA' | 'DEPOSIT' | 'REPO';
+export type ProductType = 'IRS' | 'CAP_FLOOR' | 'SWAPTION' | 'FX_FORWARD' | 'FX_OPTION' | 'RANGE_ACCRUAL' | 'SNOW_RANGE' | 'TARN' | 'SNOWBALL' | 'BOND' | 'FRA' | 'DEPOSIT' | 'REPO' | 'DUAL_DIGITAL';
 
 export type Currency = 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CAD' | 'AUD' | 'CHF';
 
@@ -366,6 +366,36 @@ export interface RepoDetails {
   paymentRollConvention?: BusinessDayRollConvention;
 }
 
+// Product 14: Dual Digital Interest Rate Swap / Option
+export interface DualDigitalDetails {
+  direction: 'PAY_DIGITAL' | 'RECEIVE_DIGITAL';
+  digitalPayoutAmount: number; // Fixed Binary Lump-Sum Payout Amount or Digital Coupon Rate (%)
+  payoutType: 'FIXED_AMOUNT' | 'COUPON_PERCENT';
+  
+  // Reference Rate Condition 1 (e.g. SOFR-3M or 5Y Swap Rate)
+  index1: FloatingIndex;
+  index1Tenor: IndexTenor;
+  condition1Operator: 'GREATER_THAN' | 'LESS_THAN';
+  trigger1Rate: number; // % e.g. 4.00 (%)
+  
+  // Reference Rate Condition 2 (e.g. EURIBOR-3M or 10Y Swap Rate)
+  index2: FloatingIndex;
+  index2Tenor: IndexTenor;
+  condition2Operator: 'GREATER_THAN' | 'LESS_THAN';
+  trigger2Rate: number; // % e.g. 3.50 (%)
+
+  impliedCorrelation: number; // Implied correlation between Index1 and Index2 (-1.0 to +1.0, e.g. 0.75)
+  observationType: 'AT_MATURITY' | 'DAILY_OBSERVATION';
+  currency: Currency;
+  notional: number;
+  dayCount: DayCountConvention;
+  paymentFrequency: PaymentFrequency;
+  accrualCalendar?: BusinessCalendar;
+  paymentCalendar?: BusinessCalendar;
+  accrualRollConvention?: BusinessDayRollConvention;
+  paymentRollConvention?: BusinessDayRollConvention;
+}
+
 export interface MarketDataConfig {
   environment: 'REALTIME' | 'EOD_NY_CLOSE' | 'LON_1600_FIX' | 'TOKYO_CLOSE';
   yieldCurveName: string;
@@ -380,7 +410,7 @@ export interface MarketDataConfig {
 export interface IRSwapTrade {
   id: string; // Internal SQL primary key or UUID
   tradeId: string; // Unique SQL Sequence Trade ID, e.g., IRS-2026-000101 or TRD-2026-000101
-  productType: ProductType; // 'IRS' | 'CAP_FLOOR' | 'SWAPTION' | 'FX_FORWARD' | 'FX_OPTION' | 'RANGE_ACCRUAL' | 'SNOW_RANGE' | 'TARN' | 'SNOWBALL' | 'BOND' | 'FRA' | 'DEPOSIT' | 'REPO'
+  productType: ProductType; // 'IRS' | 'CAP_FLOOR' | 'SWAPTION' | 'FX_FORWARD' | 'FX_OPTION' | 'RANGE_ACCRUAL' | 'SNOW_RANGE' | 'TARN' | 'SNOWBALL' | 'BOND' | 'FRA' | 'DEPOSIT' | 'REPO' | 'DUAL_DIGITAL'
   tradeDate: string; // YYYY-MM-DD
   effectiveDate: string; // YYYY-MM-DD
   maturityDate: string; // YYYY-MM-DD
@@ -412,6 +442,7 @@ export interface IRSwapTrade {
   fraDetails?: FraDetails;
   depositDetails?: DepositDetails;
   repoDetails?: RepoDetails;
+  dualDigitalDetails?: DualDigitalDetails;
 
   // Market Data Configuration Used
   marketData?: MarketDataConfig;

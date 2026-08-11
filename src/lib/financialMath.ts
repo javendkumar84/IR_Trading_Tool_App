@@ -292,6 +292,56 @@ export function calculateRepoValuation(
 /**
  * Summarizes position metrics grouped by currency
  */
+/**
+ * Calculates Dual Digital Interest Rate Swap / Option Valuation
+ * Evaluates bivariate cumulative normal / joint trigger probability:
+ * Payoff = Binary Payout if (Index1 Condition1 Trigger1) AND (Index2 Condition2 Trigger2)
+ */
+export function calculateDualDigitalValuation(
+  direction: 'PAY_DIGITAL' | 'RECEIVE_DIGITAL',
+  digitalPayoutAmount: number,
+  payoutType: 'FIXED_AMOUNT' | 'COUPON_PERCENT',
+  index1: string,
+  condition1Operator: 'GREATER_THAN' | 'LESS_THAN',
+  trigger1Rate: number,
+  index2: string,
+  condition2Operator: 'GREATER_THAN' | 'LESS_THAN',
+  trigger2Rate: number,
+  impliedCorrelation: number,
+  notional: number,
+  tenorYears: number,
+  currentRate1: number,
+  currentRate2: number
+): { mtm: number; dv01: number; jointProbability: number } {
+  // 1. Calculate marginal condition probabilities (d1 / d2 moneyness proxy)
+  const isCond1Met = condition1Operator === 'GREATER_THAN' ? currentRate1 >= trigger1Rate : currentRate1 <= trigger1Rate;
+  const isCond2Met = condition2Operator === 'GREATER_THAN' ? currentRate2 >= trigger2Rate : currentRate2 <= trigger2Rate;
+
+  // Single-variable marginal probabilities
+  const dist1 = Math.abs(currentRate1 - trigger1Rate) / 0.50; // 50bps vol scale
+  const dist2 = Math.abs(currentRate2 - trigger2Rate) / 0.50;
+  
+  const prob1 = isCond1Met ? Math.min(0.95, 0.5 + 0.4 * Math.tanh(dist1)) : Math.max(0.05, 0.5 - 0.4 * Math.tanh(dist1));
+  const prob2 = isCond2Met ? Math.min(0.95, 0.5 + 0.4 * Math.tanh(dist2)) : Math.max(0.05, 0.5 - 0.4 * Math.tanh(dist2));
+
+  // Bivariate Joint Probability with correlation term rho
+  // Joint P(A and B) = P(A)*P(B) + rho * sqrt(P(A)(1-P(A))*P(B)(1-P(B)))
+  const correlationEffect = impliedCorrelation * Math.sqrt(prob1 * (1 - prob1) * prob2 * (1 - prob2));
+  const jointProbability = Math.max(0.01, Math.min(0.99, prob1 * prob2 + correlationEffect));
+
+  // Calculate Expected Payout Value
+  const rawPayoutUsd = payoutType === 'FIXED_AMOUNT' ? digitalPayoutAmount : (digitalPayoutAmount / 100) * notional;
+  const expectedPayoutUsd = rawPayoutUsd * jointProbability;
+
+  const sign = direction === 'RECEIVE_DIGITAL' ? 1 : -1;
+  const mtm = Math.round(expectedPayoutUsd * sign);
+
+  // Dual Digital DV01 Sensitivity (digital gamma peak near triggers)
+  const dv01 = Math.round((notional * 0.00015 * jointProbability * (1 - jointProbability)) * 100);
+
+  return { mtm, dv01, jointProbability: parseFloat((jointProbability * 100).toFixed(2)) };
+}
+
 export function summarizePositionsByCurrency(trades: IRSwapTrade[]): PositionSummary[] {
   const groups: Record<string, PositionSummary> = {};
 

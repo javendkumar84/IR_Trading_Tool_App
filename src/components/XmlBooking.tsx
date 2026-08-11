@@ -239,6 +239,26 @@ export const PRODUCT_VALUATION_MODELS: Record<ProductType, ValuationModelOption[
       description: 'Tracks daily collateral mark-to-market valuations and dynamic margin call thresholds across repo term.',
     },
   ],
+  DUAL_DIGITAL: [
+    {
+      id: 'BIVARIATE_N2_CORRELATION',
+      name: 'Bivariate Normal (N2) Implied Correlation Model',
+      category: 'Exotic Rates Bivariate Analytics',
+      description: 'Evaluates joint binary payoff probability via two-dimensional Gaussian cumulative distribution function N2(d1, d2, rho) incorporating implied correlation between reference rates.',
+    },
+    {
+      id: 'HULL_WHITE_2F_DUAL_DIGITAL',
+      name: 'Hull-White 2-Factor Bivariate Short-Rate Engine',
+      category: 'Structured Rates Exotic Engine',
+      description: 'Simulates correlated short-rate paths under 2-Factor Hull-White model to price joint trigger digital payouts and correlation sensitivity (Copula/Correlation Vega).',
+    },
+    {
+      id: 'SLV_COPULA_DUAL_DIGITAL',
+      name: 'Stochastic Local Volatility (SLV) Copula Engine',
+      category: 'Advanced Volatility Copula Analytics',
+      description: 'Employs Student-t or Gaussian Copula paired with local volatility surfaces to accurately model joint tail dependencies for dual digital payoffs.',
+    },
+  ],
   FX_FORWARD: [
     {
       id: 'GARMAN_KOHLHAGEN_CIP',
@@ -803,6 +823,45 @@ export function renderPayoffDetails(productType: ProductType) {
         </div>
       );
 
+    case 'DUAL_DIGITAL':
+      return (
+        <div className="bg-[#0b0d10] border border-amber-900/50 rounded-xl p-4 space-y-3">
+          <div className="flex items-center justify-between border-b border-gray-800 pb-2">
+            <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5 uppercase tracking-wider">
+              <Calculator className="w-4 h-4" /> Payoff Calculation Mechanics: Dual Digital Interest Rate Swap / Option
+            </span>
+            <span className="text-[11px] font-mono text-gray-400 bg-[#14171f] px-2 py-0.5 rounded border border-gray-700">
+              Payoff: Fixed Binary Payout IF (Index1 ⚡ Trigger1) AND (Index2 ⚡ Trigger2)
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+            <div className="bg-[#12151c] p-3 rounded-lg border border-gray-800/80 space-y-1">
+              <span className="font-bold text-gray-300 block text-[11px]">1. Bivariate Binary Payoff Formula</span>
+              <div className="font-mono text-amber-300 text-[11px] bg-[#090a0d] p-2 rounded border border-gray-800">
+                P(A ∩ B) = N2(d1, d2, ρ)<br/>
+                Expected Payoff = FixedPayout × N2(d1, d2, ρ)<br/>
+                If Cond1 AND Cond2 satisfied: Pay binary amount else $0
+              </div>
+            </div>
+
+            <div className="bg-[#12151c] p-3 rounded-lg border border-gray-800/80 space-y-1">
+              <span className="font-bold text-gray-300 block text-[11px]">2. Step-by-Step Cashflow Mechanics</span>
+              <p className="text-gray-400 text-[11px] leading-relaxed">
+                At fixing/observation date T, both reference rate indices (e.g. SOFR-3M & EURIBOR-3M) are observed simultaneously against their respective trigger rates. The fixed binary payout is triggered if and only if both conditions evaluate to true.
+              </p>
+            </div>
+
+            <div className="bg-[#12151c] p-3 rounded-lg border border-gray-800/80 space-y-1">
+              <span className="font-bold text-gray-300 block text-[11px]">3. Financial Risk & Correlation Sensitivity</span>
+              <p className="text-gray-400 text-[11px] leading-relaxed">
+                Highly sensitive to implied bivariate correlation (Correlation Vega ρ). Digital gamma risk near barrier triggers allows significant premium discount relative to two standalone digital options.
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+
     default:
       return null;
   }
@@ -1026,6 +1085,23 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
   const [sbFundingDayCount, setSbFundingDayCount] = useState<DayCountConvention>('ACT/360');
   const [sbFundingFreq, setSbFundingFreq] = useState<PaymentFrequency>('3M');
   const [sbNotional, setSbNotional] = useState<number>(25000000);
+
+  // 14. Dual Digital State
+  const [ddDirection, setDdDirection] = useState<'PAY_DIGITAL' | 'RECEIVE_DIGITAL'>('RECEIVE_DIGITAL');
+  const [ddPayoutAmount, setDdPayoutAmount] = useState<number>(500000);
+  const [ddPayoutType, setDdPayoutType] = useState<'FIXED_AMOUNT' | 'COUPON_PERCENT'>('FIXED_AMOUNT');
+  const [ddIndex1, setDdIndex1] = useState<FloatingIndex>('SOFR');
+  const [ddIndex1Tenor, setDdIndex1Tenor] = useState<IndexTenor>('3M');
+  const [ddCondition1Op, setDdCondition1Op] = useState<'GREATER_THAN' | 'LESS_THAN'>('GREATER_THAN');
+  const [ddTrigger1Rate, setDdTrigger1Rate] = useState<number>(4.00);
+  const [ddIndex2, setDdIndex2] = useState<FloatingIndex>('EURIBOR');
+  const [ddIndex2Tenor, setDdIndex2Tenor] = useState<IndexTenor>('3M');
+  const [ddCondition2Op, setDdCondition2Op] = useState<'GREATER_THAN' | 'LESS_THAN'>('LESS_THAN');
+  const [ddTrigger2Rate, setDdTrigger2Rate] = useState<number>(3.50);
+  const [ddCorrelation, setDdCorrelation] = useState<number>(0.75);
+  const [ddObservationType, setDdObservationType] = useState<'AT_MATURITY' | 'DAILY_OBSERVATION'>('AT_MATURITY');
+  const [ddNotional, setDdNotional] = useState<number>(10000000);
+  const [ddDayCount, setDdDayCount] = useState<DayCountConvention>('30/360');
 
   // 7. Market Data Environment Used For Trade Pricing & Valuation State
   const [marketEnv, setMarketEnv] = useState<'REALTIME' | 'EOD_NY_CLOSE' | 'LON_1600_FIX' | 'TOKYO_CLOSE'>('EOD_NY_CLOSE');
@@ -1343,6 +1419,28 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
       };
       tempTrade.snowballDetails = details;
       tempTrade.notionalUsd = sbNotional;
+    } else if (selectedProduct === 'DUAL_DIGITAL') {
+      const details: import('../types').DualDigitalDetails = {
+        direction: ddDirection,
+        digitalPayoutAmount: ddPayoutAmount,
+        payoutType: ddPayoutType,
+        index1: ddIndex1,
+        index1Tenor: ddIndex1Tenor,
+        condition1Operator: ddCondition1Op,
+        trigger1Rate: ddTrigger1Rate,
+        index2: ddIndex2,
+        index2Tenor: ddIndex2Tenor,
+        condition2Operator: ddCondition2Op,
+        trigger2Rate: ddTrigger2Rate,
+        impliedCorrelation: ddCorrelation,
+        observationType: ddObservationType,
+        currency,
+        notional: ddNotional,
+        dayCount: ddDayCount,
+        paymentFrequency: '1Y',
+      };
+      tempTrade.dualDigitalDetails = details;
+      tempTrade.notionalUsd = ddNotional;
     }
 
     if (Object.keys(scheduleDateOverrides).length > 0) {
@@ -1377,6 +1475,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
     snowLowerBarrier, snowUpperBarrier, snowBaseCoupon, snowMemoryMult, snowMemoryEnabled, snowRefIndex, snowObsFreq, snowPayFreq, snowDayCount, snowFundingLegType, snowFundingIndex, snowFundingTenor, snowFundingSpreadBps, snowFundingFixedRate, snowFundingDayCount, snowFundingFreq, snowNotional,
     tarnDirection, tarnTargetCapPct, tarnFormulaType, tarnStrikeRate, tarnLeverage, tarnFloorRate, tarnCapRate, tarnRefIndex, tarnPayFreq, tarnDayCount, tarnFundingLegType, tarnFundingIndex, tarnFundingTenor, tarnFundingSpreadBps, tarnFundingFixedRate, tarnFundingDayCount, tarnFundingFreq, tarnNotional,
     sbDirection, sbInitialCoupon, sbBonusStep, sbLeverage, sbFloorRate, sbCapRate, sbRefIndex, sbPayFreq, sbDayCount, sbFundingLegType, sbFundingIndex, sbFundingTenor, sbFundingSpreadBps, sbFundingFixedRate, sbFundingDayCount, sbFundingFreq, sbNotional,
+    ddDirection, ddPayoutAmount, ddPayoutType, ddIndex1, ddIndex1Tenor, ddCondition1Op, ddTrigger1Rate, ddIndex2, ddIndex2Tenor, ddCondition2Op, ddTrigger2Rate, ddCorrelation, ddObservationType, ddNotional, ddDayCount,
     marketEnv, yieldCurveName, discountCurveName, volSurfaceName, fxCurveName, benchmarkRatePct, impliedVolPct
   ]);
 
@@ -1784,6 +1883,26 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
           fundingDayCount: sbFundingDayCount,
           fundingPaymentFrequency: sbFundingFreq,
         };
+      } else if (selectedProduct === 'DUAL_DIGITAL') {
+        tradePayload.dualDigitalDetails = {
+          direction: ddDirection,
+          digitalPayoutAmount: ddPayoutAmount,
+          payoutType: ddPayoutType,
+          index1: ddIndex1,
+          index1Tenor: ddIndex1Tenor,
+          condition1Operator: ddCondition1Op,
+          trigger1Rate: ddTrigger1Rate,
+          index2: ddIndex2,
+          index2Tenor: ddIndex2Tenor,
+          condition2Operator: ddCondition2Op,
+          trigger2Rate: ddTrigger2Rate,
+          impliedCorrelation: ddCorrelation,
+          observationType: ddObservationType,
+          currency,
+          notional: ddNotional,
+          dayCount: ddDayCount,
+          paymentFrequency: '1Y',
+        };
       }
 
       tradePayload.valuationModel = getValuationModelForProduct(selectedProduct, selectedValuationModelMap[selectedProduct]).name;
@@ -1848,7 +1967,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
         </div>
 
         {/* Product Type Selector Tabs */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-13 gap-2 pt-2 border-t border-gray-800/60">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-14 gap-2 pt-2 border-t border-gray-800/60">
           {[
             { type: 'IRS', label: '1. IR Swap', desc: 'Interest Rate Swap', color: 'border-blue-500 text-blue-400' },
             { type: 'CAP_FLOOR', label: '2. Cap / Floor', desc: 'IR Option', color: 'border-emerald-500 text-emerald-400' },
@@ -1863,6 +1982,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
             { type: 'FRA', label: '11. FRA', desc: 'Forward Rate', color: 'border-lime-500 text-lime-400' },
             { type: 'DEPOSIT', label: '12. Deposit', desc: 'Term Cash Loan', color: 'border-yellow-500 text-yellow-400' },
             { type: 'REPO', label: '13. Repo', desc: 'Repurchase Agmt', color: 'border-violet-500 text-violet-400' },
+            { type: 'DUAL_DIGITAL', label: '14. Dual Digital', desc: 'Bivariate Digital IR', color: 'border-amber-400 text-amber-300' },
           ].map((item) => (
             <button
               key={item.type}

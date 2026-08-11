@@ -1832,6 +1832,8 @@ export function generateCashflowSchedule(
       return generateDepositCashflowSchedule(trade);
     case 'REPO':
       return generateRepoCashflowSchedule(trade);
+    case 'DUAL_DIGITAL':
+      return generateDualDigitalCashflowSchedule(trade);
     default:
       return generateIRSwapCashflowSchedule(trade);
   }
@@ -2119,6 +2121,65 @@ export function generateRepoCashflowSchedule(trade: IRSwapTrade): CashflowSchedu
     totalNetCashflow: -repoInterest * sign,
     totalPV: Math.round(-repoInterest * sign * 0.999),
     totalIrDelta: Math.round(purchasePrice * dcf * 0.0001),
+    periods,
+  };
+}
+
+/**
+ * Cashflow Schedule Generator for Dual Digital Interest Rate Swap / Option
+ */
+export function generateDualDigitalCashflowSchedule(trade: IRSwapTrade): CashflowScheduleSummary {
+  const details = trade.dualDigitalDetails;
+  const ccy = details?.currency || 'USD';
+  const notional = details?.notional || trade.notionalUsd || 10000000;
+  const payoutAmount = details?.digitalPayoutAmount || 500000;
+  const payoutType = details?.payoutType || 'FIXED_AMOUNT';
+  const direction = details?.direction || 'RECEIVE_DIGITAL';
+  const sign = direction === 'RECEIVE_DIGITAL' ? 1 : -1;
+  const dayCount = details?.dayCount || '30/360';
+  const effective = trade.effectiveDate || '2026-08-01';
+  const maturity = trade.maturityDate || '2031-08-01';
+
+  const rawPayoutUsd = payoutType === 'FIXED_AMOUNT' ? payoutAmount : (payoutAmount / 100) * notional;
+  const jointProbPct = 65.5; // Expected bivariate probability %
+  const expectedPayoutUsd = Math.round(rawPayoutUsd * (jointProbPct / 100));
+
+  const periods: CashflowPeriod[] = [
+    {
+      periodNumber: 1,
+      startDate: effective,
+      endDate: maturity,
+      paymentDate: maturity,
+      resetStartDate: effective,
+      resetEndDate: maturity,
+      payResetDate: maturity,
+      numberOfDays: getNumberOfDays(effective, maturity),
+      dayCountFraction: getDayCountFraction(effective, maturity, dayCount),
+      dayCountConvention: dayCount,
+      notional,
+      fixedCouponRate: (rawPayoutUsd / notional) * 100,
+      netCashflow: expectedPayoutUsd * sign,
+      irDelta: Math.round(notional * 0.00015 * 0.655),
+      discountFactor: 0.85,
+      discountedCashflow: Math.round(expectedPayoutUsd * sign * 0.85),
+      cumulativeCashflow: expectedPayoutUsd * sign,
+      type: 'SETTLEMENT',
+      description: `Dual Digital Binary Payout at Maturity (Condition 1: ${details?.index1 || 'SOFR'} ${details?.condition1Operator === 'GREATER_THAN' ? '≥' : '≤'} ${details?.trigger1Rate || 4.0}% AND Condition 2: ${details?.index2 || 'EURIBOR'} ${details?.condition2Operator === 'GREATER_THAN' ? '≥' : '≤'} ${details?.trigger2Rate || 3.5}%)`,
+    },
+  ];
+
+  return {
+    tradeId: trade.tradeId,
+    productType: 'DUAL_DIGITAL',
+    currency: ccy,
+    notional,
+    effectiveDate: effective,
+    maturityDate: maturity,
+    totalFixedCashflow: expectedPayoutUsd * sign,
+    totalFloatingCashflow: 0,
+    totalNetCashflow: expectedPayoutUsd * sign,
+    totalPV: Math.round(expectedPayoutUsd * sign * 0.85),
+    totalIrDelta: Math.round(notional * 0.00015 * 0.655),
     periods,
   };
 }

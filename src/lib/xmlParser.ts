@@ -742,6 +742,64 @@ export function generateIRSwapXml(trade: Partial<IRSwapTrade>): string {
         dayCountFraction: details.dayCount,
       },
     };
+  } else if (productType === 'DUAL_DIGITAL') {
+    const details = trade.dualDigitalDetails || {
+      direction: 'RECEIVE_DIGITAL' as const,
+      digitalPayoutAmount: 500000,
+      payoutType: 'FIXED_AMOUNT' as const,
+      index1: 'SOFR' as FloatingIndex,
+      index1Tenor: '3M' as IndexTenor,
+      condition1Operator: 'GREATER_THAN' as const,
+      trigger1Rate: 4.00,
+      index2: 'EURIBOR' as FloatingIndex,
+      index2Tenor: '3M' as IndexTenor,
+      condition2Operator: 'LESS_THAN' as const,
+      trigger2Rate: 3.50,
+      impliedCorrelation: 0.75,
+      observationType: 'AT_MATURITY' as const,
+      currency: 'USD' as Currency,
+      notional: 10000000,
+      dayCount: '30/360' as DayCountConvention,
+      paymentFrequency: '1Y' as PaymentFrequency,
+    };
+
+    productXmlNode = {
+      dualDigitalOption: {
+        payerPartyReference: details.direction === 'PAY_DIGITAL' ? { '@_href': 'PartyA' } : { '@_href': 'PartyB' },
+        receiverPartyReference: details.direction === 'PAY_DIGITAL' ? { '@_href': 'PartyB' } : { '@_href': 'PartyA' },
+        dualDigitalLeg: {
+          '@_id': 'DualDigital_PayoutLeg',
+          calculationPeriodDates: {
+            effectiveDate: { unadjustedDate: effectiveDate },
+            terminationDate: { unadjustedDate: maturityDate },
+          },
+          binaryPayout: {
+            payoutType: details.payoutType,
+            payoutAmount: details.digitalPayoutAmount,
+            payoutCurrency: details.currency,
+          },
+          referenceCondition1: {
+            floatingRateIndex: details.index1,
+            indexTenor: details.index1Tenor,
+            operator: details.condition1Operator,
+            triggerRate: (details.trigger1Rate / 100).toFixed(6),
+          },
+          referenceCondition2: {
+            floatingRateIndex: details.index2,
+            indexTenor: details.index2Tenor,
+            operator: details.condition2Operator,
+            triggerRate: (details.trigger2Rate / 100).toFixed(6),
+          },
+          impliedCorrelation: details.impliedCorrelation,
+          observationType: details.observationType,
+          notionalAmount: {
+            currency: details.currency,
+            amount: details.notional,
+          },
+          dayCountFraction: details.dayCount,
+        },
+      },
+    };
   } else if (productType === 'REPO') {
     const details = trade.repoDetails || {
       repoType: 'CLASSIC_REPO' as const,
@@ -920,6 +978,7 @@ export function parseIRSwapXml(xmlString: string): XmlParseResult {
     let fraDetails: import('../types').FraDetails | undefined;
     let depositDetails: import('../types').DepositDetails | undefined;
     let repoDetails: import('../types').RepoDetails | undefined;
+    let dualDigitalDetails: import('../types').DualDigitalDetails | undefined;
 
     let effectiveDate = '2026-08-01';
     let maturityDate = '2031-08-01';
@@ -1485,6 +1544,66 @@ export function parseIRSwapXml(xmlString: string): XmlParseResult {
       parRate = repoRate;
       dv01 = Math.round(purchasePrice * 0.000008);
       markToMarket = 0;
+    } else if (productType === 'DUAL_DIGITAL') {
+      const ddNode = tradeNode.dualDigitalOption || {};
+      const leg = ddNode.dualDigitalLeg || {};
+      const payoutNode = leg.binaryPayout || {};
+      const ref1 = leg.referenceCondition1 || {};
+      const ref2 = leg.referenceCondition2 || {};
+
+      effectiveDate = leg.calculationPeriodDates?.effectiveDate?.unadjustedDate || '2026-08-01';
+      maturityDate = leg.calculationPeriodDates?.terminationDate?.unadjustedDate || '2031-08-01';
+      tenorYears = calculateTenorYears(effectiveDate, maturityDate);
+
+      const currency = (payoutNode.payoutCurrency || leg.notionalAmount?.currency || 'USD') as Currency;
+      const notional = parseFloat(leg.notionalAmount?.amount || '10000000');
+      notionalUsd = notional;
+      const isPay = ddNode.payerPartyReference?.['@_href'] === 'PartyA';
+
+      const trigger1Rate = parseFloat(ref1.triggerRate || '0.0400') * (parseFloat(ref1.triggerRate || '0.0400') < 0.2 ? 100 : 1);
+      const trigger2Rate = parseFloat(ref2.triggerRate || '0.0350') * (parseFloat(ref2.triggerRate || '0.0350') < 0.2 ? 100 : 1);
+
+      dualDigitalDetails = {
+        direction: isPay ? 'PAY_DIGITAL' : 'RECEIVE_DIGITAL',
+        digitalPayoutAmount: parseFloat(payoutNode.payoutAmount || '500000'),
+        payoutType: (payoutNode.payoutType || 'FIXED_AMOUNT') as any,
+        index1: (ref1.floatingRateIndex || 'SOFR') as FloatingIndex,
+        index1Tenor: (ref1.indexTenor || '3M') as IndexTenor,
+        condition1Operator: (ref1.operator || 'GREATER_THAN') as any,
+        trigger1Rate,
+        index2: (ref2.floatingRateIndex || 'EURIBOR') as FloatingIndex,
+        index2Tenor: (ref2.indexTenor || '3M') as IndexTenor,
+        condition2Operator: (ref2.operator || 'LESS_THAN') as any,
+        trigger2Rate,
+        impliedCorrelation: parseFloat(leg.impliedCorrelation || '0.75'),
+        observationType: (leg.observationType || 'AT_MATURITY') as any,
+        currency,
+        notional,
+        dayCount: (leg.dayCountFraction || '30/360') as DayCountConvention,
+        paymentFrequency: '1Y',
+      };
+
+      const rate1 = getEstimatedParRate(currency, tenorYears);
+      const rate2 = getEstimatedParRate(currency === 'EUR' ? 'USD' : 'EUR', tenorYears);
+      const val = calculateDualDigitalValuation(
+        dualDigitalDetails.direction,
+        dualDigitalDetails.digitalPayoutAmount,
+        dualDigitalDetails.payoutType,
+        dualDigitalDetails.index1,
+        dualDigitalDetails.condition1Operator,
+        dualDigitalDetails.trigger1Rate,
+        dualDigitalDetails.index2,
+        dualDigitalDetails.condition2Operator,
+        dualDigitalDetails.trigger2Rate,
+        dualDigitalDetails.impliedCorrelation,
+        notional,
+        tenorYears,
+        rate1,
+        rate2
+      );
+      parRate = trigger1Rate;
+      dv01 = val.dv01;
+      markToMarket = val.mtm;
     }
 
     const extractedTrade: Partial<IRSwapTrade> = {
@@ -1514,6 +1633,7 @@ export function parseIRSwapXml(xmlString: string): XmlParseResult {
       fraDetails,
       depositDetails,
       repoDetails,
+      dualDigitalDetails,
       notionalUsd,
       tenorYears,
       parRate,
