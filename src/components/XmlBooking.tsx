@@ -3144,6 +3144,21 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                 </div>
 
                 <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Floating Index Tenor</label>
+                  <select
+                    value={floatingTenor}
+                    onChange={(e) => setFloatingTenor(e.target.value as IndexTenor)}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold"
+                  >
+                    <option value="1D">1 Day (1D - Overnight OIS)</option>
+                    <option value="1M">1 Month (1M)</option>
+                    <option value="3M">3 Months (3M)</option>
+                    <option value="6M">6 Months (6M)</option>
+                    <option value="12M">12 Months (12M)</option>
+                  </select>
+                </div>
+
+                <div>
                   <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Day Count Convention</label>
                   <select
                     value={capFloorDayCount}
@@ -5011,6 +5026,23 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                 </div>
 
                 <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Floating Index Tenor</label>
+                  <select
+                    value={floatingTenor}
+                    onChange={(e) => setFloatingTenor(e.target.value as IndexTenor)}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold"
+                  >
+                    <option value="1D">1 Day (1D - Overnight OIS)</option>
+                    <option value="1M">1 Month (1M)</option>
+                    <option value="3M">3 Months (3M)</option>
+                    <option value="6M">6 Months (6M)</option>
+                    <option value="12M">12 Months (12M)</option>
+                    <option value="5Y">5 Years (5Y Swap)</option>
+                    <option value="10Y">10 Years (10Y Swap)</option>
+                  </select>
+                </div>
+
+                <div>
                   <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Coupon Frequency</label>
                   <select
                     value={bondCouponFreq}
@@ -5327,6 +5359,21 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                 </div>
 
                 <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Floating Index Tenor</label>
+                  <select
+                    value={floatingTenor}
+                    onChange={(e) => setFloatingTenor(e.target.value as IndexTenor)}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold"
+                  >
+                    <option value="1D">1 Day (1D - Overnight OIS)</option>
+                    <option value="1M">1 Month (1M)</option>
+                    <option value="3M">3 Months (3M)</option>
+                    <option value="6M">6 Months (6M)</option>
+                    <option value="12M">12 Months (12M)</option>
+                  </select>
+                </div>
+
+                <div>
                   <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Term Length (Days)</label>
                   <input
                     type="number"
@@ -5461,6 +5508,21 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                     <option value="ESTR">ESTR (Euro Repo Benchmark)</option>
                     <option value="SONIA">SONIA (UK Repo Benchmark)</option>
                     <option value="TONA">TONA</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Floating Index Tenor</label>
+                  <select
+                    value={floatingTenor}
+                    onChange={(e) => setFloatingTenor(e.target.value as IndexTenor)}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold"
+                  >
+                    <option value="1D">1 Day (1D - Overnight OIS)</option>
+                    <option value="1M">1 Month (1M)</option>
+                    <option value="3M">3 Months (3M)</option>
+                    <option value="6M">6 Months (6M)</option>
+                    <option value="12M">12 Months (12M)</option>
                   </select>
                 </div>
 
