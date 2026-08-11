@@ -4194,6 +4194,222 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
             </>
           )}
 
+          {/* PRODUCT 14: DUAL DIGITAL */}
+          {selectedProduct === 'DUAL_DIGITAL' && (
+            <>
+              <h3 className="text-xs font-bold text-amber-400 uppercase tracking-widest border-b border-gray-800 pb-2 pt-2 flex items-center justify-between">
+                <span>2. Dual Digital Bivariate Structure & Trigger Conditions</span>
+                <span className="text-[10px] font-mono text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded border border-amber-700/80">Event-Contingent Binary Option</span>
+              </h3>
+
+              <div className="p-4 bg-[#12141a] border border-amber-900/60 rounded-xl space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Dual Digital Direction</label>
+                    <select
+                      value={ddDirection}
+                      onChange={(e) => setDdDirection(e.target.value as 'PAY_DIGITAL' | 'RECEIVE_DIGITAL')}
+                      className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-bold"
+                    >
+                      <option value="RECEIVE_DIGITAL">RECEIVE DIGITAL (Long Dual Digital)</option>
+                      <option value="PAY_DIGITAL">PAY DIGITAL (Short Dual Digital)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Payout Structure Type</label>
+                    <select
+                      value={ddPayoutType}
+                      onChange={(e) => setDdPayoutType(e.target.value as 'FIXED_AMOUNT' | 'COUPON_PERCENT')}
+                      className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold"
+                    >
+                      <option value="FIXED_AMOUNT">FIXED LUMP-SUM AMOUNT ($)</option>
+                      <option value="COUPON_PERCENT">DIGITAL COUPON PERCENT (%)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">
+                      {ddPayoutType === 'FIXED_AMOUNT' ? `Binary Payout Amount (${currency})` : 'Digital Coupon Rate (%)'}
+                    </label>
+                    <input
+                      type="number"
+                      step={ddPayoutType === 'FIXED_AMOUNT' ? '10000' : '0.05'}
+                      value={ddPayoutAmount}
+                      onChange={(e) => setDdPayoutAmount(Number(e.target.value))}
+                      className="w-full bg-[#16181d] border border-amber-500/80 rounded p-2 text-sm text-amber-300 font-mono font-bold"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Bivariate Trigger Conditions Card */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  {/* Condition 1 */}
+                  <div className="p-3 bg-[#0d0f14] border border-blue-900/60 rounded-lg space-y-3">
+                    <h4 className="text-[11px] font-bold text-blue-300 uppercase tracking-wider flex items-center justify-between">
+                      <span>Condition 1 — Reference Rate Index 1</span>
+                      <span className="text-[9px] text-gray-400 font-mono">Rate Trigger 1</span>
+                    </h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[9px] uppercase font-bold text-gray-500 mb-1">Index 1</label>
+                        <select
+                          value={ddIndex1}
+                          onChange={(e) => setDdIndex1(e.target.value as FloatingIndex)}
+                          className="w-full bg-[#16181d] border border-gray-700 rounded p-1.5 text-xs text-white font-mono font-bold"
+                        >
+                          <option value="SOFR">SOFR</option>
+                          <option value="EURIBOR">EURIBOR</option>
+                          <option value="SONIA">SONIA</option>
+                          <option value="LIBOR-3M">LIBOR-3M</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[9px] uppercase font-bold text-gray-500 mb-1">Index Tenor</label>
+                        <select
+                          value={ddIndex1Tenor}
+                          onChange={(e) => setDdIndex1Tenor(e.target.value as IndexTenor)}
+                          className="w-full bg-[#16181d] border border-gray-700 rounded p-1.5 text-xs text-white font-mono"
+                        >
+                          <option value="3M">3 Months (3M)</option>
+                          <option value="6M">6 Months (6M)</option>
+                          <option value="1M">1 Month (1M)</option>
+                          <option value="5Y">5 Years (5Y Swap)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[9px] uppercase font-bold text-gray-500 mb-1">Condition 1 Operator</label>
+                        <select
+                          value={ddCondition1Op}
+                          onChange={(e) => setDdCondition1Op(e.target.value as 'GREATER_THAN' | 'LESS_THAN')}
+                          className="w-full bg-[#16181d] border border-gray-700 rounded p-1.5 text-xs text-white font-bold"
+                        >
+                          <option value="GREATER_THAN">≥ Greater Than / Equal</option>
+                          <option value="LESS_THAN">≤ Less Than / Equal</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[9px] uppercase font-bold text-gray-500 mb-1">Trigger Rate 1 (%)</label>
+                        <input
+                          type="number"
+                          step="0.05"
+                          value={ddTrigger1Rate}
+                          onChange={(e) => setDdTrigger1Rate(Number(e.target.value))}
+                          className="w-full bg-[#16181d] border border-blue-500/80 rounded p-1.5 text-xs text-blue-300 font-mono font-bold"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Condition 2 */}
+                  <div className="p-3 bg-[#0d0f14] border border-purple-900/60 rounded-lg space-y-3">
+                    <h4 className="text-[11px] font-bold text-purple-300 uppercase tracking-wider flex items-center justify-between">
+                      <span>Condition 2 — Reference Rate Index 2</span>
+                      <span className="text-[9px] text-gray-400 font-mono">Rate Trigger 2</span>
+                    </h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[9px] uppercase font-bold text-gray-500 mb-1">Index 2</label>
+                        <select
+                          value={ddIndex2}
+                          onChange={(e) => setDdIndex2(e.target.value as FloatingIndex)}
+                          className="w-full bg-[#16181d] border border-gray-700 rounded p-1.5 text-xs text-white font-mono font-bold"
+                        >
+                          <option value="EURIBOR">EURIBOR</option>
+                          <option value="SOFR">SOFR</option>
+                          <option value="SONIA">SONIA</option>
+                          <option value="LIBOR-3M">LIBOR-3M</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[9px] uppercase font-bold text-gray-500 mb-1">Index Tenor</label>
+                        <select
+                          value={ddIndex2Tenor}
+                          onChange={(e) => setDdIndex2Tenor(e.target.value as IndexTenor)}
+                          className="w-full bg-[#16181d] border border-gray-700 rounded p-1.5 text-xs text-white font-mono"
+                        >
+                          <option value="3M">3 Months (3M)</option>
+                          <option value="6M">6 Months (6M)</option>
+                          <option value="10Y">10 Years (10Y Swap)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[9px] uppercase font-bold text-gray-500 mb-1">Condition 2 Operator</label>
+                        <select
+                          value={ddCondition2Op}
+                          onChange={(e) => setDdCondition2Op(e.target.value as 'GREATER_THAN' | 'LESS_THAN')}
+                          className="w-full bg-[#16181d] border border-gray-700 rounded p-1.5 text-xs text-white font-bold"
+                        >
+                          <option value="LESS_THAN">≤ Less Than / Equal</option>
+                          <option value="GREATER_THAN">≥ Greater Than / Equal</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[9px] uppercase font-bold text-gray-500 mb-1">Trigger Rate 2 (%)</label>
+                        <input
+                          type="number"
+                          step="0.05"
+                          value={ddTrigger2Rate}
+                          onChange={(e) => setDdTrigger2Rate(Number(e.target.value))}
+                          className="w-full bg-[#16181d] border border-purple-500/80 rounded p-1.5 text-xs text-purple-300 font-mono font-bold"
+                          required
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Settings: Implied Correlation & Observation */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Implied Correlation (ρ)</label>
+                    <input
+                      type="number"
+                      step="0.05"
+                      min="-1.0"
+                      max="1.0"
+                      value={ddCorrelation}
+                      onChange={(e) => setDdCorrelation(Number(e.target.value))}
+                      className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-cyan-300 font-mono font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Observation Type</label>
+                    <select
+                      value={ddObservationType}
+                      onChange={(e) => setDdObservationType(e.target.value as 'AT_MATURITY' | 'DAILY_OBSERVATION')}
+                      className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono"
+                    >
+                      <option value="AT_MATURITY">AT MATURITY (European Fixing)</option>
+                      <option value="DAILY_OBSERVATION">DAILY OBSERVATION (American Barrier)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Trade Notional ({currency})</label>
+                    <input
+                      type="number"
+                      step="100000"
+                      value={ddNotional}
+                      onChange={(e) => setDdNotional(Number(e.target.value))}
+                      className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
           {/* Action Buttons: View XML & Book Trade + Valuation Summary Pill */}
           <div className="pt-4 border-t border-gray-800 space-y-3">
             {/* APPLY CHANGES & RECALCULATE SCHEDULE BUTTON BAR */}
