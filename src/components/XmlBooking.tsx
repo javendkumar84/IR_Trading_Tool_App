@@ -1086,6 +1086,41 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
   const [sbFundingFreq, setSbFundingFreq] = useState<PaymentFrequency>('3M');
   const [sbNotional, setSbNotional] = useState<number>(25000000);
 
+  // 10. Fixed Income Bond State
+  const [bondType, setBondType] = useState<'GOVERNMENT' | 'CORPORATE' | 'SUPRANATIONAL' | 'ZERO_COUPON'>('CORPORATE');
+  const [bondIsin, setBondIsin] = useState<string>('US912828ZB27');
+  const [bondIssuer, setBondIssuer] = useState<string>('US TREASURY N/B');
+  const [bondCouponRate, setBondCouponRate] = useState<number>(4.25);
+  const [bondCouponFreq, setBondCouponFreq] = useState<PaymentFrequency>('6M');
+  const [bondCleanPrice, setBondCleanPrice] = useState<number>(98.50);
+  const [bondYtm, setBondYtm] = useState<number>(4.45);
+  const [bondNotional, setBondNotional] = useState<number>(10000000);
+  const [bondDayCount, setBondDayCount] = useState<DayCountConvention>('30/360');
+
+  // 11. Forward Rate Agreement (FRA) State
+  const [fraRate, setFraRate] = useState<number>(3.85);
+  const [fraIndex, setFraIndex] = useState<FloatingIndex>('SOFR');
+  const [fraTenor, setFraTenor] = useState<IndexTenor>('3M');
+  const [fraFixingDate, setFraFixingDate] = useState<string>('2026-08-01');
+  const [fraPaymentDate, setFraPaymentDate] = useState<string>('2026-08-03');
+  const [fraNotional, setFraNotional] = useState<number>(10000000);
+  const [fraDayCount, setFraDayCount] = useState<DayCountConvention>('ACT/360');
+
+  // 12. Term Deposit / Loan State
+  const [depositDirection, setDepositDirection] = useState<'DEPOSIT' | 'LOAN'>('DEPOSIT');
+  const [depositRate, setDepositRate] = useState<number>(4.10);
+  const [depositTermDays, setDepositTermDays] = useState<number>(90);
+  const [depositNotional, setDepositNotional] = useState<number>(10000000);
+  const [depositDayCount, setDepositDayCount] = useState<DayCountConvention>('ACT/360');
+
+  // 13. Repurchase Agreement (Repo) State
+  const [repoType, setRepoType] = useState<'REPO' | 'REVERSE_REPO'>('REPO');
+  const [repoCollateralIsin, setRepoCollateralIsin] = useState<string>('US912828ZB27');
+  const [repoRate, setRepoRate] = useState<number>(3.95);
+  const [repoHaircut, setRepoHaircut] = useState<number>(2.0);
+  const [repoNotional, setRepoNotional] = useState<number>(10000000);
+  const [repoDayCount, setRepoDayCount] = useState<DayCountConvention>('ACT/360');
+
   // 14. Dual Digital State
   const [ddDirection, setDdDirection] = useState<'PAY_DIGITAL' | 'RECEIVE_DIGITAL'>('RECEIVE_DIGITAL');
   const [ddPayoutAmount, setDdPayoutAmount] = useState<number>(500000);

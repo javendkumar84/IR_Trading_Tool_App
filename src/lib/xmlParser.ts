@@ -22,6 +22,7 @@ import {
 } from '../types';
 import {
   calculateCapFloorValuation,
+  calculateDualDigitalValuation,
   calculateFxForwardValuation,
   calculateFxOptionValuation,
   calculateMarkToMarket,
