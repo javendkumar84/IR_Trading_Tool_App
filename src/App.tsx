@@ -13,6 +13,7 @@ import { PnlDashboard } from './components/PnlDashboard';
 import { VarDashboard } from './components/VarDashboard';
 import { RiskCalculationGuide } from './components/RiskCalculationGuide';
 import { MarketDataTab } from './components/MarketDataTab';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuditLogEntry, IRSwapTrade, MarketRateQuote, PositionSummary, TenorDv01Risk, WebSocketMessage } from './types';
 
 export default function App() {
@@ -157,11 +158,13 @@ export default function App() {
         )}
 
         {activeTab === 'xml' && (
-          <XmlBooking
-            traderUser={traderUser}
-            onTradeBooked={handleTradeBooked}
-            onOpenMarketData={() => setActiveTab('market-data')}
-          />
+          <ErrorBoundary fallbackTitle="Trade Capture Screen encountered a temporary state error">
+            <XmlBooking
+              traderUser={traderUser}
+              onTradeBooked={handleTradeBooked}
+              onOpenMarketData={() => setActiveTab('market-data')}
+            />
+          </ErrorBoundary>
         )}
 
         {activeTab === 'blotter' && (
