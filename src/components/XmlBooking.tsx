@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FileCode, Download, Copy, CheckCircle2, AlertCircle, Layers, Calendar, DollarSign, Building, Plus, Info, X, Calculator, Activity, RefreshCw, Cpu } from 'lucide-react';
+import { FileCode, Download, Copy, CheckCircle2, AlertCircle, Layers, Calendar, DollarSign, Building, Plus, Info, X, Calculator, Activity, RefreshCw, Cpu, Terminal } from 'lucide-react';
 import {
   CapFloorDetails,
   Currency,
