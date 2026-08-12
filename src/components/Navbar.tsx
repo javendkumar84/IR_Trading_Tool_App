@@ -5,8 +5,8 @@ import {
 } from 'lucide-react';
 
 interface NavbarProps {
-  activeTab: 'dashboard' | 'xml' | 'blotter' | 'amend' | 'eod-risk' | 'pnl' | 'var' | 'risk-calc' | 'audit' | 'dotnet' | 'qa' | 'validation';
-  setActiveTab: (tab: 'dashboard' | 'xml' | 'blotter' | 'amend' | 'eod-risk' | 'pnl' | 'var' | 'risk-calc' | 'audit' | 'dotnet' | 'qa' | 'validation') => void;
+  activeTab: 'dashboard' | 'xml' | 'blotter' | 'amend' | 'eod-risk' | 'pnl' | 'var' | 'risk-calc' | 'audit' | 'dotnet' | 'qa' | 'validation' | 'market-data';
+  setActiveTab: (tab: 'dashboard' | 'xml' | 'blotter' | 'amend' | 'eod-risk' | 'pnl' | 'var' | 'risk-calc' | 'audit' | 'dotnet' | 'qa' | 'validation' | 'market-data') => void;
   isWsConnected: boolean;
   traderUser: string;
   setTraderUser: (user: string) => void;
@@ -26,6 +26,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
     { id: 'xml', label: 'Trade Capture', icon: FileCode },
+    { id: 'market-data', label: 'Market Data', icon: Database },
     { id: 'blotter', label: 'Blotter', icon: ReceiptText },
     { id: 'amend', label: 'Amend Trade', icon: Edit3 },
     { id: 'eod-risk', label: 'EOD Risk', icon: ShieldAlert },

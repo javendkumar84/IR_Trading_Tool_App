@@ -12,10 +12,11 @@ import { EodRiskDashboard } from './components/EodRiskDashboard';
 import { PnlDashboard } from './components/PnlDashboard';
 import { VarDashboard } from './components/VarDashboard';
 import { RiskCalculationGuide } from './components/RiskCalculationGuide';
+import { MarketDataTab } from './components/MarketDataTab';
 import { AuditLogEntry, IRSwapTrade, MarketRateQuote, PositionSummary, TenorDv01Risk, WebSocketMessage } from './types';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'xml' | 'blotter' | 'amend' | 'eod-risk' | 'pnl' | 'var' | 'risk-calc' | 'audit' | 'dotnet' | 'qa' | 'validation'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'xml' | 'blotter' | 'amend' | 'eod-risk' | 'pnl' | 'var' | 'risk-calc' | 'audit' | 'dotnet' | 'qa' | 'validation' | 'market-data'>('dashboard');
   const [traderUser, setTraderUser] = useState<string>('J. Doe (Head Rates Trader)');
 
   // Real-time State
@@ -159,6 +160,7 @@ export default function App() {
           <XmlBooking
             traderUser={traderUser}
             onTradeBooked={handleTradeBooked}
+            onOpenMarketData={() => setActiveTab('market-data')}
           />
         )}
 
@@ -212,6 +214,10 @@ export default function App() {
 
         {activeTab === 'validation' && (
           <TradeValidationDashboard />
+        )}
+
+        {activeTab === 'market-data' && (
+          <MarketDataTab marketRates={marketRates} isWsConnected={isWsConnected} />
         )}
       </main>
 

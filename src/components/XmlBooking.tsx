@@ -870,9 +870,10 @@ export function renderPayoffDetails(productType: ProductType) {
 interface XmlBookingProps {
   traderUser: string;
   onTradeBooked: (trade: IRSwapTrade) => void;
+  onOpenMarketData?: () => void;
 }
 
-export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooked }) => {
+export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooked, onOpenMarketData }) => {
   const [selectedProduct, setSelectedProduct] = useState<ProductType>('IRS');
   const [showXmlModal, setShowXmlModal] = useState<boolean>(false);
 
@@ -2520,6 +2521,17 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                 Market Data & Valuation Curves Environment Used
               </h3>
               <div className="flex items-center gap-2">
+                {onOpenMarketData && (
+                  <button
+                    type="button"
+                    onClick={onOpenMarketData}
+                    className="px-2.5 py-0.5 bg-indigo-950 hover:bg-indigo-900 border border-indigo-700/80 text-indigo-300 rounded text-[10px] font-sans font-bold flex items-center gap-1 transition-all cursor-pointer"
+                    title="Open Market Data & Pricing Model Parameter Repository Tab"
+                  >
+                    <Globe className="w-3 h-3 text-indigo-400" />
+                    Inspect Curve Repository
+                  </button>
+                )}
                 <span className="text-[10px] text-indigo-300 font-bold bg-indigo-950/80 px-2.5 py-0.5 rounded-full border border-indigo-700/60">
                   SNAPSHOT: {marketSnapshotTimestamp}
                 </span>
