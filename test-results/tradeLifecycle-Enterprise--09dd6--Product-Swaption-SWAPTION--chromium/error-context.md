@@ -1,0 +1,500 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: tradeLifecycle.spec.ts >> Enterprise 4-Stage Trade Lifecycle Validation Suite with Hyperlinked Evidence >> 4-Stage Lifecycle for Product: Swaption (SWAPTION)
+- Location: e2e/tests/tradeLifecycle.spec.ts:36:5
+
+# Error details
+
+```
+Test timeout of 120000ms exceeded.
+```
+
+```
+Test timeout of 120000ms exceeded.
+```
+
+# Page snapshot
+
+```yaml
+- generic [active] [ref=f6e1]:
+  - generic [ref=f6e3]:
+    - banner [ref=f6e4]:
+      - generic [ref=f6e5]:
+        - generic [ref=f6e6]:
+          - generic [ref=f6e11]:
+            - heading "IR Swap Trade Capture" [level=1] [ref=f6e12]
+            - generic [ref=f6e13]: v2.6 .NET
+          - generic [ref=f6e14]:
+            - generic [ref=f6e15]: WS LIVE
+            - generic [ref=f6e23]:
+              - text: "Trades:"
+              - strong [ref=f6e24]: "310"
+            - generic [ref=f6e25]:
+              - generic [ref=f6e26]: "Trader:"
+              - combobox [ref=f6e27] [cursor=pointer]:
+                - option "J. Doe (Head Rates)" [selected]
+                - option "A. Smith (Senior)"
+                - option "E. Vance (Quant)"
+                - option "M. Taylor (Risk)"
+        - generic [ref=f6e28]:
+          - button "Dashboard" [ref=f6e29] [cursor=pointer]
+          - button "Trade Capture" [ref=f6e33] [cursor=pointer]
+          - button "Blotter" [ref=f6e40] [cursor=pointer]
+          - button "Amend Trade" [ref=f6e44] [cursor=pointer]
+          - button "EOD Risk" [ref=f6e48] [cursor=pointer]
+          - button "PnL" [ref=f6e52] [cursor=pointer]
+          - button "VaR" [ref=f6e57] [cursor=pointer]
+          - button "Risk Calc" [ref=f6e62] [cursor=pointer]
+          - button "Audit Trail" [ref=f6e66] [cursor=pointer]
+          - button ".NET Models" [ref=f6e71] [cursor=pointer]
+          - button "QA Suite" [ref=f6e76] [cursor=pointer]
+          - button "Validation" [ref=f6e81] [cursor=pointer]
+    - main [ref=f6e86]:
+      - generic [ref=f6e87]:
+        - generic [ref=f6e88]:
+          - generic [ref=f6e89]:
+            - generic [ref=f6e95]:
+              - heading "Executive Portfolio Analytics & Counterparty Risk Dashboard USD REPORTING" [level=2] [ref=f6e96]:
+                - text: Executive Portfolio Analytics & Counterparty Risk Dashboard
+                - generic [ref=f6e97]: USD REPORTING
+              - paragraph [ref=f6e98]: Select a specific Counterparty or view Aggregate Portfolio Analytics
+            - button "Add Counterparty" [ref=f6e100] [cursor=pointer]
+          - generic [ref=f6e102]:
+            - generic [ref=f6e103]:
+              - generic [ref=f6e104]: Counterparty Filter (Select One)
+              - combobox [ref=f6e108] [cursor=pointer]:
+                - option "ALL COUNTERPARTIES (Aggregate Portfolio View)" [selected]
+                - option "Goldman Sachs International"
+                - option "JPMorgan Chase Bank, N.A."
+                - option "Morgan Stanley & Co. International plc"
+                - option "Barclays Bank PLC"
+                - option "Citigroup Global Markets Limited"
+                - option "Deutsche Bank AG"
+                - option "UBS AG"
+                - option "BNP Paribas"
+                - option "HSBC Bank plc"
+                - option "Global Bank Corp"
+                - option "Apex Capital Ltd"
+                - option "Citigroup Inc."
+                - option "BNP Paribas S.A."
+                - option "JPMorgan Chase & Co."
+            - generic [ref=f6e109]:
+              - generic [ref=f6e110]: Base Reporting Currency
+              - combobox [ref=f6e114] [cursor=pointer]:
+                - option "USD ($ US Dollar)" [selected]
+                - option "EUR (€ Euro)"
+                - option "GBP (£ British Pound)"
+                - option "JPY (¥ Japanese Yen)"
+                - option "CAD (CA$ Canadian Dollar)"
+                - option "AUD (A$ Australian Dollar)"
+                - option "CHF (Swiss Franc)"
+            - generic [ref=f6e115]:
+              - generic [ref=f6e116]: Derivative Product Filter
+              - combobox [ref=f6e119] [cursor=pointer]:
+                - option "ALL DERIVATIVE PRODUCTS" [selected]
+                - option "IRS (Interest Rate Swaps)"
+                - option "Cap / Floor Options"
+                - option "Swaption Contracts"
+                - option "Range Accrual Product"
+                - option "FX Forward Contracts"
+                - option "FX Currency Options"
+        - generic [ref=f6e120]:
+          - generic [ref=f6e121]:
+            - generic [ref=f6e122]: "Live Derivatives & Benchmark Rates (WS_FEED: ACTIVE)"
+            - generic [ref=f6e126]: Auto-updating over WebSockets
+          - generic [ref=f6e127]:
+            - generic [ref=f6e128]:
+              - generic [ref=f6e129]:
+                - generic [ref=f6e130]: USD SOFR 3M
+                - generic [ref=f6e131]: +1.42 bps
+              - generic [ref=f6e135]:
+                - generic [ref=f6e136]: 3.829%
+                - generic [ref=f6e137]: USD
+            - generic [ref=f6e138]:
+              - generic [ref=f6e139]:
+                - generic [ref=f6e140]: EUR EURIBOR 6M
+                - generic [ref=f6e141]: "-0.65 bps"
+              - generic [ref=f6e145]:
+                - generic [ref=f6e146]: 2.651%
+                - generic [ref=f6e147]: EUR
+            - generic [ref=f6e148]:
+              - generic [ref=f6e149]:
+                - generic [ref=f6e150]: GBP SONIA 3M
+                - generic [ref=f6e151]: +1.92 bps
+              - generic [ref=f6e155]:
+                - generic [ref=f6e156]: 4.127%
+                - generic [ref=f6e157]: GBP
+            - generic [ref=f6e158]:
+              - generic [ref=f6e159]:
+                - generic [ref=f6e160]: JPY TONA 3M
+                - generic [ref=f6e161]: +0.8 bps
+              - generic [ref=f6e165]:
+                - generic [ref=f6e166]: 0.627%
+                - generic [ref=f6e167]: JPY
+            - generic [ref=f6e168]:
+              - generic [ref=f6e169]:
+                - generic [ref=f6e170]: US Treasury 10Y Benchmark
+                - generic [ref=f6e171]: +2.16 bps
+              - generic [ref=f6e175]:
+                - generic [ref=f6e176]: 4.081%
+                - generic [ref=f6e177]: USD
+        - generic [ref=f6e178]:
+          - generic [ref=f6e179]:
+            - generic [ref=f6e180]: Portfolio Mark-to-Market (USD)
+            - generic [ref=f6e185]:
+              - generic [ref=f6e186]: $ 3,247,101
+              - paragraph [ref=f6e187]: MTM valuation across 62 trades
+          - generic [ref=f6e188]:
+            - generic [ref=f6e189]: Net Rate Sensitivity (DV01)
+            - generic [ref=f6e195]:
+              - generic [ref=f6e196]: $ 306,476 / bp
+              - paragraph [ref=f6e197]:
+                - text: "Profile:"
+                - strong [ref=f6e198]: Net Long Sensitivity
+          - generic [ref=f6e199]:
+            - generic [ref=f6e200]: Gross Notional Exposure
+            - generic [ref=f6e204]:
+              - generic [ref=f6e205]: $ 1057.1M
+              - paragraph [ref=f6e206]: Total Sum of Absolute Notionals
+          - generic [ref=f6e207]:
+            - generic [ref=f6e208]:
+              - generic [ref=f6e209]: Net Notional Exposure
+              - generic [ref=f6e213]: NET PAYER
+            - generic [ref=f6e214]:
+              - generic [ref=f6e215]: $ 347.1M
+              - paragraph [ref=f6e216]:
+                - generic [ref=f6e217]: Directional Netting
+                - strong [ref=f6e218]: 32.8% of Gross
+        - generic [ref=f6e219]:
+          - generic [ref=f6e220]:
+            - generic [ref=f6e222]:
+              - heading "Net Notional Exposure Breakdown by Currency (USD)" [level=3] [ref=f6e223]
+              - paragraph [ref=f6e225]: Directional Net Receiver vs Net Payer Notional by Currency ($ Millions)
+            - application [ref=f6e229]:
+              - generic [ref=f6e251]:
+                - generic [ref=f6e252]:
+                  - generic [ref=f6e253]: USD
+                  - generic [ref=f6e255]: EUR
+                  - generic [ref=f6e257]: GBP
+                  - generic [ref=f6e259]: JPY
+                  - generic [ref=f6e261]: CAD
+                  - generic [ref=f6e263]: AUD
+                  - generic [ref=f6e265]: CHF
+                - generic [ref=f6e267]:
+                  - generic [ref=f6e268]: "-320M"
+                  - generic [ref=f6e270]: "-240M"
+                  - generic [ref=f6e272]: "-160M"
+                  - generic [ref=f6e274]: "-80M"
+                  - generic [ref=f6e276]: 0M
+          - generic [ref=f6e278]:
+            - generic [ref=f6e280]:
+              - heading "DV01 Sensitivity Distribution Across Curve Tenors (USD)" [level=3] [ref=f6e281]
+              - paragraph [ref=f6e285]: Interest Rate Sensitivity Ladder by Tenor Bucket ($ per 1bp shift)
+            - generic [ref=f6e288]:
+              - list [ref=f6e290]:
+                - listitem [ref=f6e291]:
+                  - img "Pay DV01 (Short Rate Risk) legend icon" [ref=f6e292]
+                  - text: Pay DV01 (Short Rate Risk)
+                - listitem [ref=f6e294]:
+                  - img "Receive DV01 (Long Rate Risk) legend icon" [ref=f6e295]
+                  - text: Receive DV01 (Long Rate Risk)
+              - application [ref=f6e297]:
+                - generic [ref=f6e322]:
+                  - generic [ref=f6e323]:
+                    - generic [ref=f6e324]: 2Y
+                    - generic [ref=f6e326]: 5Y
+                    - generic [ref=f6e328]: 10Y
+                    - generic [ref=f6e330]: 30Y
+                    - generic [ref=f6e332]: OTHER
+                  - generic [ref=f6e334]:
+                    - generic [ref=f6e335]: $0
+                    - generic [ref=f6e337]: $200000
+                    - generic [ref=f6e339]: $400000
+                    - generic [ref=f6e341]: $600000
+                    - generic [ref=f6e343]: $800000
+        - generic [ref=f6e345]:
+          - generic [ref=f6e346]:
+            - heading "Counterparty Risk Exposure & Credit Limit Breakdown (USD)" [level=3] [ref=f6e347]
+            - generic [ref=f6e350]: Sorted by Gross Notional Exposure
+          - table [ref=f6e352]:
+            - rowgroup [ref=f6e353]:
+              - row [ref=f6e354]:
+                - columnheader "Counterparty Institution" [ref=f6e355]
+                - columnheader "LEI Code" [ref=f6e356]
+                - columnheader "Rating" [ref=f6e357]
+                - columnheader "Trades" [ref=f6e358]
+                - columnheader "Gross Notional" [ref=f6e359]
+                - columnheader "Net Notional" [ref=f6e360]
+                - columnheader "Net MTM" [ref=f6e361]
+                - columnheader "Credit Limit" [ref=f6e362]
+                - columnheader "Limit Utilized" [ref=f6e363]
+                - columnheader "Action" [ref=f6e364]
+            - rowgroup [ref=f6e365]:
+              - row [ref=f6e366]:
+                - cell "Global Bank Corp" [ref=f6e367]
+                - cell "N/A" [ref=f6e372]
+                - cell "A+" [ref=f6e373]
+                - cell "145" [ref=f6e374]
+                - cell "$ 2065.0M" [ref=f6e375]
+                - cell "$ -825.0M" [ref=f6e376]
+                - cell "$ -4,868,899" [ref=f6e377]
+                - cell "$ 500M" [ref=f6e378]
+                - cell "1%" [ref=f6e379]
+                - cell [ref=f6e384]:
+                  - button "Filter CP" [ref=f6e385] [cursor=pointer]
+              - row [ref=f6e386]:
+                - cell "Goldman Sachs International" [ref=f6e387]
+                - cell "W22LROWP2IHZNBB6K528" [ref=f6e392]
+                - cell "A+" [ref=f6e393]
+                - cell "20" [ref=f6e394]
+                - cell "$ 440.0M" [ref=f6e395]
+                - cell "$ -150.0M" [ref=f6e396]
+                - cell "$ -239,585" [ref=f6e397]
+                - cell "$ 500M" [ref=f6e398]
+                - cell "0%" [ref=f6e399]
+                - cell [ref=f6e403]:
+                  - button "Filter CP" [ref=f6e404] [cursor=pointer]
+              - row [ref=f6e405]:
+                - cell "Morgan Stanley & Co. International plc" [ref=f6e406]
+                - cell "4P4TIKJK8DH0UK7F9356" [ref=f6e411]
+                - cell "A+" [ref=f6e412]
+                - cell "4" [ref=f6e413]
+                - cell "$ 65.0M" [ref=f6e414]
+                - cell "$ -25.0M" [ref=f6e415]
+                - cell "$ -198,197" [ref=f6e416]
+                - cell "$ 450M" [ref=f6e417]
+                - cell "0%" [ref=f6e418]
+                - cell [ref=f6e422]:
+                  - button "Filter CP" [ref=f6e423] [cursor=pointer]
+              - row [ref=f6e424]:
+                - cell "UBS AG" [ref=f6e425]
+                - cell "BFM8T6105TLKC55HOL60" [ref=f6e430]
+                - cell "AA-" [ref=f6e431]
+                - cell "2" [ref=f6e432]
+                - cell "$ 50.0M" [ref=f6e433]
+                - cell "$ -50.0M" [ref=f6e434]
+                - cell "+$ 0" [ref=f6e435]
+                - cell "$ 550M" [ref=f6e436]
+                - cell "0%" [ref=f6e437]
+                - cell [ref=f6e441]:
+                  - button "Filter CP" [ref=f6e442] [cursor=pointer]
+              - row [ref=f6e443]:
+                - cell "BNP Paribas" [ref=f6e444]
+                - cell "R0540H88242JBH8W5143" [ref=f6e449]
+                - cell "A+" [ref=f6e450]
+                - cell "2" [ref=f6e451]
+                - cell "$ 50.0M" [ref=f6e452]
+                - cell "+$ 50.0M" [ref=f6e453]
+                - cell "+$ 33,896" [ref=f6e454]
+                - cell "$ 500M" [ref=f6e455]
+                - cell "0%" [ref=f6e456]
+                - cell [ref=f6e460]:
+                  - button "Filter CP" [ref=f6e461] [cursor=pointer]
+              - row [ref=f6e462]:
+                - cell "HSBC Bank plc" [ref=f6e463]
+                - cell "MP6I5ZYZBEU3UXPYFY54" [ref=f6e468]
+                - cell "AA-" [ref=f6e469]
+                - cell "2" [ref=f6e470]
+                - cell "$ 50.0M" [ref=f6e471]
+                - cell "$ -50.0M" [ref=f6e472]
+                - cell "+$ 0" [ref=f6e473]
+                - cell "$ 650M" [ref=f6e474]
+                - cell "0%" [ref=f6e475]
+                - cell [ref=f6e479]:
+                  - button "Filter CP" [ref=f6e480] [cursor=pointer]
+              - row [ref=f6e481]:
+                - cell "Citigroup Global Markets Limited" [ref=f6e482]
+                - cell "XKLBGG7Z382F0581B340" [ref=f6e487]
+                - cell "A+" [ref=f6e488]
+                - cell "1" [ref=f6e489]
+                - cell "$ 30.0M" [ref=f6e490]
+                - cell "+$ 30.0M" [ref=f6e491]
+                - cell "$ -84,377" [ref=f6e492]
+                - cell "$ 600M" [ref=f6e493]
+                - cell "0%" [ref=f6e494]
+                - cell [ref=f6e498]:
+                  - button "Filter CP" [ref=f6e499] [cursor=pointer]
+              - row [ref=f6e500]:
+                - cell "JPMorgan Chase Bank, N.A." [ref=f6e501]
+                - cell "7H6GLXDRUGV21P84J029" [ref=f6e506]
+                - cell "AA" [ref=f6e507]
+                - cell "1" [ref=f6e508]
+                - cell "$ 27.1M" [ref=f6e509]
+                - cell "$ -27.1M" [ref=f6e510]
+                - cell "$ -1,384,991" [ref=f6e511]
+                - cell "$ 750M" [ref=f6e512]
+                - cell "0%" [ref=f6e513]
+                - cell [ref=f6e517]:
+                  - button "Filter CP" [ref=f6e518] [cursor=pointer]
+              - row [ref=f6e519]:
+                - cell "Apex Capital Ltd" [ref=f6e520]
+                - cell "N/A" [ref=f6e525]
+                - cell "A+" [ref=f6e526]
+                - cell "1" [ref=f6e527]
+                - cell "$ 10.0M" [ref=f6e528]
+                - cell "$ -10.0M" [ref=f6e529]
+                - cell "+$ 0" [ref=f6e530]
+                - cell "$ 500M" [ref=f6e531]
+                - cell "0%" [ref=f6e532]
+                - cell [ref=f6e536]:
+                  - button "Filter CP" [ref=f6e537] [cursor=pointer]
+              - row [ref=f6e538]:
+                - cell "Barclays Bank PLC" [ref=f6e539]
+                - cell "G5GSEF7VJP5I7OUK5573" [ref=f6e544]
+                - cell "A" [ref=f6e545]
+                - cell "0" [ref=f6e546]
+                - cell "$ 0.0M" [ref=f6e547]
+                - cell "+$ 0.0M" [ref=f6e548]
+                - cell "+$ 0" [ref=f6e549]
+                - cell "$ 400M" [ref=f6e550]
+                - cell "0%" [ref=f6e551]
+                - cell [ref=f6e555]:
+                  - button "Filter CP" [ref=f6e556] [cursor=pointer]
+              - row [ref=f6e557]:
+                - cell "Deutsche Bank AG" [ref=f6e558]
+                - cell "7LTWFZYICNSX8D621K86" [ref=f6e563]
+                - cell "A-" [ref=f6e564]
+                - cell "0" [ref=f6e565]
+                - cell "$ 0.0M" [ref=f6e566]
+                - cell "+$ 0.0M" [ref=f6e567]
+                - cell "+$ 0" [ref=f6e568]
+                - cell "$ 350M" [ref=f6e569]
+                - cell "0%" [ref=f6e570]
+                - cell [ref=f6e574]:
+                  - button "Filter CP" [ref=f6e575] [cursor=pointer]
+              - row [ref=f6e576]:
+                - cell "Citigroup Inc." [ref=f6e577]
+                - cell "N/A" [ref=f6e582]
+                - cell "A+" [ref=f6e583]
+                - cell "0" [ref=f6e584]
+                - cell "$ 0.0M" [ref=f6e585]
+                - cell "+$ 0.0M" [ref=f6e586]
+                - cell "+$ 0" [ref=f6e587]
+                - cell "$ 500M" [ref=f6e588]
+                - cell "0%" [ref=f6e589]
+                - cell [ref=f6e593]:
+                  - button "Filter CP" [ref=f6e594] [cursor=pointer]
+              - row [ref=f6e595]:
+                - cell "BNP Paribas S.A." [ref=f6e596]
+                - cell "N/A" [ref=f6e601]
+                - cell "A+" [ref=f6e602]
+                - cell "0" [ref=f6e603]
+                - cell "$ 0.0M" [ref=f6e604]
+                - cell "+$ 0.0M" [ref=f6e605]
+                - cell "+$ 0" [ref=f6e606]
+                - cell "$ 500M" [ref=f6e607]
+                - cell "0%" [ref=f6e608]
+                - cell [ref=f6e612]:
+                  - button "Filter CP" [ref=f6e613] [cursor=pointer]
+              - row [ref=f6e614]:
+                - cell "JPMorgan Chase & Co." [ref=f6e615]
+                - cell "N/A" [ref=f6e620]
+                - cell "A+" [ref=f6e621]
+                - cell "0" [ref=f6e622]
+                - cell "$ 0.0M" [ref=f6e623]
+                - cell "+$ 0.0M" [ref=f6e624]
+                - cell "+$ 0" [ref=f6e625]
+                - cell "$ 500M" [ref=f6e626]
+                - cell "0%" [ref=f6e627]
+                - cell [ref=f6e631]:
+                  - button "Filter CP" [ref=f6e632] [cursor=pointer]
+        - generic [ref=f6e633]:
+          - generic [ref=f6e634]:
+            - generic [ref=f6e636]:
+              - heading "Daily Trading Volume Trend (USD)" [level=3] [ref=f6e637]
+              - paragraph [ref=f6e639]: Weekly trading volume ($ Millions) and cumulative MTM
+            - application [ref=f6e643]:
+              - generic [ref=f6e661]:
+                - generic [ref=f6e662]:
+                  - generic [ref=f6e663]: Mon
+                  - generic [ref=f6e665]: Tue
+                  - generic [ref=f6e667]: Wed
+                  - generic [ref=f6e669]: Thu
+                  - generic [ref=f6e671]: Fri
+                - generic [ref=f6e673]:
+                  - generic [ref=f6e674]: $0M
+                  - generic [ref=f6e676]: $300M
+                  - generic [ref=f6e678]: $600M
+                  - generic [ref=f6e680]: $900M
+                  - generic [ref=f6e682]: $1200M
+          - generic [ref=f6e684]:
+            - generic [ref=f6e685]:
+              - generic [ref=f6e686]:
+                - heading "Live Trades Stream (62)" [level=3] [ref=f6e687]
+                - button "Full Blotter →" [ref=f6e691] [cursor=pointer]
+              - generic [ref=f6e692]:
+                - generic [ref=f6e693]:
+                  - generic [ref=f6e694]:
+                    - generic [ref=f6e695]:
+                      - generic [ref=f6e696]: IRS-2026-000416
+                      - generic [ref=f6e697]: FX_FORWARD
+                    - generic [ref=f6e698]: Global Bank Corp
+                  - generic [ref=f6e699]:
+                    - generic [ref=f6e700]:
+                      - generic [ref=f6e701]: $ 10.0M
+                      - generic [ref=f6e702]: "MTM: $-30,000"
+                    - button "View Cashflow Schedule" [ref=f6e703] [cursor=pointer]
+                - generic [ref=f6e706]:
+                  - generic [ref=f6e707]:
+                    - generic [ref=f6e708]:
+                      - generic [ref=f6e709]: IRS-2026-000414
+                      - generic [ref=f6e710]: SWAPTION
+                    - generic [ref=f6e711]: Global Bank Corp
+                  - generic [ref=f6e712]:
+                    - generic [ref=f6e713]:
+                      - generic [ref=f6e714]: $ 10.0M
+                      - generic [ref=f6e715]: "MTM: $-148,888"
+                    - button "View Cashflow Schedule" [ref=f6e716] [cursor=pointer]
+                - generic [ref=f6e719]:
+                  - generic [ref=f6e720]:
+                    - generic [ref=f6e721]:
+                      - generic [ref=f6e722]: IRS-2026-000409
+                      - generic [ref=f6e723]: SWAPTION
+                    - generic [ref=f6e724]: Global Bank Corp
+                  - generic [ref=f6e725]:
+                    - generic [ref=f6e726]:
+                      - generic [ref=f6e727]: $ 10.0M
+                      - generic [ref=f6e728]: "MTM: $-148,888"
+                    - button "View Cashflow Schedule" [ref=f6e729] [cursor=pointer]
+                - generic [ref=f6e732]:
+                  - generic [ref=f6e733]:
+                    - generic [ref=f6e734]:
+                      - generic [ref=f6e735]: IRS-2026-000407
+                      - generic [ref=f6e736]: CAP_FLOOR
+                    - generic [ref=f6e737]: Global Bank Corp
+                  - generic [ref=f6e738]:
+                    - generic [ref=f6e739]:
+                      - generic [ref=f6e740]: $ 10.0M
+                      - generic [ref=f6e741]: "MTM: $-91,459"
+                    - button "View Cashflow Schedule" [ref=f6e742] [cursor=pointer]
+                - generic [ref=f6e745]:
+                  - generic [ref=f6e746]:
+                    - generic [ref=f6e747]:
+                      - generic [ref=f6e748]: IRS-2026-000406
+                      - generic [ref=f6e749]: IRS
+                    - generic [ref=f6e750]: Global Bank Corp
+                  - generic [ref=f6e751]:
+                    - generic [ref=f6e752]:
+                      - generic [ref=f6e753]: $ 10.0M
+                      - generic [ref=f6e754]: "MTM: $0"
+                    - button "View Cashflow Schedule" [ref=f6e755] [cursor=pointer]
+                - generic [ref=f6e758]:
+                  - generic [ref=f6e759]:
+                    - generic [ref=f6e760]:
+                      - generic [ref=f6e761]: IRS-2026-000405
+                      - generic [ref=f6e762]: REPO
+                    - generic [ref=f6e763]: Global Bank Corp
+                  - generic [ref=f6e764]:
+                    - generic [ref=f6e765]:
+                      - generic [ref=f6e766]: $ 10.0M
+                      - generic [ref=f6e767]: "MTM: $0"
+                    - button "View Cashflow Schedule" [ref=f6e768] [cursor=pointer]
+            - generic [ref=f6e771]: SQLite Database & WebSockets Connected
+  - generic [ref=f6e776]: $0
+```

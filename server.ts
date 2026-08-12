@@ -667,6 +667,26 @@ GO
     server.once('error', onError);
     server.listen(portToTry, '0.0.0.0', () => {
       console.log(`Server & WebSockets running on http://0.0.0.0:${portToTry}`);
+
+      // Alternate-Day Performance Optimization Scheduler (48-Hour Interval)
+      const TWO_DAYS_MS = 48 * 60 * 60 * 1000;
+      setTimeout(async () => {
+        try {
+          const { runSystemPerformanceOptimization } = await import('./scripts/optimize-app');
+          runSystemPerformanceOptimization();
+        } catch (e: any) {
+          console.error('[OPTIMIZER-SCHEDULER] Optimization error:', e.message);
+        }
+      }, 10000); // Initial run after 10s
+
+      setInterval(async () => {
+        try {
+          const { runSystemPerformanceOptimization } = await import('./scripts/optimize-app');
+          runSystemPerformanceOptimization();
+        } catch (e: any) {
+          console.error('[OPTIMIZER-SCHEDULER] Optimization error:', e.message);
+        }
+      }, TWO_DAYS_MS);
     });
   };
 
