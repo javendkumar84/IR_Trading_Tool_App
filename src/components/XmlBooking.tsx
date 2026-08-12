@@ -4859,20 +4859,6 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                 </div>
 
                 <div>
-                  <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">FX Forward Tenor</label>
-                  <select
-                    value={floatingTenor}
-                    onChange={(e) => setFloatingTenor(e.target.value as IndexTenor)}
-                    className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-mono font-bold"
-                  >
-                    <option value="1M">1 Month (1M Forward)</option>
-                    <option value="3M">3 Months (3M Forward)</option>
-                    <option value="6M">6 Months (6M Forward)</option>
-                    <option value="12M">12 Months / 1 Year (1Y Forward)</option>
-                  </select>
-                </div>
-
-                <div>
                   <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Counter Currency</label>
                   <select
                     value={fxCounterCurrency}
@@ -4956,72 +4942,6 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                     className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-xs text-white font-mono"
                     required
                   />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-blue-300 mb-1">Accrual Calendar</label>
-                  <select
-                    value={leg1AccrualCalendar}
-                    onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
-                    className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
-                  >
-                    <option value="USNY">USNY (New York)</option>
-                    <option value="GBLO">GBLO (London)</option>
-                    <option value="EUTA">EUTA (TARGET/Euro)</option>
-                    <option value="JPTO">JPTO (Tokyo)</option>
-                    <option value="CATO">CATO (Toronto)</option>
-                    <option value="AUSY">AUSY (Sydney)</option>
-                    <option value="CHZH">CHZH (Zurich)</option>
-                    <option value="USNY+GBLO">USNY + GBLO Joint</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-emerald-300 mb-1">Payment Calendar</label>
-                  <select
-                    value={leg1PaymentCalendar}
-                    onChange={(e) => setLeg1PaymentCalendar(e.target.value as any)}
-                    className="w-full bg-[#16181d] border border-emerald-600/80 rounded p-2 text-sm text-white font-bold"
-                  >
-                    <option value="USNY">USNY (New York)</option>
-                    <option value="GBLO">GBLO (London)</option>
-                    <option value="EUTA">EUTA (TARGET/Euro)</option>
-                    <option value="JPTO">JPTO (Tokyo)</option>
-                    <option value="CATO">CATO (Toronto)</option>
-                    <option value="AUSY">AUSY (Sydney)</option>
-                    <option value="CHZH">CHZH (Zurich)</option>
-                    <option value="USNY+GBLO">USNY + GBLO Joint</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-amber-300 mb-1">Accrual Roll Convention</label>
-                  <select
-                    value={leg1AccrualRoll}
-                    onChange={(e) => setLeg1AccrualRoll(e.target.value as any)}
-                    className="w-full bg-[#16181d] border border-amber-600/80 rounded p-2 text-sm text-white font-bold"
-                  >
-                    <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
-                    <option value="FOLLOWING">FOLLOWING</option>
-                    <option value="PRECEDING">PRECEDING</option>
-                    <option value="MODPRECEDING">MODPRECEDING</option>
-                    <option value="NONE">NONE (No Adjustment)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">Payment Roll Convention</label>
-                  <select
-                    value={leg1PaymentRoll}
-                    onChange={(e) => setLeg1PaymentRoll(e.target.value as any)}
-                    className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-bold"
-                  >
-                    <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
-                    <option value="FOLLOWING">FOLLOWING</option>
-                    <option value="PRECEDING">PRECEDING</option>
-                    <option value="MODPRECEDING">MODPRECEDING</option>
-                    <option value="NONE">NONE (No Adjustment)</option>
-                  </select>
                 </div>
               </div>
             </>
@@ -5722,20 +5642,6 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                 </div>
 
                 <div>
-                  <label className="block text-[10px] uppercase font-bold text-pink-300 mb-1">Option Expiry Tenor</label>
-                  <select
-                    value={floatingTenor}
-                    onChange={(e) => setFloatingTenor(e.target.value as IndexTenor)}
-                    className="w-full bg-[#16181d] border border-pink-600/80 rounded p-2 text-sm text-white font-mono font-bold"
-                  >
-                    <option value="1M">1 Month (1M Expiry)</option>
-                    <option value="3M">3 Months (3M Expiry)</option>
-                    <option value="6M">6 Months (6M Expiry)</option>
-                    <option value="12M">12 Months / 1 Year (1Y Expiry)</option>
-                  </select>
-                </div>
-
-                <div>
                   <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Position Direction</label>
                   <select
                     value={fxOptDirection}
@@ -5850,72 +5756,6 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   >
                     <option value="EUROPEAN">EUROPEAN</option>
                     <option value="AMERICAN">AMERICAN</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-blue-300 mb-1">Accrual Calendar</label>
-                  <select
-                    value={leg1AccrualCalendar}
-                    onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
-                    className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
-                  >
-                    <option value="USNY">USNY (New York)</option>
-                    <option value="GBLO">GBLO (London)</option>
-                    <option value="EUTA">EUTA (TARGET/Euro)</option>
-                    <option value="JPTO">JPTO (Tokyo)</option>
-                    <option value="CATO">CATO (Toronto)</option>
-                    <option value="AUSY">AUSY (Sydney)</option>
-                    <option value="CHZH">CHZH (Zurich)</option>
-                    <option value="USNY+GBLO">USNY + GBLO Joint</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-emerald-300 mb-1">Payment Calendar</label>
-                  <select
-                    value={leg1PaymentCalendar}
-                    onChange={(e) => setLeg1PaymentCalendar(e.target.value as any)}
-                    className="w-full bg-[#16181d] border border-emerald-600/80 rounded p-2 text-sm text-white font-bold"
-                  >
-                    <option value="USNY">USNY (New York)</option>
-                    <option value="GBLO">GBLO (London)</option>
-                    <option value="EUTA">EUTA (TARGET/Euro)</option>
-                    <option value="JPTO">JPTO (Tokyo)</option>
-                    <option value="CATO">CATO (Toronto)</option>
-                    <option value="AUSY">AUSY (Sydney)</option>
-                    <option value="CHZH">CHZH (Zurich)</option>
-                    <option value="USNY+GBLO">USNY + GBLO Joint</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-amber-300 mb-1">Accrual Roll Convention</label>
-                  <select
-                    value={leg1AccrualRoll}
-                    onChange={(e) => setLeg1AccrualRoll(e.target.value as any)}
-                    className="w-full bg-[#16181d] border border-amber-600/80 rounded p-2 text-sm text-white font-bold"
-                  >
-                    <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
-                    <option value="FOLLOWING">FOLLOWING</option>
-                    <option value="PRECEDING">PRECEDING</option>
-                    <option value="MODPRECEDING">MODPRECEDING</option>
-                    <option value="NONE">NONE (No Adjustment)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-purple-300 mb-1">Payment Roll Convention</label>
-                  <select
-                    value={leg1PaymentRoll}
-                    onChange={(e) => setLeg1PaymentRoll(e.target.value as any)}
-                    className="w-full bg-[#16181d] border border-purple-600/80 rounded p-2 text-sm text-white font-bold"
-                  >
-                    <option value="MODFOLLOWING">MODFOLLOWING (Modified Following)</option>
-                    <option value="FOLLOWING">FOLLOWING</option>
-                    <option value="PRECEDING">PRECEDING</option>
-                    <option value="MODPRECEDING">MODPRECEDING</option>
-                    <option value="NONE">NONE (No Adjustment)</option>
                   </select>
                 </div>
               </div>
@@ -7056,35 +6896,71 @@ IR Delta (DV01)     : Δ_k       = Notional × DayCountFraction × DF(T_k) × 0.
                       {(liveScheduleSummary?.periods || []).map((p) => {
                         const fxdRate = p.fixedCouponRate || fixedRate;
                         const fltRate = (p.floatingFixingRate || benchmarkRatePct) + ((p.floatingSpreadBps || 0) / 100);
+                        const fixedCalcText = `Fixed CF = ${notional.toLocaleString()} × ${fxdRate.toFixed(4)}% × ${p.dayCountFraction} = $${(p.fixedCashflow || 0).toLocaleString()}`;
+                        const floatCalcText = `Float CF = ${notional.toLocaleString()} × ${fltRate.toFixed(4)}% × ${p.dayCountFraction} = $${(p.floatingCashflow || 0).toLocaleString()}`;
+                        const netCalcText = `Net CF = $${(p.fixedCashflow || 0).toLocaleString()} + $${(p.floatingCashflow || 0).toLocaleString()} = $${p.netCashflow.toLocaleString()}`;
+                        const pvCalcText = `PV = $${p.netCashflow.toLocaleString()} × ${p.discountFactor.toFixed(6)} = $${p.discountedCashflow.toLocaleString()}`;
+                        const dv01CalcText = `DV01 = ${notional.toLocaleString()} × ${p.dayCountFraction} × ${p.discountFactor.toFixed(6)} × 0.0001 = $${p.irDelta.toLocaleString()}`;
+
                         return (
-                          <tr key={p.periodNumber} className="hover:bg-[#111422]/60 transition-colors">
-                            <td className="py-2.5 px-3 font-bold text-white">#{p.periodNumber}</td>
+                          <tr key={p.periodNumber} className="group relative hover:bg-[#111628] transition-colors cursor-pointer">
+                            <td className="py-2.5 px-3 font-bold text-white relative">
+                              <span>#{p.periodNumber}</span>
+
+                              {/* Hover Tooltip showing Period Calculation Breakdown */}
+                              <div className="hidden group-hover:block absolute left-12 top-0 z-50 w-96 p-3.5 bg-[#0b0f19] border border-blue-600/90 rounded-xl shadow-2xl text-[11px] font-mono text-gray-200 pointer-events-none space-y-2">
+                                <div className="text-xs font-bold text-blue-300 border-b border-blue-900/60 pb-1 flex items-center justify-between font-sans">
+                                  <span>Period #{p.periodNumber} Exact Mathematical Steps</span>
+                                  <span className="text-[10px] text-gray-400 font-mono">Days: {p.numberOfDays} (α={p.dayCountFraction})</span>
+                                </div>
+                                <div className="space-y-1">
+                                  <p className="text-amber-300">
+                                    <strong>1. Fixed Leg:</strong> {fixedCalcText}
+                                  </p>
+                                  <p className="text-cyan-300">
+                                    <strong>2. Float Leg:</strong> {floatCalcText}
+                                  </p>
+                                  <p className="text-blue-300 font-bold">
+                                    <strong>3. Net Cashflow:</strong> {netCalcText}
+                                  </p>
+                                  <p className="text-purple-300">
+                                    <strong>4. Discount Factor:</strong> DF({p.endDate}) = {p.discountFactor.toFixed(6)}
+                                  </p>
+                                  <p className="text-emerald-400 font-bold border-t border-gray-800 pt-1">
+                                    <strong>5. Discounted PV:</strong> {pvCalcText}
+                                  </p>
+                                  <p className="text-teal-300 text-[10px]">
+                                    <strong>6. Period IR Delta (DV01):</strong> {dv01CalcText}
+                                  </p>
+                                </div>
+                              </div>
+                            </td>
                             <td className="py-2.5 px-3 text-gray-300">
-                              <div>{p.startDate} → {p.endDate}</div>
+                              <div>{p.startDate} &rarr; {p.endDate}</div>
                               <div className="text-[9px] text-gray-500">Pay: {p.paymentDate}</div>
                             </td>
                             <td className="py-2.5 px-3 text-center text-gray-300">
                               <div>{p.numberOfDays}d</div>
                               <div className="text-[9px] text-gray-500">α = {p.dayCountFraction}</div>
                             </td>
-                            <td className="py-2.5 px-3 text-right">
+                            <td className="py-2.5 px-3 text-right" title={fixedCalcText}>
                               <div className="text-amber-300 font-bold">{fxdRate.toFixed(4)}%</div>
                               <div className="text-[10px] text-amber-400 font-semibold">${(p.fixedCashflow || 0).toLocaleString()}</div>
                             </td>
-                            <td className="py-2.5 px-3 text-right">
+                            <td className="py-2.5 px-3 text-right" title={floatCalcText}>
                               <div className="text-cyan-300 font-bold">{fltRate.toFixed(4)}%</div>
                               <div className="text-[10px] text-cyan-400 font-semibold">${(p.floatingCashflow || 0).toLocaleString()}</div>
                             </td>
-                            <td className={`py-2.5 px-3 text-right font-bold ${p.netCashflow >= 0 ? 'text-blue-300' : 'text-rose-400'}`}>
+                            <td className={`py-2.5 px-3 text-right font-bold ${p.netCashflow >= 0 ? 'text-blue-300' : 'text-rose-400'}`} title={netCalcText}>
                               ${p.netCashflow.toLocaleString()}
                             </td>
-                            <td className="py-2.5 px-3 text-right text-purple-300 font-bold">
+                            <td className="py-2.5 px-3 text-right text-purple-300 font-bold" title={`DF = exp(-r × T) = ${p.discountFactor.toFixed(6)}`}>
                               {p.discountFactor.toFixed(6)}
                             </td>
-                            <td className={`py-2.5 px-3 text-right font-extrabold bg-emerald-950/20 ${p.discountedCashflow >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                            <td className={`py-2.5 px-3 text-right font-extrabold bg-emerald-950/20 ${p.discountedCashflow >= 0 ? 'text-emerald-400' : 'text-rose-400'}`} title={pvCalcText}>
                               ${p.discountedCashflow.toLocaleString()}
                             </td>
-                            <td className="py-2.5 px-3 text-right text-teal-300 font-bold">
+                            <td className="py-2.5 px-3 text-right text-teal-300 font-bold" title={dv01CalcText}>
                               ${p.irDelta.toLocaleString()}
                             </td>
                           </tr>
