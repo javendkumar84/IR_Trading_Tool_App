@@ -2084,6 +2084,8 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
   const independentLeg1Summary: IndependentLegSchedule | null = previewTrade ? generateIndependentLeg1Schedule(previewTrade, scheduleDateOverrides) : null;
   const independentLeg2Summary: IndependentLegSchedule | null = previewTrade ? generateIndependentLeg2Schedule(previewTrade, scheduleDateOverrides) : null;
 
+  const [showPvLogModal, setShowPvLogModal] = useState<boolean>(false);
+
   return (
     <div id="xml-capture-suite" className="space-y-6 pb-12">
       
@@ -2101,6 +2103,16 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowPvLogModal(true)}
+              className="px-3 py-1.5 bg-blue-950/80 hover:bg-blue-900 border border-blue-700/80 text-blue-300 rounded text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow"
+              title="View step-by-step PV valuation audit log & mathematical steps"
+            >
+              <Terminal className="w-3.5 h-3.5 text-blue-400" />
+              View PV Audit Log
+            </button>
+
             <button
               type="button"
               onClick={() => setShowXmlModal(true)}
@@ -6210,6 +6222,15 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <button
                 type="button"
+                onClick={() => setShowPvLogModal(true)}
+                className="w-full sm:w-auto px-5 py-3 bg-blue-950/80 hover:bg-blue-900 text-blue-300 border border-blue-700 hover:border-blue-400 rounded font-bold uppercase tracking-wider text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+              >
+                <Terminal className="w-4 h-4 text-blue-400" />
+                View PV Audit Log
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setShowXmlModal(true)}
                 className="w-full sm:w-auto px-5 py-3 bg-[#12141a] hover:bg-[#1a1d26] text-emerald-400 border border-emerald-800/80 hover:border-emerald-500 rounded font-bold uppercase tracking-wider text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
               >
@@ -6819,6 +6840,245 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                 className="px-4 py-1.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-bold transition-colors cursor-pointer"
               >
                 Close Preview
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Step-by-Step PV Valuation Audit Log Modal */}
+      {showPvLogModal && (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-[#0b0d14] border border-blue-900/80 rounded-2xl w-full max-w-5xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden font-mono">
+            {/* Modal Header */}
+            <div className="px-6 py-4 bg-[#111420] border-b border-gray-800 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 bg-blue-950/80 border border-blue-700/80 rounded-xl text-blue-400">
+                  <Terminal className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2 font-sans">
+                    Step-by-Step Present Value (PV) Valuation Audit Log
+                    <span className="px-2.5 py-0.5 bg-blue-950 text-blue-300 text-[10px] rounded-full border border-blue-700 font-mono font-bold">
+                      {selectedProduct} | {currency}
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-gray-400 font-sans mt-0.5">
+                    Mathematical audit trail for Present Value: <span className="font-mono text-emerald-400 font-bold">PV = ∑ [ (CF_Fixed + CF_Float) × DF(ValDate, T_k) ]</span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const logContent = `================================================================================
+INTEREST RATE SWAP / DERIVATIVE STEP-BY-STEP PV VALUATION AUDIT LOG
+================================================================================
+Product Type        : ${selectedProduct}
+Trade Currency      : ${currency}
+Valuation Date (PV) : ${tradeDate}
+Effective Date      : ${effectiveDate}
+Maturity Date       : ${maturityDate}
+Trade Notional      : ${currency} ${notional.toLocaleString()}
+Valuation Model     : ${getValuationModelForProduct(selectedProduct, selectedValuationModelMap[selectedProduct]).name}
+Discount Curve      : ${discountCurveName}
+Forecast Yield Curve: ${yieldCurveName}
+Benchmark Rate      : ${benchmarkRatePct}%
+Total Net Trade PV  : ${currency} ${(liveScheduleSummary?.totalPV || 0).toLocaleString()}
+Total Trade DV01    : $${(liveScheduleSummary?.totalIrDelta || 0).toLocaleString()} / 1bp
+
+--------------------------------------------------------------------------------
+1. VALUATION FORMULAS & MATHEMATICAL SPECIFICATION
+--------------------------------------------------------------------------------
+Fixed Leg Cashflow  : CF_Fixed = Notional × FixedRate × DayCountFraction(d1, d2, ${fixedDayCount})
+Floating Cashflow   : CF_Float = Notional × (IndexRate + Spread/10000) × DayCountFraction(d1, d2, ${floatingDayCount})
+Discount Factor     : DF(T_k)   = exp( - r_k × T_k )
+Present Value (PV)  : PV_k      = NetCF_k × DF(T_k)
+IR Delta (DV01)     : Δ_k       = Notional × DayCountFraction × DF(T_k) × 0.0001
+
+--------------------------------------------------------------------------------
+2. PERIOD-BY-PERIOD CASHFLOW & PV CALCULATION BREAKDOWN
+--------------------------------------------------------------------------------
+` + (liveScheduleSummary?.periods || []).map((p) => 
+  `[Period ${p.periodNumber}] ${p.startDate} -> ${p.endDate} (Days: ${p.numberOfDays}, DayCountFrac: ${p.dayCountFraction})
+   * Fixed Leg Rate   : ${(p.fixedCouponRate || fixedRate).toFixed(4)}%  | Fixed CF : $${(p.fixedCashflow || 0).toLocaleString()}
+   * Float Fixing Rate: ${(p.floatingFixingRate || benchmarkRatePct).toFixed(4)}% (+${p.floatingSpreadBps || 0}bps = ${((p.floatingFixingRate || benchmarkRatePct) + ((p.floatingSpreadBps||0)/100)).toFixed(4)}%) | Float CF: $${(p.floatingCashflow || 0).toLocaleString()}
+   * Net Cashflow     : $${p.netCashflow.toLocaleString()}
+   * Discount Factor  : ${p.discountFactor.toFixed(6)}
+   * Discounted PV    : $${p.discountedCashflow.toLocaleString()}
+   * Cumulative PV    : $${p.cumulativeCashflow.toLocaleString()}
+   * Period DV01 ($)  : $${p.irDelta.toLocaleString()}`
+).join('\n\n');
+                    navigator.clipboard.writeText(logContent);
+                    alert('Step-by-step PV Valuation Audit Log copied to clipboard!');
+                  }}
+                  className="px-3 py-1.5 bg-[#1a1d26] hover:bg-gray-800 text-gray-300 hover:text-white rounded-lg text-xs font-bold font-sans flex items-center gap-1.5 transition-colors cursor-pointer border border-gray-700"
+                  title="Copy Audit Log"
+                >
+                  <Copy className="w-3.5 h-3.5 text-blue-400" />
+                  Copy Audit Log
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowPvLogModal(false)}
+                  className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"
+                  title="Close Modal"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body - Audit Log Content */}
+            <div className="p-6 overflow-y-auto max-h-[72vh] bg-[#07080d] scrollbar-thin space-y-6">
+              {/* Header Summary Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 font-sans text-xs">
+                <div className="p-3 bg-[#111422] border border-blue-900/60 rounded-xl space-y-1">
+                  <div className="text-[10px] font-bold text-gray-400 uppercase">Product & Currency</div>
+                  <div className="text-sm font-bold text-white font-mono">{selectedProduct} ({currency})</div>
+                  <div className="text-[10px] text-blue-300 truncate">Notional: {currency} {notional.toLocaleString()}</div>
+                </div>
+
+                <div className="p-3 bg-[#111422] border border-indigo-900/60 rounded-xl space-y-1">
+                  <div className="text-[10px] font-bold text-gray-400 uppercase">Valuation Model</div>
+                  <div className="text-xs font-bold text-indigo-300 font-mono truncate">{getValuationModelForProduct(selectedProduct, selectedValuationModelMap[selectedProduct]).name}</div>
+                  <div className="text-[10px] text-gray-400 truncate">Curve: {discountCurveName}</div>
+                </div>
+
+                <div className="p-3 bg-[#111422] border border-emerald-900/60 rounded-xl space-y-1">
+                  <div className="text-[10px] font-bold text-gray-400 uppercase">Computed Net PV</div>
+                  <div className={`text-base font-extrabold font-mono ${(liveScheduleSummary?.totalPV || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {currency} {(liveScheduleSummary?.totalPV || 0).toLocaleString()}
+                  </div>
+                  <div className="text-[10px] text-emerald-300">As of: {tradeDate}</div>
+                </div>
+
+                <div className="p-3 bg-[#111422] border border-teal-900/60 rounded-xl space-y-1">
+                  <div className="text-[10px] font-bold text-gray-400 uppercase">IR Delta (DV01)</div>
+                  <div className="text-base font-extrabold text-teal-300 font-mono">
+                    ${(liveScheduleSummary?.totalIrDelta || 0).toLocaleString()} / 1bp
+                  </div>
+                  <div className="text-[10px] text-gray-400">Total Sensitivity</div>
+                </div>
+              </div>
+
+              {/* Mathematical Formula Specification Card */}
+              <div className="p-4 bg-[#0d0f18] border border-blue-900/50 rounded-xl space-y-2 text-xs font-mono">
+                <div className="text-xs font-bold text-blue-300 uppercase tracking-wider font-sans flex items-center justify-between border-b border-gray-800 pb-1.5">
+                  <span>1. Mathematical PV Valuation Formulas & Conventions Applied</span>
+                  <span className="text-[10px] text-blue-400 font-normal">Standard ISDA Market Conventions</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px] pt-1 text-gray-300">
+                  <div className="space-y-1">
+                    <p><strong className="text-amber-300">Fixed Cashflow:</strong> <code className="text-gray-200 bg-gray-900 px-1 py-0.5 rounded">CF_Fixed = Notional × FixedRate × α(d1, d2)</code></p>
+                    <p><strong className="text-cyan-300">Floating Cashflow:</strong> <code className="text-gray-200 bg-gray-900 px-1 py-0.5 rounded">CF_Float = Notional × (IndexRate + Spread) × α(d1, d2)</code></p>
+                    <p><strong className="text-emerald-300">Day Count Fraction α:</strong> Day count ratio for <span className="text-white font-bold">{fixedDayCount}</span> / <span className="text-white font-bold">{floatingDayCount}</span></p>
+                  </div>
+                  <div className="space-y-1">
+                    <p><strong className="text-purple-300">Discount Factor (DF):</strong> <code className="text-gray-200 bg-gray-900 px-1 py-0.5 rounded">DF(T_k) = exp(- r_k × T_k)</code></p>
+                    <p><strong className="text-emerald-400">Present Value (PV_k):</strong> <code className="text-gray-200 bg-gray-900 px-1 py-0.5 rounded">PV_k = (CF_Fixed + CF_Float) × DF(T_k)</code></p>
+                    <p><strong className="text-teal-300">IR Delta (DV01_k):</strong> <code className="text-gray-200 bg-gray-900 px-1 py-0.5 rounded">DV01_k = Notional × α(d1, d2) × DF(T_k) × 10⁻⁴</code></p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Step-by-Step Period Valuation Table */}
+              <div className="space-y-2">
+                <div className="text-xs font-bold text-gray-300 uppercase tracking-wider font-sans flex items-center justify-between">
+                  <span>2. Step-by-Step Period Valuation Audit Table</span>
+                  <span className="text-[10px] text-gray-500 font-mono font-normal">Showing {(liveScheduleSummary?.periods || []).length} Accrual Periods</span>
+                </div>
+
+                <div className="overflow-x-auto border border-gray-800 rounded-xl bg-[#090b10]">
+                  <table className="w-full text-left text-[11px] font-mono border-collapse">
+                    <thead>
+                      <tr className="bg-[#121520] text-gray-400 border-b border-gray-800">
+                        <th className="py-2.5 px-3"># Period</th>
+                        <th className="py-2.5 px-3">Dates (Start &rarr; End)</th>
+                        <th className="py-2.5 px-3 text-center">Days / α</th>
+                        <th className="py-2.5 px-3 text-right text-amber-300">Fixed Rate / CF</th>
+                        <th className="py-2.5 px-3 text-right text-cyan-300">Float Rate / CF</th>
+                        <th className="py-2.5 px-3 text-right text-blue-300">Net CF ($)</th>
+                        <th className="py-2.5 px-3 text-right text-purple-300">DF(T_k)</th>
+                        <th className="py-2.5 px-3 text-right text-emerald-400">Discounted PV ($)</th>
+                        <th className="py-2.5 px-3 text-right text-teal-300">DV01 ($)</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-850">
+                      {(liveScheduleSummary?.periods || []).map((p) => {
+                        const fxdRate = p.fixedCouponRate || fixedRate;
+                        const fltRate = (p.floatingFixingRate || benchmarkRatePct) + ((p.floatingSpreadBps || 0) / 100);
+                        return (
+                          <tr key={p.periodNumber} className="hover:bg-[#111422]/60 transition-colors">
+                            <td className="py-2.5 px-3 font-bold text-white">#{p.periodNumber}</td>
+                            <td className="py-2.5 px-3 text-gray-300">
+                              <div>{p.startDate} → {p.endDate}</div>
+                              <div className="text-[9px] text-gray-500">Pay: {p.paymentDate}</div>
+                            </td>
+                            <td className="py-2.5 px-3 text-center text-gray-300">
+                              <div>{p.numberOfDays}d</div>
+                              <div className="text-[9px] text-gray-500">α = {p.dayCountFraction}</div>
+                            </td>
+                            <td className="py-2.5 px-3 text-right">
+                              <div className="text-amber-300 font-bold">{fxdRate.toFixed(4)}%</div>
+                              <div className="text-[10px] text-amber-400 font-semibold">${(p.fixedCashflow || 0).toLocaleString()}</div>
+                            </td>
+                            <td className="py-2.5 px-3 text-right">
+                              <div className="text-cyan-300 font-bold">{fltRate.toFixed(4)}%</div>
+                              <div className="text-[10px] text-cyan-400 font-semibold">${(p.floatingCashflow || 0).toLocaleString()}</div>
+                            </td>
+                            <td className={`py-2.5 px-3 text-right font-bold ${p.netCashflow >= 0 ? 'text-blue-300' : 'text-rose-400'}`}>
+                              ${p.netCashflow.toLocaleString()}
+                            </td>
+                            <td className="py-2.5 px-3 text-right text-purple-300 font-bold">
+                              {p.discountFactor.toFixed(6)}
+                            </td>
+                            <td className={`py-2.5 px-3 text-right font-extrabold bg-emerald-950/20 ${p.discountedCashflow >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                              ${p.discountedCashflow.toLocaleString()}
+                            </td>
+                            <td className="py-2.5 px-3 text-right text-teal-300 font-bold">
+                              ${p.irDelta.toLocaleString()}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                    <tfoot>
+                      <tr className="bg-[#121624] text-xs font-bold border-t-2 border-blue-900/80">
+                        <td colSpan={5} className="py-3 px-3 text-white uppercase font-sans">
+                          Total Trade PV & Risk Summary:
+                        </td>
+                        <td className="py-3 px-3 text-right text-blue-300 font-mono">
+                          ${(liveScheduleSummary?.totalNetCashflow || 0).toLocaleString()}
+                        </td>
+                        <td className="py-3 px-3 text-right text-purple-300 font-mono">
+                          Avg DF
+                        </td>
+                        <td className={`py-3 px-3 text-right text-sm font-extrabold font-mono ${(liveScheduleSummary?.totalPV || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {currency} {(liveScheduleSummary?.totalPV || 0).toLocaleString()}
+                        </td>
+                        <td className="py-3 px-3 text-right text-teal-300 font-mono">
+                          ${(liveScheduleSummary?.totalIrDelta || 0).toLocaleString()}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-3 bg-[#111420] border-t border-gray-800 flex items-center justify-between text-xs text-gray-400 font-sans">
+              <span>Synchronized Valuation Date: {tradeDate} | Model: {getValuationModelForProduct(selectedProduct, selectedValuationModelMap[selectedProduct]).name}</span>
+              <button
+                type="button"
+                onClick={() => setShowPvLogModal(false)}
+                className="px-5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold transition-colors cursor-pointer"
+              >
+                Close Audit Log
               </button>
             </div>
           </div>
