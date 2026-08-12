@@ -2388,10 +2388,20 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
               </div>
 
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[10px] text-amber-300 font-bold bg-amber-950/80 px-2 py-0.5 rounded border border-amber-800">
+                <button
+                  type="button"
+                  onClick={() => setShowPvLogModal(true)}
+                  className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-sans font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow border border-blue-400 animate-pulse"
+                  title="Open Step-by-Step Present Value (PV) Valuation Audit Log & Formula Breakdown"
+                >
+                  <Terminal className="w-3.5 h-3.5 text-white" />
+                  View PV Audit Log
+                </button>
+
+                <span className="text-[10px] text-amber-300 font-bold bg-amber-950/80 px-2 py-1 rounded border border-amber-800">
                   Valuation Date: {tradeDate} (COB)
                 </span>
-                <span className="text-xs font-bold text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800">
+                <span className="text-xs font-bold text-emerald-400 bg-emerald-950/80 px-2 py-1 rounded border border-emerald-800">
                   {discountCurveName}
                 </span>
               </div>
