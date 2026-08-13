@@ -13,11 +13,12 @@ import { PnlDashboard } from './components/PnlDashboard';
 import { VarDashboard } from './components/VarDashboard';
 import { RiskCalculationGuide } from './components/RiskCalculationGuide';
 import { MarketDataTab } from './components/MarketDataTab';
+import { CashExplainTab } from './components/CashExplainTab';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuditLogEntry, IRSwapTrade, MarketRateQuote, PositionSummary, TenorDv01Risk, WebSocketMessage } from './types';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'xml' | 'blotter' | 'amend' | 'eod-risk' | 'pnl' | 'var' | 'risk-calc' | 'audit' | 'dotnet' | 'qa' | 'validation' | 'market-data'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'xml' | 'blotter' | 'amend' | 'eod-risk' | 'pnl' | 'var' | 'risk-calc' | 'audit' | 'dotnet' | 'qa' | 'validation' | 'market-data' | 'cash-explain'>('dashboard');
   const [traderUser, setTraderUser] = useState<string>('J. Doe (Head Rates Trader)');
 
   // Real-time State
@@ -221,6 +222,10 @@ export default function App() {
 
         {activeTab === 'market-data' && (
           <MarketDataTab marketRates={marketRates} isWsConnected={isWsConnected} />
+        )}
+
+        {activeTab === 'cash-explain' && (
+          <CashExplainTab trades={trades} />
         )}
       </main>
 
