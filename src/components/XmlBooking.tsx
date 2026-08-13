@@ -2443,38 +2443,67 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs pt-1">
               {/* 1. Calculated Present Value (PV) Field */}
               <div className="bg-[#121624] p-3 rounded-lg border border-blue-700/80 space-y-1.5">
                 <label className="block text-[10px] uppercase font-bold text-blue-300 font-sans flex items-center justify-between">
-                  <span>Calculated Present Value (PV)</span>
+                  <span>Calculated PV (Total)</span>
                   <span className="text-[9px] text-amber-300 font-bold bg-amber-950/80 px-1 rounded border border-amber-800">
-                    Val Date: {tradeDate}
+                    Val: {tradeDate}
                   </span>
                 </label>
                 <div className="flex items-baseline justify-between">
-                  <span className={`text-base font-extrabold font-mono ${ (liveScheduleSummary?.totalPV || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400' }`}>
+                  <span className={`text-sm font-extrabold font-mono ${ (liveScheduleSummary?.totalPV || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400' }`}>
                     {currency} { (liveScheduleSummary?.totalPV || 0).toLocaleString() }
                   </span>
-                  <span className="text-[10px] text-gray-400 uppercase font-sans font-bold">
-                    {currency}
-                  </span>
                 </div>
-                <div className="text-[10px] text-gray-400 font-sans truncate" title="Discounted net cashflow sum over yield curve as of valuation date">
-                  Valuation Date: <strong>{tradeDate}</strong> | PV = ∑ CF_k × DF(ValDate, T_k)
+                <div className="text-[9px] text-gray-400 font-sans truncate" title="Discounted net cashflow sum over yield curve as of valuation date">
+                  PV = ∑ CF_k × DF(ValDate, T_k)
                 </div>
               </div>
 
-              {/* 2. Quantitative Valuation Model Used Field (Interactive Selection) */}
-              <div className="bg-[#121624] p-3 rounded-lg border border-indigo-700/80 space-y-1.5 col-span-1 sm:col-span-2">
+              {/* 2. PV NoCash Field */}
+              <div className="bg-[#121624] p-3 rounded-lg border border-purple-700/80 space-y-1.5">
+                <label className="block text-[10px] uppercase font-bold text-purple-300 font-sans flex items-center justify-between">
+                  <span>PV NoCash</span>
+                  <span className="text-[9px] text-purple-300 font-mono">Excl. T+0</span>
+                </label>
+                <div className="flex items-baseline justify-between">
+                  <span className={`text-sm font-extrabold font-mono ${ (liveScheduleSummary?.pvNoCash || 0) >= 0 ? 'text-purple-300' : 'text-rose-400' }`}>
+                    {currency} { (liveScheduleSummary?.pvNoCash || Math.round((liveScheduleSummary?.totalPV || 0) - (liveScheduleSummary?.cashOnTheDay || 0))).toLocaleString() }
+                  </span>
+                </div>
+                <div className="text-[9px] text-gray-400 font-sans truncate" title="Present Value excluding upfront premium or T+0 cash settlements">
+                  PV NoCash = Total PV - CashOnDay
+                </div>
+              </div>
+
+              {/* 3. Cash on the Day Field */}
+              <div className="bg-[#121624] p-3 rounded-lg border border-amber-700/80 space-y-1.5">
+                <label className="block text-[10px] uppercase font-bold text-amber-300 font-sans flex items-center justify-between">
+                  <span>Cash on the Day</span>
+                  <span className="text-[9px] text-amber-400 font-mono">T+0 Cash</span>
+                </label>
+                <div className="flex items-baseline justify-between">
+                  <span className={`text-sm font-extrabold font-mono ${ (liveScheduleSummary?.cashOnTheDay || 0) >= 0 ? 'text-amber-300' : 'text-rose-400' }`}>
+                    {currency} { (liveScheduleSummary?.cashOnTheDay || 0).toLocaleString() }
+                  </span>
+                </div>
+                <div className="text-[9px] text-gray-400 font-sans truncate" title="Immediate upfront option premium or cash settlement due on trade date">
+                  Upfront Premium / Settlement Cash
+                </div>
+              </div>
+
+              {/* 4. Quantitative Valuation Model Used Field */}
+              <div className="bg-[#121624] p-3 rounded-lg border border-indigo-700/80 space-y-1.5">
                 <label className="block text-[10px] uppercase font-bold text-indigo-300 font-sans flex items-center justify-between">
-                  <span>Valuation Model Used for PV</span>
-                  <span className="text-[9px] text-indigo-300 font-normal bg-indigo-950 px-1.5 py-0.5 rounded border border-indigo-700/60 font-mono">
+                  <span>Valuation Model</span>
+                  <span className="text-[9px] text-indigo-300 font-normal bg-indigo-950 px-1 py-0.5 rounded border border-indigo-700/60 font-mono truncate max-w-[80px]">
                     {getValuationModelForProduct(selectedProduct, selectedValuationModelMap[selectedProduct]).category}
                   </span>
                 </label>
-                <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse shrink-0"></span>
+                <div className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse shrink-0"></span>
                   <select
                     value={selectedValuationModelMap[selectedProduct] || PRODUCT_VALUATION_MODELS[selectedProduct][0].id}
                     onChange={(e) =>
@@ -2483,7 +2512,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                         [selectedProduct]: e.target.value,
                       }))
                     }
-                    className="w-full bg-[#0a0c14] border border-indigo-500 text-white rounded px-2 py-1 text-xs font-mono font-bold focus:outline-none focus:border-indigo-400 shadow-inner cursor-pointer"
+                    className="w-full bg-[#0a0c14] border border-indigo-500 text-white rounded px-1.5 py-0.5 text-[11px] font-mono font-bold focus:outline-none focus:border-indigo-400 shadow-inner cursor-pointer truncate"
                   >
                     {PRODUCT_VALUATION_MODELS[selectedProduct].map((model) => (
                       <option key={model.id} value={model.id}>
@@ -2492,21 +2521,21 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                     ))}
                   </select>
                 </div>
-                <div className="text-[10px] text-gray-400 font-sans truncate" title={getValuationModelForProduct(selectedProduct, selectedValuationModelMap[selectedProduct]).description}>
+                <div className="text-[9px] text-gray-400 font-sans truncate" title={getValuationModelForProduct(selectedProduct, selectedValuationModelMap[selectedProduct]).description}>
                   {getValuationModelForProduct(selectedProduct, selectedValuationModelMap[selectedProduct]).description}
                 </div>
               </div>
 
-              {/* 3. Interest Rate Sensitivity (DV01) Field */}
+              {/* 5. Interest Rate Sensitivity (DV01) Field */}
               <div className="bg-[#121624] p-3 rounded-lg border border-teal-700/80 space-y-1.5">
                 <label className="block text-[10px] uppercase font-bold text-teal-300 font-sans flex items-center justify-between">
-                  <span>IR Sensitivity (DV01)</span>
+                  <span>IR Delta (DV01)</span>
                   <span className="text-[9px] text-teal-400 font-mono">$ / 1 bps</span>
                 </label>
-                <div className="text-base font-bold text-teal-300 font-mono">
+                <div className="text-sm font-bold text-teal-300 font-mono">
                   ${ (liveScheduleSummary?.totalIrDelta || 2600).toLocaleString() }
                 </div>
-                <div className="text-[10px] text-gray-400 font-sans truncate">
+                <div className="text-[9px] text-gray-400 font-sans truncate">
                   Delta shift per 1 bps curve move
                 </div>
               </div>

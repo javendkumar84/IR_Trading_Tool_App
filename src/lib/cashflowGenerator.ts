@@ -74,6 +74,8 @@ export interface CashflowScheduleSummary {
   totalFloatingCashflow: number;
   totalNetCashflow: number;
   totalPV: number;
+  pvNoCash?: number;            // PV excluding cashflows settling on trade date / cash on the day
+  cashOnTheDay?: number;        // Immediate upfront cashflow / premium / T+0 settlement cash
   totalIrDelta: number;          // Total Trade IRDelta (DV01 in $)
   accrualCalendar?: BusinessCalendar | string;
   paymentCalendar?: BusinessCalendar | string;
@@ -1806,37 +1808,84 @@ export function generateCashflowSchedule(
   dateOverrides?: Record<string, { startDate?: string; endDate?: string; resetStartDate?: string; resetEndDate?: string; payResetDate?: string }>
 ): CashflowScheduleSummary {
   const effectiveOverrides = dateOverrides || trade.scheduleDateOverrides;
+  let summary: CashflowScheduleSummary;
+
   switch (trade.productType) {
     case 'IRS':
-      return generateIRSwapCashflowSchedule(trade, effectiveOverrides);
+      summary = generateIRSwapCashflowSchedule(trade, effectiveOverrides);
+      break;
     case 'CAP_FLOOR':
-      return generateCapFloorCashflowSchedule(trade);
+      summary = generateCapFloorCashflowSchedule(trade);
+      break;
     case 'SWAPTION':
-      return generateSwaptionCashflowSchedule(trade);
+      summary = generateSwaptionCashflowSchedule(trade);
+      break;
     case 'RANGE_ACCRUAL':
-      return generateRangeAccrualCashflowSchedule(trade);
+      summary = generateRangeAccrualCashflowSchedule(trade);
+      break;
     case 'SNOW_RANGE':
-      return generateSnowRangeCashflowSchedule(trade);
+      summary = generateSnowRangeCashflowSchedule(trade);
+      break;
     case 'TARN':
-      return generateTarnCashflowSchedule(trade);
+      summary = generateTarnCashflowSchedule(trade);
+      break;
     case 'SNOWBALL':
-      return generateSnowballCashflowSchedule(trade);
+      summary = generateSnowballCashflowSchedule(trade);
+      break;
     case 'FX_FORWARD':
     case 'FX_OPTION':
-      return generateFxCashflowSchedule(trade);
+      summary = generateFxCashflowSchedule(trade);
+      break;
     case 'BOND':
-      return generateBondCashflowSchedule(trade);
+      summary = generateBondCashflowSchedule(trade);
+      break;
     case 'FRA':
-      return generateFraCashflowSchedule(trade);
+      summary = generateFraCashflowSchedule(trade);
+      break;
     case 'DEPOSIT':
-      return generateDepositCashflowSchedule(trade);
+      summary = generateDepositCashflowSchedule(trade);
+      break;
     case 'REPO':
-      return generateRepoCashflowSchedule(trade);
+      summary = generateRepoCashflowSchedule(trade);
+      break;
     case 'DUAL_DIGITAL':
-      return generateDualDigitalCashflowSchedule(trade);
+      summary = generateDualDigitalCashflowSchedule(trade);
+      break;
     default:
-      return generateIRSwapCashflowSchedule(trade);
+      summary = generateIRSwapCashflowSchedule(trade);
+      break;
   }
+
+  // Calculate Cash on the Day (T+0 upfront settlement, premium, or fee cashflows on trade/effective date)
+  const valDate = trade.tradeDate || new Date().toISOString().split('T')[0];
+  let cashOnTheDay = 0;
+
+  if (trade.productType === 'CAP_FLOOR' && trade.capFloorDetails) {
+    const prem = trade.capFloorDetails.premiumAmount || 0;
+    cashOnTheDay = trade.capFloorDetails.direction === 'BUY' ? -prem : prem;
+  } else if (trade.productType === 'SWAPTION' && trade.swaptionDetails) {
+    const prem = trade.swaptionDetails.premiumAmount || 0;
+    cashOnTheDay = trade.swaptionDetails.direction === 'BUY' ? -prem : prem;
+  } else if (trade.productType === 'FX_OPTION' && trade.fxOptionDetails) {
+    const prem = trade.fxOptionDetails.premiumAmount || 0;
+    cashOnTheDay = trade.fxOptionDetails.direction === 'BUY' ? -prem : prem;
+  } else {
+    // Sum any cashflow periods maturing/settling on tradeDate or effectiveDate (Period 0)
+    (summary.periods || []).forEach((p) => {
+      if (p.periodNumber === 0 || p.paymentDate === valDate || p.paymentDate === trade.effectiveDate) {
+        cashOnTheDay += (p.netCashflow || p.discountedCashflow || 0);
+      }
+    });
+  }
+
+  // PV NoCash = Total PV excluding Cash on the Day
+  const pvNoCash = Math.round(summary.totalPV - cashOnTheDay);
+
+  return {
+    ...summary,
+    cashOnTheDay: Math.round(cashOnTheDay),
+    pvNoCash,
+  };
 }
 
 /**
