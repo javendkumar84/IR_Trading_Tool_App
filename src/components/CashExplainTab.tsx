@@ -519,8 +519,8 @@ export const CashExplainTab: React.FC<CashExplainTabProps> = ({ trades }) => {
                   <th className="py-3 px-3 text-center">Ccy</th>
                   <th className="py-3 px-3">ResetDate</th>
                   <th className="py-3 px-3 text-right text-cyan-300 font-bold">FixingRate</th>
-                  <th className="py-3 px-3 text-right text-teal-300 font-bold">TotalRate</th>
                   <th className="py-3 px-3 text-right font-extrabold text-emerald-400">CashAmount</th>
+                  <th className="py-3 px-3 text-right text-teal-300 font-bold">CouponRate</th>
                   <th className="py-3 px-3 text-center">State</th>
                 </tr>
               </thead>
@@ -566,14 +566,14 @@ export const CashExplainTab: React.FC<CashExplainTabProps> = ({ trades }) => {
                         {r.fixingRate > 0 ? `${r.fixingRate.toFixed(4)}%` : '—'}
                       </td>
 
-                      {/* Total Rate Cell with Hover Formula */}
-                      <td className="py-3 px-3 text-right text-teal-300 font-bold hover:bg-teal-950/60 rounded cursor-help" title={`Total Floating Rate: Fixing (${r.fixingRate.toFixed(4)}%) + Spread (${r.spreadBps}bp) = ${r.couponRate.toFixed(4)}%`}>
-                        {r.couponRate.toFixed(4)}%
+                      {/* CashAmount Cell with Hover Formula */}
+                      <td className={`py-3 px-3 text-right font-extrabold text-sm hover:bg-emerald-950/60 rounded cursor-help ${r.cashAmount >= 0 ? 'text-emerald-400' : 'text-rose-400'}`} title={`CashAmount Formula: Notional (${r.notional.toLocaleString()}) × Total CouponRate (${r.couponRate}%) × DCF (${r.dcf.toFixed(4)}) = ${r.cashAmount.toLocaleString()}`}>
+                        {r.currency} {r.cashAmount.toLocaleString()}
                       </td>
 
-                      {/* CashAmount Cell with Hover Formula */}
-                      <td className={`py-3 px-3 text-right font-extrabold text-sm hover:bg-emerald-950/60 rounded cursor-help ${r.cashAmount >= 0 ? 'text-emerald-400' : 'text-rose-400'}`} title={`CashAmount Formula: Notional (${r.notional.toLocaleString()}) × TotalRate (${r.couponRate}%) × DCF (${r.dcf.toFixed(4)}) = ${r.cashAmount.toLocaleString()}`}>
-                        {r.currency} {r.cashAmount.toLocaleString()}
+                      {/* CouponRate Cell with Hover Formula */}
+                      <td className="py-3 px-3 text-right text-teal-300 font-bold hover:bg-teal-950/60 rounded cursor-help" title={`Total Floating Coupon Rate: Fixing (${r.fixingRate.toFixed(4)}%) + Spread (${r.spreadBps}bp) = ${r.couponRate.toFixed(4)}%`}>
+                        {r.couponRate > 0 ? `${r.couponRate.toFixed(4)}%` : '—'}
                       </td>
 
                       <td className="py-3 px-3 text-center font-bold">
