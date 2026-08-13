@@ -435,6 +435,29 @@ export default function TradeAmendment({ onAmendmentComplete }: TradeAmendmentPr
       {loadedTrade && (
         <div className="space-y-6">
 
+          {/* Final Status Warning Alert */}
+          {(loadedTrade.status === 'TERMINATED' || loadedTrade.status === 'MATURED' || loadedTrade.status === 'CANCELLED') && (
+            <div className="p-3 bg-amber-950/60 border border-amber-700/80 rounded-xl text-amber-300 font-mono text-xs flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>
+                  <strong>Notice:</strong> Trade <code className="text-white font-bold">{loadedTrade.tradeId}</code> is currently marked as <strong className="text-rose-400">{loadedTrade.status}</strong>. Amendments on final-state trades require re-activation.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setAmendments((prev) => ({ ...prev, status: 'AMENDED' }));
+                  setLoadedTrade((prev) => prev ? { ...prev, status: 'AMENDED' } : null);
+                  setSuccess(`Trade ${loadedTrade.tradeId} status re-activated to AMENDED for edits.`);
+                }}
+                className="px-3 py-1 bg-amber-600 hover:bg-amber-500 text-white rounded font-sans font-bold text-[11px] transition-all cursor-pointer shadow shrink-0"
+              >
+                Re-activate for Edits
+              </button>
+            </div>
+          )}
+
           {/* Header Summary Ribbon */}
           <div className="bg-[#12141a] border border-indigo-900/60 rounded-xl p-4 font-mono">
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
