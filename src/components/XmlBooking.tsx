@@ -2343,21 +2343,47 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                 Pay / Receive Structure
               </label>
               <select
-                value={leg1Direction === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED'}
+                value={
+                  leg1Type === 'FLOATING' && leg2Type === 'FLOATING'
+                    ? (leg1Direction === 'PAY' ? 'PAY_FLOAT_REC_FLOAT' : 'REC_FLOAT_PAY_FLOAT')
+                    : (leg1Direction === 'PAY' && leg1Type === 'FIXED' ? 'PAY_FIXED' : leg1Direction === 'PAY' && leg1Type === 'FLOATING' ? 'PAY_FLOAT_REC_FIXED' : 'RECEIVE_FIXED')
+                }
                 onChange={(e) => {
                   const val = e.target.value;
                   if (val === 'PAY_FIXED') {
+                    setLeg1Type('FIXED');
                     setLeg1Direction('PAY');
+                    setLeg2Type('FLOATING');
                     setLeg2Direction('RECEIVE');
-                  } else {
+                  } else if (val === 'RECEIVE_FIXED') {
+                    setLeg1Type('FIXED');
                     setLeg1Direction('RECEIVE');
+                    setLeg2Type('FLOATING');
                     setLeg2Direction('PAY');
+                  } else if (val === 'PAY_FLOAT_REC_FLOAT') {
+                    setLeg1Type('FLOATING');
+                    setLeg1Direction('PAY');
+                    setLeg2Type('FLOATING');
+                    setLeg2Direction('RECEIVE');
+                  } else if (val === 'REC_FLOAT_PAY_FLOAT') {
+                    setLeg1Type('FLOATING');
+                    setLeg1Direction('RECEIVE');
+                    setLeg2Type('FLOATING');
+                    setLeg2Direction('PAY');
+                  } else if (val === 'PAY_FLOAT_REC_FIXED') {
+                    setLeg1Type('FLOATING');
+                    setLeg1Direction('PAY');
+                    setLeg2Type('FIXED');
+                    setLeg2Direction('RECEIVE');
                   }
                 }}
                 className="w-full bg-[#16181d] border border-amber-500/80 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-amber-400 cursor-pointer"
               >
-                <option value="PAY_FIXED">PAY FIXED / RECEIVE FLOAT (Pay Leg 1 / Rec Leg 2)</option>
-                <option value="RECEIVE_FIXED">RECEIVE FIXED / PAY FLOAT (Rec Leg 1 / Pay Leg 2)</option>
+                <option value="PAY_FIXED">PAY FIXED / RECEIVE FLOAT (Pay Fixed Leg 1 / Rec Float Leg 2)</option>
+                <option value="RECEIVE_FIXED">RECEIVE FIXED / PAY FLOAT (Rec Fixed Leg 1 / Pay Float Leg 2)</option>
+                <option value="PAY_FLOAT_REC_FLOAT">⚡ PAY FLOAT / RECEIVE FLOAT (Pay SOFR/EURIBOR L1 / Rec SOFR L2 Basis Swap)</option>
+                <option value="REC_FLOAT_PAY_FLOAT">⚡ RECEIVE FLOAT / PAY FLOAT (Rec SOFR/EURIBOR L1 / Pay SOFR L2 Basis Swap)</option>
+                <option value="PAY_FLOAT_REC_FIXED">PAY FLOAT / RECEIVE FIXED (Pay Float Leg 1 / Rec Fixed Leg 2)</option>
               </select>
             </div>
 

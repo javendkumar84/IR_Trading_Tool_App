@@ -555,21 +555,47 @@ export default function TradeAmendment({ onAmendmentComplete }: TradeAmendmentPr
                   <div>
                     <label className="block text-[10px] uppercase font-bold text-amber-400 mb-1">Pay / Receive Structure</label>
                     <select
-                      value={leg1Direction === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED'}
+                      value={
+                        leg1Type === 'FLOATING' && leg2Type === 'FLOATING'
+                          ? (leg1Direction === 'PAY' ? 'PAY_FLOAT_REC_FLOAT' : 'REC_FLOAT_PAY_FLOAT')
+                          : (leg1Direction === 'PAY' && leg1Type === 'FIXED' ? 'PAY_FIXED' : leg1Direction === 'PAY' && leg1Type === 'FLOATING' ? 'PAY_FLOAT_REC_FIXED' : 'RECEIVE_FIXED')
+                      }
                       onChange={(e) => {
                         const val = e.target.value;
                         if (val === 'PAY_FIXED') {
+                          setLeg1Type('FIXED');
                           setLeg1Direction('PAY');
+                          setLeg2Type('FLOATING');
                           setLeg2Direction('RECEIVE');
-                        } else {
+                        } else if (val === 'RECEIVE_FIXED') {
+                          setLeg1Type('FIXED');
                           setLeg1Direction('RECEIVE');
+                          setLeg2Type('FLOATING');
                           setLeg2Direction('PAY');
+                        } else if (val === 'PAY_FLOAT_REC_FLOAT') {
+                          setLeg1Type('FLOATING');
+                          setLeg1Direction('PAY');
+                          setLeg2Type('FLOATING');
+                          setLeg2Direction('RECEIVE');
+                        } else if (val === 'REC_FLOAT_PAY_FLOAT') {
+                          setLeg1Type('FLOATING');
+                          setLeg1Direction('RECEIVE');
+                          setLeg2Type('FLOATING');
+                          setLeg2Direction('PAY');
+                        } else if (val === 'PAY_FLOAT_REC_FIXED') {
+                          setLeg1Type('FLOATING');
+                          setLeg1Direction('PAY');
+                          setLeg2Type('FIXED');
+                          setLeg2Direction('RECEIVE');
                         }
                       }}
                       className="w-full bg-[#16181d] border border-amber-600 rounded p-2 text-sm text-white font-mono font-bold cursor-pointer"
                     >
-                      <option value="PAY_FIXED">PAY FIXED / RECEIVE FLOAT (Pay L1 / Rec L2)</option>
-                      <option value="RECEIVE_FIXED">RECEIVE FIXED / PAY FLOAT (Rec L1 / Pay L2)</option>
+                      <option value="PAY_FIXED">PAY FIXED / RECEIVE FLOAT (Pay Fixed L1 / Rec Float L2)</option>
+                      <option value="RECEIVE_FIXED">RECEIVE FIXED / PAY FLOAT (Rec Fixed L1 / Pay Float L2)</option>
+                      <option value="PAY_FLOAT_REC_FLOAT">⚡ PAY FLOAT / RECEIVE FLOAT (Float/Float Basis Swap)</option>
+                      <option value="REC_FLOAT_PAY_FLOAT">⚡ RECEIVE FLOAT / PAY FLOAT (Float/Float Basis Swap)</option>
+                      <option value="PAY_FLOAT_REC_FIXED">PAY FLOAT / RECEIVE FIXED (Pay Float L1 / Rec Fixed L2)</option>
                     </select>
                   </div>
 
