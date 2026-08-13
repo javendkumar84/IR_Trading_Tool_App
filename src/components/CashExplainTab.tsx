@@ -2,28 +2,18 @@ import React, { useState, useMemo } from 'react';
 import {
   ReceiptText,
   Search,
-  Filter,
   Download,
-  Calendar,
-  DollarSign,
   CheckCircle2,
   Clock,
   HelpCircle,
   TrendingUp,
-  FileSpreadsheet,
   Layers,
-  ArrowUpRight,
-  ArrowDownRight,
-  RefreshCw,
+  Info,
   SlidersHorizontal,
-  ChevronRight,
-  Building,
-  ShieldCheck,
-  Zap,
-  Info
+  ChevronDown
 } from 'lucide-react';
 import { IRSwapTrade, Currency } from '../types';
-import { generateCashflowSchedule } from '../lib/cashflowGenerator';
+import { generateCashflowSchedule, generateIndependentLeg1Schedule, generateIndependentLeg2Schedule } from '../lib/cashflowGenerator';
 
 interface CashExplainTabProps {
   trades: IRSwapTrade[];
@@ -34,125 +24,183 @@ export type CashState = 'Paid' | 'Expected' | 'Unknown';
 
 export interface CashExplainRow {
   tradeId: string;
+  legId: 'LEG_1' | 'LEG_2' | 'UPFRONT';
   legName: string;
   periodNumber: number;
   startDate: string;
   endDate: string;
   payDate: string;
   paymentBasis: PaymentBasis | string;
-  dcf: number; // Day Count Fraction
+  dcf: number; // Day Count Fraction alpha
+  numberOfDays: number;
   notional: number;
   currency: Currency;
   resetDate: string; // Reset/Fixing Date
   fixingRate: number; // % e.g. 3.92%
   couponRate: number; // % e.g. 3.85%
+  spreadBps: number;
   cashAmount: number;
+  discountFactor: number;
+  discountedPV: number;
   state: CashState;
+  calculationFormula: string; // Dynamic math step explanation for hover tooltip
 }
 
 export const CashExplainTab: React.FC<CashExplainTabProps> = ({ trades }) => {
   const [selectedTradeId, setSelectedTradeId] = useState<string>(trades[0]?.tradeId || 'IRS-2026-000101');
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [legFilter, setLegFilter] = useState<'ALL' | 'LEG_1' | 'LEG_2'>('ALL');
   const [stateFilter, setStateFilter] = useState<'ALL' | 'Paid' | 'Expected' | 'Unknown'>('ALL');
-  const [valuationDate, setValuationDate] = useState<string>('2026-08-13');
+  const [valuationDate, setValuationDate] = useState<string>('2026-08-14');
 
   // Selected trade object
   const currentTrade = useMemo(() => {
     return trades.find(t => t.tradeId === selectedTradeId) || trades[0] || null;
   }, [trades, selectedTradeId]);
 
-  // Generate Cash Explain Breakdown Rows for the selected Trade ID
+  // Generate Explicit Leg 1 vs Leg 2 Cashflows for the selected Trade ID
   const cashExplainRows = useMemo<CashExplainRow[]>(() => {
     if (!currentTrade) return [];
 
-    const schedule = generateCashflowSchedule(currentTrade);
     const today = valuationDate;
-
     const rows: CashExplainRow[] = [];
 
-    // 1. Process upfront/premium/period 0 cashflows if any
-    (schedule.periods || []).forEach((p) => {
-      // Determine Settlement Cash State (Paid vs Expected vs Unknown)
+    // Extract independent schedules for Leg 1 and Leg 2
+    const leg1Sched = generateIndependentLeg1Schedule(currentTrade);
+    const leg2Sched = generateIndependentLeg2Schedule(currentTrade);
+
+    // 1. Leg 1 Flow Processing (Fixed / Structured Payoff Leg)
+    (leg1Sched.periods || []).forEach((p) => {
       let state: CashState = 'Expected';
-      if (p.paymentDate < today) {
+      const payD = p.payDate || p.paymentDate || p.endDate;
+      if (payD < today) {
         state = 'Paid';
-      } else if (p.paymentDate === today) {
+      } else if (payD === today) {
         state = 'Expected';
-      } else if (!p.fixingDate && p.type !== 'PREMIUM' && p.floatingFixingRate === 0) {
-        state = 'Unknown';
       }
 
-      // Format Payment Basis string as per IB standards
-      let basis: string = 'FIXED';
-      if (p.type === 'PREMIUM') {
-        basis = 'UPFRONT_PREMIUM';
-      } else if (p.floatingFixingRate !== undefined || p.fixingRate !== undefined) {
-        const floatIdx = currentTrade.floatingLeg?.index || currentTrade.leg2?.index || 'SOFR';
-        basis = `FLOATING_${floatIdx}`;
-      } else if (p.fixedCouponRate !== undefined) {
-        basis = 'FIXED';
-      }
+      const notional = p.notional || leg1Sched.notional || currentTrade.notionalUsd || 10000000;
+      const ccy = p.currency || leg1Sched.currency || 'USD';
+      const dcf = p.dayCountFraction || 0.5;
+      const cpnRate = p.ratePct ?? p.rate ?? currentTrade.fixedLeg?.fixedRate ?? currentTrade.parRate ?? 3.85;
+      const rawCash = p.cashflowAmount ?? p.cashflow ?? Math.round(notional * (cpnRate / 100) * dcf);
+      
+      const df = p.discountFactor || 0.98;
+      const pvVal = Math.round(rawCash * df);
 
-      const notionalVal = p.notional || p.fixedLegNotional || p.floatingLegNotional || schedule.notional || currentTrade.notionalUsd || 10000000;
-      const ccy = p.fixedLegCurrency || schedule.currency || 'USD';
-
-      // Fixings & Coupon Rates
-      const cpnRate = p.fixedCouponRate ?? p.couponRate ?? p.fixedRate ?? currentTrade.fixedLeg?.fixedRate ?? currentTrade.parRate ?? 0;
-      const fixRate = p.floatingFixingRate ?? p.fixingRate ?? p.floatingRate ?? 0;
+      // Formula breakdown string for hover tooltip
+      const formulaStr = `Leg 1 Period #${p.periodNumber}:\nNotional × CouponRate × DCF (alpha)\n= $${notional.toLocaleString()} × ${cpnRate.toFixed(4)}% × ${dcf.toFixed(4)}\n= ${ccy} ${rawCash.toLocaleString()}\nDiscounted PV: ${rawCash.toLocaleString()} × DF(${df.toFixed(4)}) = ${ccy} ${pvVal.toLocaleString()}`;
 
       rows.push({
         tradeId: currentTrade.tradeId,
-        legName: p.type === 'PREMIUM' ? 'Upfront Premium' : (p.description.includes('L2') ? 'Floating Leg' : 'Fixed Leg'),
+        legId: 'LEG_1',
+        legName: 'Leg 1 (Fixed / Structured)',
         periodNumber: p.periodNumber,
         startDate: p.startDate,
         endDate: p.endDate,
-        payDate: p.paymentDate,
-        paymentBasis: basis,
-        dcf: p.dayCountFraction,
-        notional: notionalVal,
+        payDate: payD,
+        paymentBasis: 'FIXED',
+        dcf,
+        numberOfDays: p.numberOfDays || 180,
+        notional,
         currency: ccy,
-        resetDate: p.resetStartDate || p.fixingDate || p.startDate,
-        fixingRate: parseFloat(fixRate.toFixed(4)),
+        resetDate: p.resetStartDate || p.startDate,
+        fixingRate: 0,
         couponRate: parseFloat(cpnRate.toFixed(4)),
-        cashAmount: p.netCashflow || p.discountedCashflow || 0,
-        state
+        spreadBps: 0,
+        cashAmount: rawCash,
+        discountFactor: df,
+        discountedPV: pvVal,
+        state,
+        calculationFormula: formulaStr
+      });
+    });
+
+    // 2. Leg 2 Flow Processing (Floating / Funding Index Leg)
+    (leg2Sched.periods || []).forEach((p) => {
+      let state: CashState = 'Expected';
+      const payD = p.payDate || p.paymentDate || p.endDate;
+      if (payD < today) {
+        state = 'Paid';
+      } else if (payD === today) {
+        state = 'Expected';
+      } else if (!p.fixingRate && p.ratePct === 0) {
+        state = 'Unknown';
+      }
+
+      const notional = p.notional || leg2Sched.notional || currentTrade.notionalUsd || 10000000;
+      const ccy = p.currency || leg2Sched.currency || 'USD';
+      const dcf = p.dayCountFraction || 0.25;
+      const floatIdx = currentTrade.floatingLeg?.index || currentTrade.leg2?.index || 'SOFR';
+      const fixRate = p.fixingRate ?? 3.90;
+      const sprd = p.spreadBps ?? currentTrade.floatingLeg?.spreadBps ?? 0;
+      const totalRate = p.ratePct ?? (fixRate + sprd / 100);
+      const rawCash = p.cashflowAmount ?? p.cashflow ?? Math.round(notional * (totalRate / 100) * dcf);
+      
+      const df = p.discountFactor || 0.985;
+      const pvVal = Math.round(rawCash * df);
+
+      // Formula breakdown string for hover tooltip
+      const formulaStr = `Leg 2 Period #${p.periodNumber}:\nNotional × (FixingRate + Spread) × DCF (alpha)\n= $${notional.toLocaleString()} × (${fixRate.toFixed(4)}% + ${sprd}bps) × ${dcf.toFixed(4)}\n= ${ccy} ${rawCash.toLocaleString()}\nDiscounted PV: ${rawCash.toLocaleString()} × DF(${df.toFixed(4)}) = ${ccy} ${pvVal.toLocaleString()}`;
+
+      rows.push({
+        tradeId: currentTrade.tradeId,
+        legId: 'LEG_2',
+        legName: 'Leg 2 (Floating / Funding)',
+        periodNumber: p.periodNumber,
+        startDate: p.startDate,
+        endDate: p.endDate,
+        payDate: payD,
+        paymentBasis: `FLOATING_${floatIdx}`,
+        dcf,
+        numberOfDays: p.numberOfDays || 90,
+        notional,
+        currency: ccy,
+        resetDate: p.resetStartDate || p.startDate,
+        fixingRate: parseFloat(fixRate.toFixed(4)),
+        couponRate: parseFloat(totalRate.toFixed(4)),
+        spreadBps: sprd,
+        cashAmount: rawCash,
+        discountFactor: df,
+        discountedPV: pvVal,
+        state,
+        calculationFormula: formulaStr
       });
     });
 
     return rows;
   }, [currentTrade, valuationDate]);
 
-  // Filtered rows
-  const filteredRows = useMemo(() => {
-    return cashExplainRows.filter(r => {
-      const matchesSearch =
-        r.paymentBasis.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        r.payDate.includes(searchTerm) ||
-        r.startDate.includes(searchTerm) ||
-        r.endDate.includes(searchTerm);
+  // Separate Leg 1 and Leg 2 rows
+  const leg1Rows = useMemo(() => {
+    return cashExplainRows.filter(r => r.legId === 'LEG_1').filter(r => {
+      const matchesSearch = r.paymentBasis.toLowerCase().includes(searchTerm.toLowerCase()) || r.payDate.includes(searchTerm) || r.startDate.includes(searchTerm);
       const matchesState = stateFilter === 'ALL' || r.state === stateFilter;
       return matchesSearch && matchesState;
     });
   }, [cashExplainRows, searchTerm, stateFilter]);
 
-  // Summary Metrics for Selected Trade ID
-  const summaryMetrics = useMemo(() => {
-    const totalCash = cashExplainRows.reduce((acc, r) => acc + r.cashAmount, 0);
-    const paidCash = cashExplainRows.filter(r => r.state === 'Paid').reduce((acc, r) => acc + r.cashAmount, 0);
-    const expectedCash = cashExplainRows.filter(r => r.state === 'Expected').reduce((acc, r) => acc + r.cashAmount, 0);
-    const unknownCount = cashExplainRows.filter(r => r.state === 'Unknown').length;
+  const leg2Rows = useMemo(() => {
+    return cashExplainRows.filter(r => r.legId === 'LEG_2').filter(r => {
+      const matchesSearch = r.paymentBasis.toLowerCase().includes(searchTerm.toLowerCase()) || r.payDate.includes(searchTerm) || r.startDate.includes(searchTerm);
+      const matchesState = stateFilter === 'ALL' || r.state === stateFilter;
+      return matchesSearch && matchesState;
+    });
+  }, [cashExplainRows, searchTerm, stateFilter]);
 
-    return { totalCash, paidCash, expectedCash, unknownCount };
-  }, [cashExplainRows]);
+  // Combined metrics
+  const leg1TotalCash = useMemo(() => leg1Rows.reduce((a, r) => a + r.cashAmount, 0), [leg1Rows]);
+  const leg2TotalCash = useMemo(() => leg2Rows.reduce((a, r) => a + r.cashAmount, 0), [leg2Rows]);
 
-  // Export Cash Explain CSV
+  // Export CSV
   const handleExportCsv = () => {
     if (!currentTrade) return;
-    const headers = ['Trade ID', 'Period', 'Leg Name', 'Start Date', 'End Date', 'Pay Date', 'Payment Basis', 'DCF (alpha)', 'Notional', 'Currency', 'Reset Date', 'Fixing Rate (%)', 'Coupon Rate (%)', 'Cash Amount', 'State'];
-    const csvRows = filteredRows.map(r => [
+    const headers = ['Trade ID', 'Leg ID', 'Leg Name', 'Period', 'Start Date', 'End Date', 'Pay Date', 'Payment Basis', 'DCF (alpha)', 'Notional', 'Currency', 'Reset Date', 'Fixing Rate (%)', 'Coupon Rate (%)', 'Cash Amount', 'State'];
+    const csvRows = [...leg1Rows, ...leg2Rows].map(r => [
       r.tradeId,
-      r.periodNumber,
+      r.legId,
       `"${r.legName}"`,
+      r.periodNumber,
       r.startDate,
       r.endDate,
       r.payDate,
@@ -172,7 +220,7 @@ export const CashExplainTab: React.FC<CashExplainTabProps> = ({ trades }) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Cash_Explain_Details_${currentTrade.tradeId}_${valuationDate}.csv`;
+    a.download = `Cash_Explain_LegBreakdown_${currentTrade.tradeId}_${valuationDate}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -189,19 +237,19 @@ export const CashExplainTab: React.FC<CashExplainTabProps> = ({ trades }) => {
           <div>
             <div className="flex items-center gap-2.5">
               <h2 className="text-xl font-extrabold text-white tracking-wide font-sans">
-                Trade Cash Explain Details Repository
+                Trade Cash Explain Details Repository (Leg 1 vs Leg 2 Separated)
               </h2>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-cyan-950 text-cyan-300 border border-cyan-700 uppercase">
                 INVESTMENT BANKING CASH ATTRIBUTION
               </span>
             </div>
             <p className="text-xs text-gray-400 mt-1 font-sans">
-              Market-standard trade-level cash settlement breakdown by StartDate, EndDate, PayDate, PaymentBasis, DCF, ResetDate, FixingRate, and State.
+              Separated Leg 1 vs Leg 2 cashflows with interactive hover calculation popups for formula breakdown.
             </p>
           </div>
         </div>
 
-        {/* Trade Selector & Valuation Date Controls */}
+        {/* Trade Selector & Valuation Controls */}
         <div className="flex flex-wrap items-center gap-3 font-mono text-xs">
           <div className="flex items-center gap-2 bg-[#121624] border border-cyan-800/80 rounded-xl px-3 py-1.5 shadow-inner">
             <span className="text-gray-400 font-sans font-bold">Select Trade ID:</span>
@@ -230,7 +278,7 @@ export const CashExplainTab: React.FC<CashExplainTabProps> = ({ trades }) => {
         </div>
       </div>
 
-      {/* Trade Level Executive Summary Banner */}
+      {/* Trade Level Executive Leg Overview */}
       {currentTrade && (
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 font-sans text-xs">
           <div className="p-4 bg-[#0e1220] border border-cyan-900/60 rounded-xl space-y-1">
@@ -241,33 +289,33 @@ export const CashExplainTab: React.FC<CashExplainTabProps> = ({ trades }) => {
             </div>
           </div>
 
-          <div className="p-4 bg-[#0e1220] border border-emerald-900/60 rounded-xl space-y-1 font-mono">
-            <div className="text-[10px] font-bold text-gray-400 uppercase font-sans">Total Paid Cashflows</div>
-            <div className="text-base font-extrabold text-emerald-400">
-              {cashExplainRows[0]?.currency || 'USD'} {summaryMetrics.paidCash.toLocaleString()}
+          <div className="p-4 bg-[#0e1220] border border-indigo-900/60 rounded-xl space-y-1 font-mono">
+            <div className="text-[10px] font-bold text-indigo-400 uppercase font-sans">Leg 1 Cashflow Sum</div>
+            <div className={`text-base font-extrabold ${leg1TotalCash >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+              {cashExplainRows[0]?.currency || 'USD'} {leg1TotalCash.toLocaleString()}
             </div>
-            <div className="text-[10px] text-gray-400">Historical settled & cleared cashflows</div>
+            <div className="text-[10px] text-gray-400">Fixed / Structured Payoff Cashflows</div>
           </div>
 
-          <div className="p-4 bg-[#0e1220] border border-blue-900/60 rounded-xl space-y-1 font-mono">
-            <div className="text-[10px] font-bold text-gray-400 uppercase font-sans">Total Expected Cashflows</div>
-            <div className="text-base font-extrabold text-blue-300">
-              {cashExplainRows[0]?.currency || 'USD'} {summaryMetrics.expectedCash.toLocaleString()}
+          <div className="p-4 bg-[#0e1220] border border-teal-900/60 rounded-xl space-y-1 font-mono">
+            <div className="text-[10px] font-bold text-teal-400 uppercase font-sans">Leg 2 Cashflow Sum</div>
+            <div className={`text-base font-extrabold ${leg2TotalCash >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+              {cashExplainRows[0]?.currency || 'USD'} {leg2TotalCash.toLocaleString()}
             </div>
-            <div className="text-[10px] text-gray-400">Future scheduled cash settlements</div>
+            <div className="text-[10px] text-gray-400">Floating / Funding Benchmark Index</div>
           </div>
 
           <div className="p-4 bg-[#0e1220] border border-amber-900/60 rounded-xl space-y-1 font-mono">
-            <div className="text-[10px] font-bold text-gray-400 uppercase font-sans">Net Cash Settlement Sum</div>
-            <div className={`text-base font-extrabold ${summaryMetrics.totalCash >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-              {cashExplainRows[0]?.currency || 'USD'} {summaryMetrics.totalCash.toLocaleString()}
+            <div className="text-[10px] font-bold text-gray-400 uppercase font-sans">Net Cash Settlement</div>
+            <div className={`text-base font-extrabold ${(leg1TotalCash + leg2TotalCash) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+              {cashExplainRows[0]?.currency || 'USD'} {(leg1TotalCash + leg2TotalCash).toLocaleString()}
             </div>
-            <div className="text-[10px] text-gray-400">Sum over all periods (Paid + Expected)</div>
+            <div className="text-[10px] text-gray-400">Combined Leg 1 + Leg 2 Cash Sum</div>
           </div>
         </div>
       )}
 
-      {/* Filter Bar & Export Actions */}
+      {/* Controls & Filter Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 font-mono text-xs bg-[#0c0f1a] p-4 border border-gray-800 rounded-xl">
         <div className="flex items-center gap-3 flex-1">
           <div className="relative flex-1 max-w-md">
@@ -281,6 +329,29 @@ export const CashExplainTab: React.FC<CashExplainTabProps> = ({ trades }) => {
             />
           </div>
 
+          {/* Leg View Filter Pills */}
+          <div className="flex items-center gap-1 bg-[#141826] p-1 rounded-lg border border-gray-800">
+            <button
+              onClick={() => setLegFilter('ALL')}
+              className={`px-3 py-1 rounded text-xs font-bold transition-all cursor-pointer ${legFilter === 'ALL' ? 'bg-cyan-600 text-white' : 'text-gray-400 hover:text-white'}`}
+            >
+              All Legs
+            </button>
+            <button
+              onClick={() => setLegFilter('LEG_1')}
+              className={`px-3 py-1 rounded text-xs font-bold transition-all cursor-pointer ${legFilter === 'LEG_1' ? 'bg-indigo-600 text-white' : 'text-gray-400 hover:text-white'}`}
+            >
+              Leg 1 Only
+            </button>
+            <button
+              onClick={() => setLegFilter('LEG_2')}
+              className={`px-3 py-1 rounded text-xs font-bold transition-all cursor-pointer ${legFilter === 'LEG_2' ? 'bg-teal-600 text-white' : 'text-gray-400 hover:text-white'}`}
+            >
+              Leg 2 Only
+            </button>
+          </div>
+
+          {/* State Filter Pills */}
           <div className="flex items-center gap-1 bg-[#141826] p-1 rounded-lg border border-gray-800">
             {(['ALL', 'Paid', 'Expected', 'Unknown'] as const).map((st) => (
               <button
@@ -313,87 +384,229 @@ export const CashExplainTab: React.FC<CashExplainTabProps> = ({ trades }) => {
         </button>
       </div>
 
-      {/* Tabulated Market Standard Cash Explain Table */}
-      <div className="bg-[#0a0d16] border border-gray-800 rounded-2xl overflow-hidden shadow-2xl font-mono">
-        <div className="px-6 py-4 bg-[#101424] border-b border-gray-800 flex items-center justify-between font-sans">
-          <h3 className="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-2">
-            <ReceiptText className="w-4 h-4 text-cyan-400" />
-            Cash Explain Details Table — Trade ID: <strong className="text-cyan-300 font-mono">{selectedTradeId}</strong>
-          </h3>
-          <span className="text-[10px] text-cyan-300 font-mono">Showing {filteredRows.length} Cash Periods</span>
-        </div>
+      {/* SECTION 1: LEG 1 CASHFLOW SCHEDULE TABLE */}
+      {(legFilter === 'ALL' || legFilter === 'LEG_1') && (
+        <div className="bg-[#0a0d16] border border-indigo-900/80 rounded-2xl overflow-hidden shadow-2xl font-mono space-y-0">
+          <div className="px-6 py-4 bg-[#101426] border-b border-indigo-900/60 flex items-center justify-between font-sans">
+            <h3 className="text-xs font-bold text-indigo-300 uppercase tracking-wider flex items-center gap-2">
+              <Layers className="w-4 h-4 text-indigo-400" />
+              LEG 1 CASHFLOWS (Fixed / Structured Payoff Leg) — Trade ID: <strong className="text-white font-mono">{selectedTradeId}</strong>
+            </h3>
+            <span className="text-[10px] text-indigo-300 font-mono">Total Leg 1 Net: {cashExplainRows[0]?.currency || 'USD'} {leg1TotalCash.toLocaleString()}</span>
+          </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="bg-[#121628] text-gray-400 border-b border-gray-800 text-[11px] font-mono uppercase">
-                <th className="py-3 px-3 text-center">#</th>
-                <th className="py-3 px-3">StartDate</th>
-                <th className="py-3 px-3">EndDate</th>
-                <th className="py-3 px-3 text-cyan-300 font-bold">PayDate</th>
-                <th className="py-3 px-3 text-indigo-300">PaymentBasis</th>
-                <th className="py-3 px-3 text-center">DCF ($\alpha$)</th>
-                <th className="py-3 px-3 text-right">Notional</th>
-                <th className="py-3 px-3 text-center">Ccy</th>
-                <th className="py-3 px-3">ResetDate</th>
-                <th className="py-3 px-3 text-right text-cyan-300">FixingRate</th>
-                <th className="py-3 px-3 text-right text-indigo-300">CouponRate</th>
-                <th className="py-3 px-3 text-right font-extrabold text-emerald-400">CashAmount</th>
-                <th className="py-3 px-3 text-center">State</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-850">
-              {filteredRows.length > 0 ? (
-                filteredRows.map((r, idx) => (
-                  <tr key={idx} className="hover:bg-[#131728]/80 transition-colors">
-                    <td className="py-3 px-3 text-center font-bold text-gray-500">{r.periodNumber}</td>
-                    <td className="py-3 px-3 text-gray-300">{r.startDate}</td>
-                    <td className="py-3 px-3 text-gray-300">{r.endDate}</td>
-                    <td className="py-3 px-3 text-cyan-300 font-bold">{r.payDate}</td>
-                    <td className="py-3 px-3 font-bold">
-                      <span className="px-2 py-0.5 rounded text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-700/60 font-mono">
-                        {r.paymentBasis}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3 text-center text-gray-300">{r.dcf.toFixed(4)}</td>
-                    <td className="py-3 px-3 text-right text-white font-bold">{r.notional.toLocaleString()}</td>
-                    <td className="py-3 px-3 text-center font-bold text-gray-400">{r.currency}</td>
-                    <td className="py-3 px-3 text-gray-300">{r.resetDate}</td>
-                    <td className="py-3 px-3 text-right text-cyan-300 font-bold">{r.fixingRate > 0 ? `${r.fixingRate.toFixed(4)}%` : '—'}</td>
-                    <td className="py-3 px-3 text-right text-indigo-300 font-bold">{r.couponRate > 0 ? `${r.couponRate.toFixed(4)}%` : '—'}</td>
-                    <td className={`py-3 px-3 text-right font-extrabold text-sm ${r.cashAmount >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      {r.currency} {r.cashAmount.toLocaleString()}
-                    </td>
-                    <td className="py-3 px-3 text-center font-bold">
-                      {r.state === 'Paid' && (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-700 flex items-center justify-center gap-1">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Paid
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-[#12162a] text-indigo-300 border-b border-indigo-900/60 text-[11px] font-mono uppercase">
+                  <th className="py-3 px-3 text-center">#</th>
+                  <th className="py-3 px-3">StartDate</th>
+                  <th className="py-3 px-3">EndDate</th>
+                  <th className="py-3 px-3 text-cyan-300 font-bold">PayDate</th>
+                  <th className="py-3 px-3">PaymentBasis</th>
+                  <th className="py-3 px-3 text-center">DCF ($\alpha$)</th>
+                  <th className="py-3 px-3 text-right">Notional</th>
+                  <th className="py-3 px-3 text-center">Ccy</th>
+                  <th className="py-3 px-3">ResetDate</th>
+                  <th className="py-3 px-3 text-right">FixingRate</th>
+                  <th className="py-3 px-3 text-right text-indigo-300 font-bold">CouponRate</th>
+                  <th className="py-3 px-3 text-right font-extrabold text-emerald-400">CashAmount</th>
+                  <th className="py-3 px-3 text-center">State</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-850">
+                {leg1Rows.length > 0 ? (
+                  leg1Rows.map((r, idx) => (
+                    <tr key={idx} className="hover:bg-[#131830] transition-colors relative group">
+                      <td className="py-3 px-3 text-center font-bold text-gray-400">
+                        {r.periodNumber}
+                        
+                        {/* Interactive Hover Popup Box displaying exact Math Step Calculation */}
+                        <div className="absolute left-10 top-0 hidden group-hover:block z-50 w-80 bg-[#090b14] border border-indigo-500 rounded-xl p-3.5 shadow-2xl text-left font-sans text-xs space-y-1.5 pointer-events-none">
+                          <div className="flex items-center justify-between text-indigo-300 font-bold font-mono border-b border-indigo-900 pb-1">
+                            <span>HOVER CALCULATED FORMULA</span>
+                            <span className="text-[10px] bg-indigo-950 px-1.5 py-0.5 rounded border border-indigo-700">Period #{r.periodNumber}</span>
+                          </div>
+                          <pre className="text-[10px] font-mono text-gray-200 whitespace-pre-wrap leading-relaxed">
+                            {r.calculationFormula}
+                          </pre>
+                        </div>
+                      </td>
+
+                      <td className="py-3 px-3 text-gray-300">{r.startDate}</td>
+                      <td className="py-3 px-3 text-gray-300">{r.endDate}</td>
+                      <td className="py-3 px-3 text-cyan-300 font-bold">{r.payDate}</td>
+                      <td className="py-3 px-3 font-bold">
+                        <span className="px-2 py-0.5 rounded text-[10px] bg-indigo-950 text-indigo-300 border border-indigo-700/60 font-mono">
+                          {r.paymentBasis}
                         </span>
-                      )}
-                      {r.state === 'Expected' && (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-blue-950 text-blue-300 border border-blue-700 flex items-center justify-center gap-1">
-                          <Clock className="w-3 h-3 text-blue-400" /> Expected
-                        </span>
-                      )}
-                      {r.state === 'Unknown' && (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-amber-950 text-amber-400 border border-amber-700 flex items-center justify-center gap-1">
-                          <HelpCircle className="w-3 h-3 text-amber-400" /> Unknown
-                        </span>
-                      )}
+                      </td>
+
+                      {/* DCF Cell with Hover Formula */}
+                      <td className="py-3 px-3 text-center text-indigo-300 font-bold hover:bg-indigo-950/60 rounded cursor-help" title={`Day Count Fraction: ${r.numberOfDays} days / 360 = ${r.dcf.toFixed(4)}`}>
+                        {r.dcf.toFixed(4)}
+                      </td>
+
+                      <td className="py-3 px-3 text-right text-white font-bold">{r.notional.toLocaleString()}</td>
+                      <td className="py-3 px-3 text-center font-bold text-gray-400">{r.currency}</td>
+                      <td className="py-3 px-3 text-gray-300">{r.resetDate}</td>
+                      <td className="py-3 px-3 text-right text-gray-500">{r.fixingRate > 0 ? `${r.fixingRate.toFixed(4)}%` : '—'}</td>
+
+                      {/* Coupon Rate Cell with Hover Formula */}
+                      <td className="py-3 px-3 text-right text-indigo-300 font-bold hover:bg-indigo-950/60 rounded cursor-help" title={`Leg 1 Coupon Rate: ${r.couponRate.toFixed(4)}%`}>
+                        {r.couponRate.toFixed(4)}%
+                      </td>
+
+                      {/* CashAmount Cell with Hover Formula */}
+                      <td className={`py-3 px-3 text-right font-extrabold text-sm hover:bg-emerald-950/60 rounded cursor-help ${r.cashAmount >= 0 ? 'text-emerald-400' : 'text-rose-400'}`} title={`CashAmount Formula: Notional (${r.notional.toLocaleString()}) × CouponRate (${r.couponRate}%) × DCF (${r.dcf.toFixed(4)}) = ${r.cashAmount.toLocaleString()}`}>
+                        {r.currency} {r.cashAmount.toLocaleString()}
+                      </td>
+
+                      <td className="py-3 px-3 text-center font-bold">
+                        {r.state === 'Paid' && (
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-700 flex items-center justify-center gap-1">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Paid
+                          </span>
+                        )}
+                        {r.state === 'Expected' && (
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-blue-950 text-blue-300 border border-blue-700 flex items-center justify-center gap-1">
+                            <Clock className="w-3 h-3 text-blue-400" /> Expected
+                          </span>
+                        )}
+                        {r.state === 'Unknown' && (
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-amber-950 text-amber-400 border border-amber-700 flex items-center justify-center gap-1">
+                            <HelpCircle className="w-3 h-3 text-amber-400" /> Unknown
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={13} className="py-8 text-center text-gray-500 font-sans">
+                      No Leg 1 cash explain records found.
                     </td>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={13} className="py-8 text-center text-gray-500 font-sans">
-                    No cash explain records found for Trade ID <strong className="text-white">{selectedTradeId}</strong>.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* SECTION 2: LEG 2 CASHFLOW SCHEDULE TABLE */}
+      {(legFilter === 'ALL' || legFilter === 'LEG_2') && (
+        <div className="bg-[#0a0d16] border border-teal-900/80 rounded-2xl overflow-hidden shadow-2xl font-mono space-y-0">
+          <div className="px-6 py-4 bg-[#101924] border-b border-teal-900/60 flex items-center justify-between font-sans">
+            <h3 className="text-xs font-bold text-teal-300 uppercase tracking-wider flex items-center gap-2">
+              <Layers className="w-4 h-4 text-teal-400" />
+              LEG 2 CASHFLOWS (Floating / Funding Index Leg) — Trade ID: <strong className="text-white font-mono">{selectedTradeId}</strong>
+            </h3>
+            <span className="text-[10px] text-teal-300 font-mono">Total Leg 2 Net: {cashExplainRows[0]?.currency || 'USD'} {leg2TotalCash.toLocaleString()}</span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-[#121c2a] text-teal-300 border-b border-teal-900/60 text-[11px] font-mono uppercase">
+                  <th className="py-3 px-3 text-center">#</th>
+                  <th className="py-3 px-3">StartDate</th>
+                  <th className="py-3 px-3">EndDate</th>
+                  <th className="py-3 px-3 text-cyan-300 font-bold">PayDate</th>
+                  <th className="py-3 px-3">PaymentBasis</th>
+                  <th className="py-3 px-3 text-center">DCF ($\alpha$)</th>
+                  <th className="py-3 px-3 text-right">Notional</th>
+                  <th className="py-3 px-3 text-center">Ccy</th>
+                  <th className="py-3 px-3">ResetDate</th>
+                  <th className="py-3 px-3 text-right text-cyan-300 font-bold">FixingRate</th>
+                  <th className="py-3 px-3 text-right text-teal-300 font-bold">TotalRate</th>
+                  <th className="py-3 px-3 text-right font-extrabold text-emerald-400">CashAmount</th>
+                  <th className="py-3 px-3 text-center">State</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-850">
+                {leg2Rows.length > 0 ? (
+                  leg2Rows.map((r, idx) => (
+                    <tr key={idx} className="hover:bg-[#132030] transition-colors relative group">
+                      <td className="py-3 px-3 text-center font-bold text-gray-400">
+                        {r.periodNumber}
+
+                        {/* Interactive Hover Popup Box displaying exact Math Step Calculation */}
+                        <div className="absolute left-10 top-0 hidden group-hover:block z-50 w-80 bg-[#090b14] border border-teal-500 rounded-xl p-3.5 shadow-2xl text-left font-sans text-xs space-y-1.5 pointer-events-none">
+                          <div className="flex items-center justify-between text-teal-300 font-bold font-mono border-b border-teal-900 pb-1">
+                            <span>HOVER CALCULATED FORMULA</span>
+                            <span className="text-[10px] bg-teal-950 px-1.5 py-0.5 rounded border border-teal-700">Period #{r.periodNumber}</span>
+                          </div>
+                          <pre className="text-[10px] font-mono text-gray-200 whitespace-pre-wrap leading-relaxed">
+                            {r.calculationFormula}
+                          </pre>
+                        </div>
+                      </td>
+
+                      <td className="py-3 px-3 text-gray-300">{r.startDate}</td>
+                      <td className="py-3 px-3 text-gray-300">{r.endDate}</td>
+                      <td className="py-3 px-3 text-cyan-300 font-bold">{r.payDate}</td>
+                      <td className="py-3 px-3 font-bold">
+                        <span className="px-2 py-0.5 rounded text-[10px] bg-teal-950 text-teal-300 border border-teal-700/60 font-mono">
+                          {r.paymentBasis}
+                        </span>
+                      </td>
+
+                      {/* DCF Cell with Hover Formula */}
+                      <td className="py-3 px-3 text-center text-teal-300 font-bold hover:bg-teal-950/60 rounded cursor-help" title={`Day Count Fraction: ${r.numberOfDays} days / 360 = ${r.dcf.toFixed(4)}`}>
+                        {r.dcf.toFixed(4)}
+                      </td>
+
+                      <td className="py-3 px-3 text-right text-white font-bold">{r.notional.toLocaleString()}</td>
+                      <td className="py-3 px-3 text-center font-bold text-gray-400">{r.currency}</td>
+                      <td className="py-3 px-3 text-gray-300">{r.resetDate}</td>
+
+                      {/* Fixing Rate Cell with Hover Formula */}
+                      <td className="py-3 px-3 text-right text-cyan-300 font-bold hover:bg-cyan-950/60 rounded cursor-help" title={`Benchmark Fixing Rate: ${r.fixingRate.toFixed(4)}%`}>
+                        {r.fixingRate > 0 ? `${r.fixingRate.toFixed(4)}%` : '—'}
+                      </td>
+
+                      {/* Total Rate Cell with Hover Formula */}
+                      <td className="py-3 px-3 text-right text-teal-300 font-bold hover:bg-teal-950/60 rounded cursor-help" title={`Total Floating Rate: Fixing (${r.fixingRate.toFixed(4)}%) + Spread (${r.spreadBps}bp) = ${r.couponRate.toFixed(4)}%`}>
+                        {r.couponRate.toFixed(4)}%
+                      </td>
+
+                      {/* CashAmount Cell with Hover Formula */}
+                      <td className={`py-3 px-3 text-right font-extrabold text-sm hover:bg-emerald-950/60 rounded cursor-help ${r.cashAmount >= 0 ? 'text-emerald-400' : 'text-rose-400'}`} title={`CashAmount Formula: Notional (${r.notional.toLocaleString()}) × TotalRate (${r.couponRate}%) × DCF (${r.dcf.toFixed(4)}) = ${r.cashAmount.toLocaleString()}`}>
+                        {r.currency} {r.cashAmount.toLocaleString()}
+                      </td>
+
+                      <td className="py-3 px-3 text-center font-bold">
+                        {r.state === 'Paid' && (
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-emerald-950 text-emerald-400 border border-emerald-700 flex items-center justify-center gap-1">
+                            <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Paid
+                          </span>
+                        )}
+                        {r.state === 'Expected' && (
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-blue-950 text-blue-300 border border-blue-700 flex items-center justify-center gap-1">
+                            <Clock className="w-3 h-3 text-blue-400" /> Expected
+                          </span>
+                        )}
+                        {r.state === 'Unknown' && (
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-amber-950 text-amber-400 border border-amber-700 flex items-center justify-center gap-1">
+                            <HelpCircle className="w-3 h-3 text-amber-400" /> Unknown
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={13} className="py-8 text-center text-gray-500 font-sans">
+                      No Leg 2 cash explain records found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
     </div>
   );
