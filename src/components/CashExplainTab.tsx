@@ -409,7 +409,7 @@ export const CashExplainTab: React.FC<CashExplainTabProps> = ({ trades }) => {
                   <th className="py-3 px-3 text-right">Notional</th>
                   <th className="py-3 px-3 text-center">Ccy</th>
                   <th className="py-3 px-3">ResetDate</th>
-                  <th className="py-3 px-3 text-right">FixingRate</th>
+                  <th className="py-3 px-3 text-right">Fixing Rate (%)</th>
                   <th className="py-3 px-3 text-right text-indigo-300 font-bold">CouponRate</th>
                   <th className="py-3 px-3 text-right font-extrabold text-emerald-400">CashAmount</th>
                   <th className="py-3 px-3 text-center">State</th>
@@ -519,7 +519,7 @@ export const CashExplainTab: React.FC<CashExplainTabProps> = ({ trades }) => {
                   <th className="py-3 px-3 text-right">Notional</th>
                   <th className="py-3 px-3 text-center">Ccy</th>
                   <th className="py-3 px-3">ResetDate</th>
-                  <th className="py-3 px-3 text-right text-cyan-300 font-bold">FixingRate</th>
+                  <th className="py-3 px-3 text-right text-cyan-300 font-bold">Fixing Rate (%)</th>
                   <th className="py-3 px-3 text-right font-extrabold text-emerald-400">CashAmount</th>
                   <th className="py-3 px-3 text-right text-teal-300 font-bold">CouponRate</th>
                   <th className="py-3 px-3 text-center">State</th>

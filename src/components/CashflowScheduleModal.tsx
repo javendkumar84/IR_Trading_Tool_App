@@ -35,7 +35,7 @@ export const CashflowScheduleModal: React.FC<CashflowScheduleModalProps> = ({ tr
       'Day Count Convention',
       'Notional',
       'Fixed Coupon Rate (%)',
-      'Float Fixing Rate (%)',
+      'Fixing Rate (%)',
       'Float Spread (bps)',
       'Float Total Rate (%)',
       'Fixed Cashflow',
@@ -291,7 +291,7 @@ export const CashflowScheduleModal: React.FC<CashflowScheduleModalProps> = ({ tr
                       <th className="py-3 px-3 text-center">Days</th>
                       <th className="py-3 px-3 text-center">Fraction (α)</th>
                       <th className="py-3 px-3 text-right text-blue-400">Fixed Coupon Rate (%)</th>
-                      <th className="py-3 px-3 text-right text-amber-400">Float Fixing Rate (%)</th>
+                      <th className="py-3 px-3 text-right text-amber-400">Fixing Rate (%)</th>
                       <th className="py-3 px-3 text-right text-emerald-400">Float Coupon Rate (%)</th>
                       <th className="py-3 px-3 text-right">Fixed Leg Cashflow</th>
                       <th className="py-3 px-3 text-right">Float Leg Cashflow</th>
