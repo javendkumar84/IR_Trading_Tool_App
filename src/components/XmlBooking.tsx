@@ -871,9 +871,10 @@ interface XmlBookingProps {
   traderUser: string;
   onTradeBooked: (trade: IRSwapTrade) => void;
   onOpenMarketData?: () => void;
+  onOpenBlotter?: () => void;
 }
 
-export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooked, onOpenMarketData }) => {
+export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooked, onOpenMarketData, onOpenBlotter }) => {
   const [selectedProduct, setSelectedProduct] = useState<ProductType>('IRS');
   const [showXmlModal, setShowXmlModal] = useState<boolean>(false);
 
@@ -888,6 +889,11 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
     SNOWBALL: 'BERMUDAN_RATCHET_VOL',
     FX_FORWARD: 'GARMAN_KOHLHAGEN_CIP',
     FX_OPTION: 'GARMAN_KOHLHAGEN_SMILE',
+    BOND: 'DISCOUNTED_CASH_FLOW',
+    FRA: 'FORWARD_RATE_AGREEMENT_DCF',
+    DEPOSIT: 'SIMPLE_COMPOUNDED_DCF',
+    REPO: 'COLLATERALIZED_REPO_DCF',
+    DUAL_DIGITAL: 'BI_DIGITAL_BLACK_SCHOLES',
   });
 
   // Counterparty Store State
@@ -1088,7 +1094,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
   const [sbNotional, setSbNotional] = useState<number>(25000000);
 
   // 10. Fixed Income Bond State
-  const [bondType, setBondType] = useState<'GOVERNMENT' | 'CORPORATE' | 'SUPRANATIONAL' | 'ZERO_COUPON'>('CORPORATE');
+  const [bondType, setBondType] = useState<'SOVEREIGN' | 'CORPORATE'>('CORPORATE');
   const [bondIsin, setBondIsin] = useState<string>('US912828ZB27');
   const [bondIssuer, setBondIssuer] = useState<string>('US TREASURY N/B');
   const [bondCouponRate, setBondCouponRate] = useState<number>(4.25);
@@ -1108,14 +1114,14 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
   const [fraDayCount, setFraDayCount] = useState<DayCountConvention>('ACT/360');
 
   // 12. Term Deposit / Loan State
-  const [depositDirection, setDepositDirection] = useState<'DEPOSIT' | 'LOAN'>('DEPOSIT');
+  const [depositDirection, setDepositDirection] = useState<'LEND' | 'BORROW'>('LEND');
   const [depositRate, setDepositRate] = useState<number>(4.10);
   const [depositTermDays, setDepositTermDays] = useState<number>(90);
   const [depositNotional, setDepositNotional] = useState<number>(10000000);
   const [depositDayCount, setDepositDayCount] = useState<DayCountConvention>('ACT/360');
 
   // 13. Repurchase Agreement (Repo) State
-  const [repoType, setRepoType] = useState<'REPO' | 'REVERSE_REPO'>('REPO');
+  const [repoType, setRepoType] = useState<'CLASSIC_REPO' | 'REVERSE_REPO'>('CLASSIC_REPO');
   const [repoCollateralIsin, setRepoCollateralIsin] = useState<string>('US912828ZB27');
   const [repoRate, setRepoRate] = useState<number>(3.95);
   const [repoHaircut, setRepoHaircut] = useState<number>(2.0);
@@ -1234,35 +1240,62 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
       tempTrade.leg1 = leg1Obj;
       tempTrade.leg2 = leg2Obj;
 
-      tempTrade.fixedLeg = {
-        direction: leg1Direction === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED',
-        notional,
-        currency: leg1Currency,
-        fixedRate,
-        dayCount: fixedDayCount,
-        frequency: fixedFreq,
-        businessDayConvention: 'MODFOLLOWING',
-        accrualCalendar: leg1AccrualCalendar,
-        paymentCalendar: leg1PaymentCalendar,
-        accrualRollConvention: leg1AccrualRoll,
-        paymentRollConvention: leg1PaymentRoll,
-      };
-      tempTrade.floatingLeg = {
-        direction: leg2Direction === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED',
-        notional: floatingNotional,
-        currency: leg2Currency,
-        index: floatingIndex,
-        indexTenor: floatingTenor,
-        resetType: leg2ResetType,
-        spreadBps,
-        dayCount: floatingDayCount,
-        frequency: floatingFreq,
-        businessDayConvention: 'MODFOLLOWING',
-        accrualCalendar: leg2AccrualCalendar,
-        paymentCalendar: leg2PaymentCalendar,
-        accrualRollConvention: leg2AccrualRoll,
-        paymentRollConvention: leg2PaymentRoll,
-      };
+      if (leg1Type === 'FLOATING' && leg2Type === 'FLOATING') {
+        tempTrade.fixedLeg = undefined;
+        tempTrade.floatingLeg = leg2Obj as any;
+      } else if (leg1Type === 'FLOATING' && leg2Type === 'FIXED') {
+        tempTrade.fixedLeg = {
+          direction: leg2Direction === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED',
+          notional: floatingNotional,
+          currency: leg2Currency,
+          fixedRate: leg2FixedRate || 3.85,
+          dayCount: floatingDayCount,
+          frequency: floatingFreq,
+          businessDayConvention: 'MODFOLLOWING',
+        };
+        tempTrade.floatingLeg = {
+          direction: leg1Direction === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED',
+          notional,
+          currency: leg1Currency,
+          index: leg1Index || 'SOFR',
+          indexTenor: leg1Tenor || '3M',
+          resetType: leg1ResetType,
+          spreadBps: leg1SpreadBps,
+          dayCount: fixedDayCount,
+          frequency: fixedFreq,
+          businessDayConvention: 'MODFOLLOWING',
+        };
+      } else {
+        tempTrade.fixedLeg = {
+          direction: leg1Direction === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED',
+          notional,
+          currency: leg1Currency,
+          fixedRate,
+          dayCount: fixedDayCount,
+          frequency: fixedFreq,
+          businessDayConvention: 'MODFOLLOWING',
+          accrualCalendar: leg1AccrualCalendar,
+          paymentCalendar: leg1PaymentCalendar,
+          accrualRollConvention: leg1AccrualRoll,
+          paymentRollConvention: leg1PaymentRoll,
+        };
+        tempTrade.floatingLeg = {
+          direction: leg2Direction === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED',
+          notional: floatingNotional,
+          currency: leg2Currency,
+          index: floatingIndex,
+          indexTenor: floatingTenor,
+          resetType: leg2ResetType,
+          spreadBps,
+          dayCount: floatingDayCount,
+          frequency: floatingFreq,
+          businessDayConvention: 'MODFOLLOWING',
+          accrualCalendar: leg2AccrualCalendar,
+          paymentCalendar: leg2PaymentCalendar,
+          accrualRollConvention: leg2AccrualRoll,
+          paymentRollConvention: leg2PaymentRoll,
+        };
+      }
       tempTrade.notionalUsd = notional;
     } else if (selectedProduct === 'CAP_FLOOR') {
       const details: CapFloorDetails = {
@@ -1872,26 +1905,54 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
           frequency: floatingFreq,
           businessDayConvention: 'MODFOLLOWING',
         };
-        tradePayload.fixedLeg = {
-          direction: leg1Direction === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED',
-          notional,
-          currency: leg1Currency,
-          fixedRate,
-          dayCount: fixedDayCount,
-          frequency: fixedFreq,
-          businessDayConvention: 'MODFOLLOWING',
-        };
-        tradePayload.floatingLeg = {
-          direction: leg2Direction === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED',
-          notional: floatingNotional,
-          currency: leg2Currency,
-          index: floatingIndex,
-          indexTenor: floatingTenor,
-          spreadBps,
-          dayCount: floatingDayCount,
-          frequency: floatingFreq,
-          businessDayConvention: 'MODFOLLOWING',
-        };
+
+        if (leg1Type === 'FLOATING' && leg2Type === 'FLOATING') {
+          tradePayload.fixedLeg = undefined;
+          tradePayload.floatingLeg = tradePayload.leg2;
+        } else if (leg1Type === 'FLOATING' && leg2Type === 'FIXED') {
+          tradePayload.fixedLeg = {
+            direction: leg2Direction === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED',
+            notional: floatingNotional,
+            currency: leg2Currency,
+            fixedRate: leg2FixedRate || 3.85,
+            dayCount: floatingDayCount,
+            frequency: floatingFreq,
+            businessDayConvention: 'MODFOLLOWING',
+          };
+          tradePayload.floatingLeg = {
+            direction: leg1Direction === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED',
+            notional,
+            currency: leg1Currency,
+            index: leg1Index || 'SOFR',
+            indexTenor: leg1Tenor || '3M',
+            resetType: leg1ResetType,
+            spreadBps: leg1SpreadBps,
+            dayCount: fixedDayCount,
+            frequency: fixedFreq,
+            businessDayConvention: 'MODFOLLOWING',
+          };
+        } else {
+          tradePayload.fixedLeg = {
+            direction: leg1Direction === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED',
+            notional,
+            currency: leg1Currency,
+            fixedRate,
+            dayCount: fixedDayCount,
+            frequency: fixedFreq,
+            businessDayConvention: 'MODFOLLOWING',
+          };
+          tradePayload.floatingLeg = {
+            direction: leg2Direction === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED',
+            notional: floatingNotional,
+            currency: leg2Currency,
+            index: floatingIndex,
+            indexTenor: floatingTenor,
+            spreadBps,
+            dayCount: floatingDayCount,
+            frequency: floatingFreq,
+            businessDayConvention: 'MODFOLLOWING',
+          };
+        }
       } else if (selectedProduct === 'CAP_FLOOR') {
         tradePayload.capFloorDetails = {
           capFloorType,
@@ -2240,9 +2301,20 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
 
       {/* Status Alerts */}
       {bookingSuccessMsg && (
-        <div className="p-3 bg-emerald-950/80 border border-emerald-700 text-emerald-200 rounded-lg text-xs flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span>{bookingSuccessMsg}</span>
+        <div className="p-3 bg-emerald-950/80 border border-emerald-700 text-emerald-200 rounded-lg text-xs flex items-center justify-between gap-2 shadow-lg">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>{bookingSuccessMsg}</span>
+          </div>
+          {onOpenBlotter && (
+            <button
+              type="button"
+              onClick={onOpenBlotter}
+              className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-mono font-bold transition-all cursor-pointer shadow whitespace-nowrap"
+            >
+              View Booked Trade in Blotter →
+            </button>
+          )}
         </div>
       )}
 

@@ -164,6 +164,7 @@ export default function App() {
               traderUser={traderUser}
               onTradeBooked={handleTradeBooked}
               onOpenMarketData={() => setActiveTab('market-data')}
+              onOpenBlotter={() => setActiveTab('blotter')}
             />
           </ErrorBoundary>
         )}

@@ -38,6 +38,6 @@ export function runSystemPerformanceOptimization() {
 }
 
 // Execute directly if called from command line
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (typeof process !== 'undefined' && process.argv[1]?.includes('optimize-app')) {
   runSystemPerformanceOptimization();
 }

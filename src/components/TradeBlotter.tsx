@@ -308,7 +308,13 @@ export const TradeBlotter: React.FC<TradeBlotterProps> = ({
                       {/* Direction */}
                       <td className="py-3 px-4">
                         {prod === 'IRS' && (
-                          <span className="text-gray-300 font-bold">{t.fixedLeg?.direction || 'PAY_FIXED'}</span>
+                          <span className="text-gray-200 font-bold">
+                            {t.leg1?.legType === 'FLOATING' && t.leg2?.legType === 'FLOATING'
+                              ? `⚡ ${t.leg1.direction === 'PAY' || t.leg1.direction === 'PAY_FIXED' ? 'PAY' : 'REC'} ${t.leg1.index || 'FLOAT'} / ${t.leg2.direction === 'PAY' || t.leg2.direction === 'PAY_FIXED' ? 'PAY' : 'REC'} ${t.leg2.index || 'FLOAT'}`
+                              : t.leg1?.legType === 'FLOATING' && t.leg2?.legType === 'FIXED'
+                              ? `${t.leg1.direction === 'PAY' || t.leg1.direction === 'PAY_FIXED' ? 'PAY' : 'REC'} ${t.leg1.index || 'FLOAT'} / REC FIXED`
+                              : (t.fixedLeg?.direction || t.leg1?.direction || 'PAY_FIXED')}
+                          </span>
                         )}
                         {prod === 'CAP_FLOOR' && (
                           <span className="text-emerald-300 font-bold">{t.capFloorDetails?.direction} {t.capFloorDetails?.capFloorType}</span>
@@ -333,8 +339,22 @@ export const TradeBlotter: React.FC<TradeBlotterProps> = ({
                       <td className="py-3 px-4 text-gray-200 text-[11px]">
                         {prod === 'IRS' && (
                           <div>
-                            <div>Fix: <strong className="text-blue-400">{t.fixedLeg?.fixedRate}%</strong></div>
-                            <div className="text-gray-500 text-[10px]">Flt: {t.floatingLeg?.index} ({t.floatingLeg?.indexTenor})</div>
+                            {t.leg1?.legType === 'FLOATING' && t.leg2?.legType === 'FLOATING' ? (
+                              <>
+                                <div>L1: <strong className="text-cyan-400">{t.leg1.index} ({t.leg1.indexTenor || '1M'})</strong> {t.leg1.spreadBps ? `+${t.leg1.spreadBps}bps` : ''}</div>
+                                <div className="text-gray-400 text-[10px]">L2: {t.leg2.index} ({t.leg2.indexTenor || '3M'}) {t.leg2.spreadBps ? `+${t.leg2.spreadBps}bps` : ''}</div>
+                              </>
+                            ) : t.leg1?.legType === 'FLOATING' && t.leg2?.legType === 'FIXED' ? (
+                              <>
+                                <div>L1 Flt: <strong className="text-cyan-400">{t.leg1.index} ({t.leg1.indexTenor || '3M'})</strong></div>
+                                <div className="text-blue-400 text-[10px]">L2 Fix: {t.leg2.fixedRate || t.fixedLeg?.fixedRate}%</div>
+                              </>
+                            ) : (
+                              <>
+                                <div>Fix: <strong className="text-blue-400">{t.fixedLeg?.fixedRate || t.leg1?.fixedRate}%</strong></div>
+                                <div className="text-gray-500 text-[10px]">Flt: {t.floatingLeg?.index || t.leg2?.index} ({t.floatingLeg?.indexTenor || t.leg2?.indexTenor})</div>
+                              </>
+                            )}
                           </div>
                         )}
                         {prod === 'CAP_FLOOR' && (

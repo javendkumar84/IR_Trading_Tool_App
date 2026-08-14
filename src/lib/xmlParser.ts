@@ -52,8 +52,8 @@ export function generateIRSwapXml(trade: Partial<IRSwapTrade>): string {
           swapStream: [
             {
               '@_id': 'FloatingLeg1',
-              payerPartyReference: trade.leg1.direction === 'PAY_FIXED' ? { '@_href': 'PartyA' } : { '@_href': 'PartyB' },
-              receiverPartyReference: trade.leg1.direction === 'PAY_FIXED' ? { '@_href': 'PartyB' } : { '@_href': 'PartyA' },
+              payerPartyReference: (trade.leg1.direction === 'PAY' || trade.leg1.direction === 'PAY_FIXED') ? { '@_href': 'PartyA' } : { '@_href': 'PartyB' },
+              receiverPartyReference: (trade.leg1.direction === 'PAY' || trade.leg1.direction === 'PAY_FIXED') ? { '@_href': 'PartyB' } : { '@_href': 'PartyA' },
               calculationPeriodDates: {
                 effectiveDate: { unadjustedDate: effectiveDate },
                 terminationDate: { unadjustedDate: maturityDate },
@@ -93,8 +93,8 @@ export function generateIRSwapXml(trade: Partial<IRSwapTrade>): string {
             },
             {
               '@_id': 'FloatingLeg2',
-              payerPartyReference: trade.leg2.direction === 'PAY_FIXED' ? { '@_href': 'PartyA' } : { '@_href': 'PartyB' },
-              receiverPartyReference: trade.leg2.direction === 'PAY_FIXED' ? { '@_href': 'PartyB' } : { '@_href': 'PartyA' },
+              payerPartyReference: (trade.leg2.direction === 'PAY' || trade.leg2.direction === 'PAY_FIXED') ? { '@_href': 'PartyA' } : { '@_href': 'PartyB' },
+              receiverPartyReference: (trade.leg2.direction === 'PAY' || trade.leg2.direction === 'PAY_FIXED') ? { '@_href': 'PartyB' } : { '@_href': 'PartyA' },
               calculationPeriodDates: {
                 effectiveDate: { unadjustedDate: effectiveDate },
                 terminationDate: { unadjustedDate: maturityDate },
@@ -1108,6 +1108,9 @@ export function parseIRSwapXml(xmlString: string): XmlParseResult {
           resetType: floatingStream2.resetDates?.resetType || 'ARREARS',
           businessDayConvention: 'MODFOLLOWING',
         };
+
+        // Clear fixedLeg for dual floating leg basis swaps so it does not default to PAY_FIXED
+        fixedLeg = undefined;
 
         tenorYears = calculateTenorYears(effectiveDate, maturityDate);
       }

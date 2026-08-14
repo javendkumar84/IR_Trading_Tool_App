@@ -114,6 +114,8 @@ export interface IndependentLegSchedule {
     discountFactor?: number;
     pv?: number;
     description?: string;
+    notional?: number;
+    currency?: Currency;
   }>;
 }
 
