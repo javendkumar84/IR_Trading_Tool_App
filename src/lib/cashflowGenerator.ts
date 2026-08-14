@@ -108,6 +108,8 @@ export interface IndependentLegSchedule {
     rate?: number;
     ratePct?: number;
     fixingRate?: number;
+    floatingFixingRate?: number;
+    floatingTotalRate?: number;
     spreadBps?: number;
     cashflow?: number;
     cashflowAmount?: number;
@@ -210,6 +212,31 @@ function getNextPeriodEndDate(startDateStr: string, frequency: string): string {
 }
 
 /**
+ * Returns baseline benchmark rate (%) for a given index symbol or currency
+ */
+export function getBenchmarkFixingRate(indexOrCcy?: string): number {
+  if (!indexOrCcy) return 3.85;
+  const upper = indexOrCcy.toUpperCase();
+  if (upper.includes('SOFR') || upper.includes('USD')) return 3.85;
+  if (upper.includes('EURIBOR') || upper.includes('ESTR') || upper.includes('EUR')) return 2.75;
+  if (upper.includes('SONIA') || upper.includes('GBP')) return 4.25;
+  if (upper.includes('TONA') || upper.includes('JPY')) return 0.45;
+  if (upper.includes('SARON') || upper.includes('CHF')) return 1.15;
+  if (upper.includes('CDOR') || upper.includes('CORRA') || upper.includes('CAD')) return 3.25;
+  if (upper.includes('AONIA') || upper.includes('BBSW') || upper.includes('AUD')) return 3.80;
+  return 3.85;
+}
+
+/**
+ * Derives a dynamic period-specific forward fixing rate (%) for floating legs
+ */
+export function derivePeriodFixingRate(baseRate: number, periodNum: number, tenorMultiplier = 0.035): number {
+  const curveDrift = (periodNum - 1) * tenorMultiplier;
+  const curveSeasonality = Math.sin(periodNum * 0.5) * 0.08;
+  return parseFloat((baseRate + curveDrift + curveSeasonality).toFixed(4));
+}
+
+/**
  * Generates Cashflow Schedule for Interest Rate Swaps (IRS / Basis Swaps / Cross Currency Swaps)
  */
 export function generateIRSwapCashflowSchedule(
@@ -270,7 +297,8 @@ export function generateIRSwapCashflowSchedule(
       if (leg1.legType === 'FIXED') {
         leg1Rate = leg1.fixedRate ?? trade.fixedLeg?.fixedRate ?? trade.parRate ?? 3.85;
       } else {
-        leg1Fixing = parseFloat((3.80 + periodNum * 0.02).toFixed(4));
+        const base1 = getBenchmarkFixingRate(leg1.index || leg1.currency || trade.fixedLeg?.currency || 'USD');
+        leg1Fixing = derivePeriodFixingRate(base1, periodNum, 0.03);
         leg1Rate = parseFloat((leg1Fixing + leg1Spread / 100).toFixed(4));
       }
 
@@ -285,7 +313,8 @@ export function generateIRSwapCashflowSchedule(
       if (leg2.legType === 'FIXED') {
         leg2Rate = (leg2 as GenericSwapLeg).fixedRate ?? trade.fixedLeg?.fixedRate ?? 3.85;
       } else {
-        leg2Fixing = parseFloat((3.75 + periodNum * 0.025).toFixed(4));
+        const base2 = getBenchmarkFixingRate(leg2.index || leg2.currency || trade.floatingLeg?.currency || 'USD');
+        leg2Fixing = derivePeriodFixingRate(base2, periodNum, 0.04);
         leg2Rate = parseFloat((leg2Fixing + leg2Spread / 100).toFixed(4));
       }
 
@@ -451,7 +480,8 @@ export function generateIRSwapCashflowSchedule(
     // Projected Floating Leg Benchmark Fixing Rate & Total Rate
     const spreadBps = floating?.spreadBps || 0;
     const spreadPercent = spreadBps / 100;
-    const floatingFixingRate = parseFloat((couponRate + (periodNum * 0.03) - 0.05).toFixed(4));
+    const baseFloat = getBenchmarkFixingRate(floating?.index || floatCcy || 'USD');
+    const floatingFixingRate = derivePeriodFixingRate(baseFloat, periodNum, 0.035);
     const floatingTotalRate = parseFloat((floatingFixingRate + spreadPercent).toFixed(4));
 
     const floatAmountRaw = floatNotional * (floatingTotalRate / 100) * floatDcf;
@@ -1619,11 +1649,13 @@ export function generateIndependentLeg1Schedule(
   dateOverrides?: Record<string, { startDate?: string; endDate?: string; resetStartDate?: string; resetEndDate?: string; payResetDate?: string }>
 ): IndependentLegSchedule {
   const overrides = dateOverrides || trade.scheduleDateOverrides || {};
-  const ccy = trade.fixedLeg?.currency || trade.leg1?.currency || trade.rangeAccrualDetails?.currency || trade.snowRangeDetails?.currency || trade.tarnDetails?.currency || trade.snowballDetails?.currency || trade.capFloorDetails?.currency || trade.swaptionDetails?.currency || 'USD';
-  const notional = trade.fixedLeg?.notional || trade.leg1?.notional || trade.rangeAccrualDetails?.notional || trade.snowRangeDetails?.notional || trade.tarnDetails?.notional || trade.snowballDetails?.notional || trade.capFloorDetails?.notional || trade.swaptionDetails?.notional || trade.notionalUsd || 25000000;
-  const freq = trade.fixedLeg?.frequency || trade.leg1?.frequency || trade.rangeAccrualDetails?.paymentFrequency || trade.snowRangeDetails?.paymentFrequency || trade.tarnDetails?.paymentFrequency || trade.snowballDetails?.paymentFrequency || trade.capFloorDetails?.paymentFrequency || '6M';
-  const convention = trade.fixedLeg?.dayCount || trade.leg1?.dayCount || trade.rangeAccrualDetails?.dayCount || trade.snowRangeDetails?.dayCount || trade.tarnDetails?.dayCount || trade.snowballDetails?.dayCount || trade.capFloorDetails?.dayCount || '30/360';
-  const ratePct = trade.fixedLeg?.fixedRate || trade.leg1?.fixedRate || trade.rangeAccrualDetails?.accrualCouponRate || trade.snowRangeDetails?.baseCouponRate || trade.tarnDetails?.strikeRate || trade.snowballDetails?.initialCouponRate || trade.capFloorDetails?.strikeRate || trade.parRate || 3.85;
+  const ccy = trade.leg1?.currency || trade.fixedLeg?.currency || trade.rangeAccrualDetails?.currency || trade.snowRangeDetails?.currency || trade.tarnDetails?.currency || trade.snowballDetails?.currency || 'USD';
+  const notional = trade.leg1?.notional || trade.fixedLeg?.notional || trade.rangeAccrualDetails?.notional || trade.snowRangeDetails?.notional || trade.tarnDetails?.notional || trade.snowballDetails?.notional || trade.notionalUsd || 25000000;
+  const freq = trade.leg1?.frequency || trade.fixedLeg?.frequency || trade.rangeAccrualDetails?.paymentFrequency || trade.snowRangeDetails?.paymentFrequency || trade.tarnDetails?.paymentFrequency || trade.snowballDetails?.paymentFrequency || '6M';
+  const convention = trade.leg1?.dayCount || trade.fixedLeg?.dayCount || trade.rangeAccrualDetails?.dayCount || trade.snowRangeDetails?.dayCount || trade.tarnDetails?.dayCount || trade.snowballDetails?.dayCount || '30/360';
+  const legType = trade.leg1?.legType || (trade.fixedLeg ? 'FIXED' : 'FLOATING');
+
+  const ratePct = trade.leg1?.fixedRate || trade.fixedLeg?.fixedRate || trade.rangeAccrualDetails?.accrualCouponRate || trade.snowRangeDetails?.baseCouponRate || trade.tarnDetails?.strikeRate || trade.snowballDetails?.initialCouponRate || trade.parRate || 3.85;
 
   let currStart = trade.effectiveDate || '2026-08-01';
   const maturity = trade.maturityDate || addMonths(currStart, Math.round((trade.tenorYears || 5) * 12));
@@ -1650,18 +1682,28 @@ export function generateIndependentLeg1Schedule(
     const dcf = getDayCountFraction(effStart, effEnd, convention);
 
     let flowRate = ratePct;
-    if (trade.productType === 'RANGE_ACCRUAL' && trade.rangeAccrualDetails) {
+    let periodFixing: number | undefined = undefined;
+    let periodSpread: number | undefined = undefined;
+
+    if (legType === 'FLOATING') {
+      const base1 = getBenchmarkFixingRate(trade.leg1?.index || trade.leg1?.currency || ccy);
+      periodFixing = derivePeriodFixingRate(base1, periodNum, 0.03);
+      periodSpread = trade.leg1?.spreadBps || 0;
+      flowRate = parseFloat((periodFixing + periodSpread / 100).toFixed(4));
+    } else if (trade.productType === 'RANGE_ACCRUAL' && trade.rangeAccrualDetails) {
       const lowerB = trade.rangeAccrualDetails.lowerBarrierRate || 3.0;
       const upperB = trade.rangeAccrualDetails.upperBarrierRate || 5.0;
-      const indexVal = 3.80;
-      if (indexVal < lowerB || indexVal > upperB) flowRate = 0;
+      const baseIdx = getBenchmarkFixingRate(trade.rangeAccrualDetails.referenceIndex || ccy);
+      periodFixing = derivePeriodFixingRate(baseIdx, periodNum, 0.03);
+      if (periodFixing < lowerB || periodFixing > upperB) flowRate = 0;
     } else if (trade.productType === 'SNOW_RANGE' && trade.snowRangeDetails) {
       const lowerB = trade.snowRangeDetails.lowerBarrierRate || 2.0;
       const upperB = trade.snowRangeDetails.upperBarrierRate || 4.75;
       const baseC = trade.snowRangeDetails.baseCouponRate || 5.50;
       const mult = trade.snowRangeDetails.memoryEnabled ? (trade.snowRangeDetails.memoryMultiplier || 1.0) : 0;
-      const indexVal = 3.80;
-      const isInside = indexVal >= lowerB && indexVal <= upperB;
+      const baseIdx = getBenchmarkFixingRate(trade.snowRangeDetails.referenceIndex || ccy);
+      periodFixing = derivePeriodFixingRate(baseIdx, periodNum, 0.03);
+      const isInside = periodFixing >= lowerB && periodFixing <= upperB;
       const fraction = isInside ? 1.0 : 0.8;
       flowRate = periodNum === 1 ? baseC * fraction : baseC + mult * previousCoupon * fraction;
       previousCoupon = flowRate;
@@ -1669,8 +1711,9 @@ export function generateIndependentLeg1Schedule(
       const targetCap = trade.tarnDetails.targetCapPct || 10.0;
       const strike = trade.tarnDetails.strikeRate || 6.50;
       const leverage = trade.tarnDetails.leverageFactor || 1.5;
-      const indexVal = 3.75;
-      let rawRate = strike - leverage * indexVal;
+      const baseIdx = getBenchmarkFixingRate(trade.tarnDetails.referenceIndex || ccy);
+      periodFixing = derivePeriodFixingRate(baseIdx, periodNum, 0.03);
+      let rawRate = strike - leverage * periodFixing;
       if (rawRate < (trade.tarnDetails.floorRate || 0)) rawRate = trade.tarnDetails.floorRate || 0;
       if (cumTarnCoupon + rawRate >= targetCap) {
         flowRate = Math.max(0, targetCap - cumTarnCoupon);
@@ -1683,11 +1726,12 @@ export function generateIndependentLeg1Schedule(
       const initC = trade.snowballDetails.initialCouponRate || 6.0;
       const bonus = trade.snowballDetails.bonusStepRate || 1.5;
       const leverage = trade.snowballDetails.leverageFactor || 1.0;
-      const indexVal = 3.80;
+      const baseIdx = getBenchmarkFixingRate(trade.snowballDetails.referenceIndex || ccy);
+      periodFixing = derivePeriodFixingRate(baseIdx, periodNum, 0.03);
       if (periodNum === 1) {
         flowRate = initC;
       } else {
-        flowRate = Math.max(trade.snowballDetails.floorRate || 0, Math.min(trade.snowballDetails.capRate || 12.0, previousCoupon + bonus - leverage * indexVal));
+        flowRate = Math.max(trade.snowballDetails.floorRate || 0, Math.min(trade.snowballDetails.capRate || 12.0, previousCoupon + bonus - leverage * periodFixing));
       }
       previousCoupon = flowRate;
     }
@@ -1709,6 +1753,8 @@ export function generateIndependentLeg1Schedule(
       numberOfDays: numDays,
       dayCountFraction: dcf,
       ratePct: flowRate,
+      fixingRate: periodFixing,
+      spreadBps: periodSpread,
       cashflowAmount: signedFlow,
       description: `Leg 1 Period #${periodNum} (${freq}): ${effStart} → ${effEnd}`,
     });
@@ -1738,10 +1784,8 @@ export function generateIndependentLeg2Schedule(
   const freq = trade.floatingLeg?.frequency || trade.leg2?.frequency || trade.rangeAccrualDetails?.fundingPaymentFrequency || trade.snowRangeDetails?.fundingPaymentFrequency || trade.tarnDetails?.fundingPaymentFrequency || trade.snowballDetails?.fundingPaymentFrequency || '3M';
   const convention = trade.floatingLeg?.dayCount || trade.leg2?.dayCount || trade.rangeAccrualDetails?.fundingDayCount || trade.snowRangeDetails?.fundingDayCount || trade.tarnDetails?.fundingDayCount || trade.snowballDetails?.fundingDayCount || 'ACT/360';
 
-  const fixingRate = 3.80;
   const spreadBps = trade.floatingLeg?.spreadBps || trade.leg2?.spreadBps || trade.rangeAccrualDetails?.fundingSpreadBps || trade.snowRangeDetails?.fundingSpreadBps || trade.tarnDetails?.fundingSpreadBps || trade.snowballDetails?.fundingSpreadBps || 0;
   const legType = trade.leg2?.legType || trade.rangeAccrualDetails?.fundingLegType || trade.snowRangeDetails?.fundingLegType || trade.tarnDetails?.fundingLegType || trade.snowballDetails?.fundingLegType || 'FLOATING';
-  const totalRatePct = legType === 'FIXED' ? (trade.rangeAccrualDetails?.fundingFixedRate || trade.snowRangeDetails?.fundingFixedRate || trade.tarnDetails?.fundingFixedRate || trade.snowballDetails?.fundingFixedRate || 3.85) : (fixingRate + spreadBps / 100);
 
   let currStart = trade.effectiveDate || '2026-08-01';
   const maturity = trade.maturityDate || addMonths(currStart, Math.round((trade.tenorYears || 5) * 12));
@@ -1763,6 +1807,13 @@ export function generateIndependentLeg2Schedule(
 
     const numDays = getNumberOfDays(effStart, effEnd);
     const dcf = getDayCountFraction(effStart, effEnd, convention);
+
+    const base2 = getBenchmarkFixingRate(trade.leg2?.index || trade.floatingLeg?.index || ccy);
+    const periodFixingRate = derivePeriodFixingRate(base2, periodNum, 0.035);
+    const totalRatePct = legType === 'FIXED'
+      ? (trade.leg2?.fixedRate || trade.fixedLeg?.fixedRate || 3.85)
+      : parseFloat((periodFixingRate + spreadBps / 100).toFixed(4));
+
     const rawFlow = Math.round(notional * (totalRatePct / 100) * dcf);
 
     const direction = trade.floatingLeg?.direction || trade.leg2?.direction || trade.rangeAccrualDetails?.fundingDirection || trade.snowRangeDetails?.fundingDirection || trade.tarnDetails?.fundingDirection || trade.snowballDetails?.fundingDirection || 'PAY';
@@ -1781,7 +1832,7 @@ export function generateIndependentLeg2Schedule(
       numberOfDays: numDays,
       dayCountFraction: dcf,
       ratePct: totalRatePct,
-      fixingRate,
+      fixingRate: legType === 'FLOATING' ? periodFixingRate : undefined,
       spreadBps,
       cashflowAmount: signedFlow,
       description: `Leg 2 Period #${periodNum} (${freq}): ${effStart} → ${effEnd}`,

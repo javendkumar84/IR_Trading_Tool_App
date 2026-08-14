@@ -13,7 +13,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { IRSwapTrade, Currency } from '../types';
-import { generateCashflowSchedule, generateIndependentLeg1Schedule, generateIndependentLeg2Schedule } from '../lib/cashflowGenerator';
+import { generateCashflowSchedule, generateIndependentLeg1Schedule, generateIndependentLeg2Schedule, getBenchmarkFixingRate, derivePeriodFixingRate } from '../lib/cashflowGenerator';
 
 interface CashExplainTabProps {
   trades: IRSwapTrade[];
@@ -132,8 +132,9 @@ export const CashExplainTab: React.FC<CashExplainTabProps> = ({ trades }) => {
       const ccy = p.currency || leg2Sched.currency || 'USD';
       const dcf = p.dayCountFraction || 0.25;
       const floatIdx = currentTrade.floatingLeg?.index || currentTrade.leg2?.index || 'SOFR';
-      const fixRate = p.fixingRate ?? 3.90;
-      const sprd = p.spreadBps ?? currentTrade.floatingLeg?.spreadBps ?? 0;
+      const defaultBase = getBenchmarkFixingRate(floatIdx || ccy);
+      const fixRate = p.fixingRate ?? p.floatingFixingRate ?? derivePeriodFixingRate(defaultBase, p.periodNumber || 1, 0.035);
+      const sprd = p.spreadBps ?? currentTrade.floatingLeg?.spreadBps ?? currentTrade.leg2?.spreadBps ?? 0;
       const totalRate = p.ratePct ?? (fixRate + sprd / 100);
       const rawCash = p.cashflowAmount ?? p.cashflow ?? Math.round(notional * (totalRate / 100) * dcf);
       
