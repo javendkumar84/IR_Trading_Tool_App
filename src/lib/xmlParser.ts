@@ -23,6 +23,7 @@ import {
 import {
   calculateCapFloorValuation,
   calculateDualDigitalValuation,
+  calculateDv01,
   calculateFxForwardValuation,
   calculateFxOptionValuation,
   calculateMarkToMarket,
@@ -1113,6 +1114,10 @@ export function parseIRSwapXml(xmlString: string): XmlParseResult {
         fixedLeg = undefined;
 
         tenorYears = calculateTenorYears(effectiveDate, maturityDate);
+        const estParRate = getEstimatedParRate(ccy, tenorYears);
+        parRate = estParRate;
+        dv01 = calculateDv01(notional1, estParRate, tenorYears, '3M');
+        markToMarket = 0;
       }
     } else if (productType === 'CAP_FLOOR') {
       const capNode = tradeNode.capFloor || {};

@@ -167,12 +167,12 @@ export default function TradeAmendment({ onAmendmentComplete }: TradeAmendmentPr
       setLeg1Freq(trade.leg1.frequency || '6M');
     } else if (trade.fixedLeg) {
       setLeg1Type('FIXED');
-      setLeg1Direction(trade.fixedLeg.direction === 'PAY_FIXED' ? 'PAY' : 'RECEIVE');
-      setLeg1Currency(trade.fixedLeg.currency || 'USD');
-      setLeg1Notional(trade.fixedLeg.notional || trade.notionalUsd || 25000000);
-      setLeg1FixedRate(trade.fixedLeg.fixedRate || 3.85);
-      setLeg1DayCount(trade.fixedLeg.dayCount || '30/360');
-      setLeg1Freq(trade.fixedLeg.frequency || '6M');
+      setLeg1Direction(trade.fixedLeg?.direction === 'PAY_FIXED' ? 'PAY' : 'RECEIVE');
+      setLeg1Currency(trade.fixedLeg?.currency || 'USD');
+      setLeg1Notional(trade.fixedLeg?.notional || trade.notionalUsd || 25000000);
+      setLeg1FixedRate(trade.fixedLeg?.fixedRate || 3.85);
+      setLeg1DayCount(trade.fixedLeg?.dayCount || '30/360');
+      setLeg1Freq(trade.fixedLeg?.frequency || '6M');
     }
 
     // Populate Leg 2
@@ -190,14 +190,14 @@ export default function TradeAmendment({ onAmendmentComplete }: TradeAmendmentPr
       setLeg2Freq(trade.leg2.frequency || '3M');
     } else if (trade.floatingLeg) {
       setLeg2Type('FLOATING');
-      setLeg2Direction(trade.floatingLeg.direction === 'PAY_FIXED' ? 'PAY' : 'RECEIVE');
-      setLeg2Currency(trade.floatingLeg.currency || 'USD');
-      setLeg2Notional(trade.floatingLeg.notional || 25000000);
-      setLeg2Index(trade.floatingLeg.index || 'SOFR');
-      setLeg2IndexTenor(trade.floatingLeg.indexTenor || '3M');
-      setLeg2ResetType(trade.floatingLeg.resetType || 'ADVANCE');
-      setLeg2SpreadBps(trade.floatingLeg.spreadBps || 0);
-      setLeg2DayCount(trade.floatingLeg.dayCount || 'ACT/360');
+      setLeg2Direction(trade.floatingLeg?.direction === 'PAY_FIXED' ? 'PAY' : 'RECEIVE');
+      setLeg2Currency(trade.floatingLeg?.currency || 'USD');
+      setLeg2Notional(trade.floatingLeg?.notional || 25000000);
+      setLeg2Index(trade.floatingLeg?.index || 'SOFR');
+      setLeg2IndexTenor(trade.floatingLeg?.indexTenor || '3M');
+      setLeg2ResetType(trade.floatingLeg?.resetType || 'ADVANCE');
+      setLeg2SpreadBps(trade.floatingLeg?.spreadBps || 0);
+      setLeg2DayCount(trade.floatingLeg?.dayCount || 'ACT/360');
       setLeg2Freq(trade.floatingLeg.frequency || '3M');
     }
 

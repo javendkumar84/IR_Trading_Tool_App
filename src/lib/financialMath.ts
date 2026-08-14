@@ -96,8 +96,8 @@ export function calculateMarkToMarket(
   // Direction:
   // RECEIVE_FIXED: If market rate goes down, fixed rate we receive is higher -> MTM positive
   // PAY_FIXED: If market rate goes up, fixed rate we pay is lower than market -> MTM positive
-  const directionMultiplier = fixedLeg.direction === 'RECEIVE_FIXED' ? -1 : 1;
-  const mtm = Math.round(rateDiff * annuity * dt * fixedLeg.notional * directionMultiplier);
+  const directionMultiplier = (fixedLeg?.direction || 'PAY_FIXED') === 'RECEIVE_FIXED' ? -1 : 1;
+  const mtm = Math.round(rateDiff * annuity * dt * (fixedLeg?.notional || 10000000) * directionMultiplier);
 
   return {
     mtm,
@@ -366,8 +366,10 @@ export function summarizePositionsByCurrency(trades: IRSwapTrade[]): PositionSum
     g.tradeCount += 1;
     g.grossNotional += notional;
 
-    // Direction sign: PAY_FIXED/SELL is -Notional; RECEIVE_FIXED/BUY is +Notional
-    const isPay = trade.fixedLeg?.direction === 'PAY_FIXED' || trade.capFloorDetails?.direction === 'SELL' || trade.swaptionDetails?.direction === 'SELL' || trade.fxForwardDetails?.direction === 'SELL_BASE' || trade.fxOptionDetails?.direction === 'SELL';
+    // Direction sign: PAY_FIXED/SELL/PAY is -Notional; RECEIVE_FIXED/BUY/RECEIVE is +Notional
+    const isPay = trade.leg1
+      ? (trade.leg1.direction === 'PAY' || trade.leg1.direction === 'PAY_FIXED')
+      : (trade.fixedLeg?.direction === 'PAY_FIXED' || trade.capFloorDetails?.direction === 'SELL' || trade.swaptionDetails?.direction === 'SELL' || trade.fxForwardDetails?.direction === 'SELL_BASE' || trade.fxOptionDetails?.direction === 'SELL');
     const notionalSign = isPay ? -1 : 1;
 
     g.netNotional += notional * notionalSign;
@@ -393,12 +395,16 @@ export function calculateTenorRiskBuckets(trades: IRSwapTrade[]): TenorDv01Risk[
   trades.forEach((t) => {
     if (t.status === 'TERMINATED' || t.status === 'MATURED' || t.status === 'DRAFT') return;
 
-    const bKey = getTenorBucket(t.tenorYears);
+    const bKey = getTenorBucket(t.tenorYears || 5);
     const b = buckets[bKey];
-    if (t.fixedLeg.direction === 'PAY_FIXED') {
-      b.payDv01 += t.dv01;
+    const isPay = t.leg1
+      ? (t.leg1.direction === 'PAY' || t.leg1.direction === 'PAY_FIXED')
+      : (t.fixedLeg?.direction === 'PAY_FIXED');
+
+    if (isPay) {
+      b.payDv01 += (t.dv01 || 0);
     } else {
-      b.receiveDv01 += t.dv01;
+      b.receiveDv01 += (t.dv01 || 0);
     }
     b.netDv01 = b.payDv01 - b.receiveDv01;
   });
