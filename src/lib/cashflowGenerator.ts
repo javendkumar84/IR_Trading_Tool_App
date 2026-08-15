@@ -1,5 +1,6 @@
 import { IRSwapTrade, ProductType, Currency, DayCountConvention, PaymentFrequency, ResetType, GenericSwapLeg, LegType, BusinessCalendar, BusinessDayRollConvention, IndexTenor } from '../types';
 import { convertCurrency } from './fxRates';
+import { getOfficialHistoricalFixingRate, OFFICIAL_INDEX_REGISTRY } from './historicalFixingStore';
 
 export interface CashflowPeriod {
   periodNumber: number;
@@ -144,18 +145,18 @@ function addDays(dateStr: string, days: number): string {
 /**
  * Calculates exact calendar days between two ISO date strings YYYY-MM-DD
  */
-function getNumberOfDays(startDateStr: string, endDateStr: string): number {
+export function getNumberOfDays(startDateStr: string, endDateStr: string): number {
   const start = new Date(startDateStr);
   const end = new Date(endDateStr);
   if (isNaN(start.getTime()) || isNaN(end.getTime())) return 180;
-  const diffTime = end.getTime() - start.getTime();
-  return Math.max(1, Math.round(diffTime / (1000 * 60 * 60 * 24)));
+  const diffTime = Math.abs(end.getTime() - start.getTime());
+  return Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 }
 
 /**
  * Computes exact Day Count Fraction (alpha) according to standard market conventions
  */
-function getDayCountFraction(
+export function getDayCountFraction(
   startDateStr: string,
   endDateStr: string,
   convention: DayCountConvention | string = '30/360'
@@ -194,19 +195,25 @@ function getDayCountFraction(
       const daysInYear = isLeap ? 366 : 365;
       return parseFloat((days / daysInYear).toFixed(6));
     }
-    default:
-      return parseFloat((getNumberOfDays(startDateStr, endDateStr) / 360).toFixed(6));
+    default: {
+      const days = getNumberOfDays(startDateStr, endDateStr);
+      return parseFloat((days / 360).toFixed(6));
+    }
   }
 }
 
 /**
- * Calculates next period end date based on Payment Frequency (1D, 1M, 3M, 6M, 1Y)
+ * Returns next period end date based on payment frequency
  */
-function getNextPeriodEndDate(startDateStr: string, frequency: string): string {
-  if (frequency === '1D') {
-    return addDays(startDateStr, 1);
-  }
-  const monthsMap: Record<string, number> = { '1M': 1, '3M': 3, '6M': 6, '1Y': 12 };
+export function getNextPeriodEndDate(startDateStr: string, frequency: PaymentFrequency | string = '6M'): string {
+  const monthsMap: Record<string, number> = {
+    '1D': 0.033,
+    '1M': 1,
+    '3M': 3,
+    '6M': 6,
+    '12M': 12,
+    '1Y': 12,
+  };
   const m = monthsMap[frequency] || 6;
   return addMonths(startDateStr, m);
 }
@@ -229,16 +236,16 @@ export function getBenchmarkFixingRate(indexOrCcy?: string, indexTenor?: IndexTe
 
   if (indexTenor) {
     const tUpper = indexTenor.toUpperCase();
-    if (tUpper === '1D') return 3.66;                                                            // SOFR 1D  = 3.6600% (1 Aug 2026 NY FED Fixing)
-    if (tUpper === '1M') return parseFloat((baseRate + 0.05).toFixed(4));                       // SOFR 1M  = 3.9000%
-    if (tUpper === '3M') return parseFloat((baseRate + 0.12).toFixed(4));                       // SOFR 3M  = 3.9700%
-    if (tUpper === '6M') return parseFloat((baseRate + 0.18).toFixed(4));                       // SOFR 6M  = 4.0300%
-    if (tUpper === '12M' || tUpper === '1Y') return parseFloat((baseRate + 0.25).toFixed(4)); // SOFR 1Y  = 4.1000%
-    if (tUpper === '2Y') return parseFloat((baseRate + 0.38).toFixed(4));                       // SOFR 2Y  = 4.2300%
-    if (tUpper === '5Y') return parseFloat((baseRate + 0.55).toFixed(4));                       // SOFR 5Y  = 4.4000%
-    if (tUpper === '10Y') return parseFloat((baseRate + 0.72).toFixed(4));                      // SOFR 10Y = 4.5700%
-    if (tUpper === '20Y') return parseFloat((baseRate + 0.80).toFixed(4));                      // SOFR 20Y = 4.6500%
-    if (tUpper === '30Y') return parseFloat((baseRate + 0.85).toFixed(4));                      // SOFR 30Y = 4.7000%
+    if (tUpper === '1D') return 3.66;
+    if (tUpper === '1M') return parseFloat((baseRate + 0.05).toFixed(4));
+    if (tUpper === '3M') return parseFloat((baseRate + 0.12).toFixed(4));
+    if (tUpper === '6M') return parseFloat((baseRate + 0.18).toFixed(4));
+    if (tUpper === '12M' || tUpper === '1Y') return parseFloat((baseRate + 0.25).toFixed(4));
+    if (tUpper === '2Y') return parseFloat((baseRate + 0.38).toFixed(4));
+    if (tUpper === '5Y') return parseFloat((baseRate + 0.55).toFixed(4));
+    if (tUpper === '10Y') return parseFloat((baseRate + 0.72).toFixed(4));
+    if (tUpper === '20Y') return parseFloat((baseRate + 0.80).toFixed(4));
+    if (tUpper === '30Y') return parseFloat((baseRate + 0.85).toFixed(4));
   }
 
   return baseRate;
@@ -246,178 +253,15 @@ export function getBenchmarkFixingRate(indexOrCcy?: string, indexTenor?: IndexTe
 
 /**
  * Official Published Historical Index Fixing Rates Repository
- * Source Authorities:
- *  - USD: Federal Reserve Bank of New York (NY FED - SOFR / FEDFUNDS)
- *  - EUR: European Central Bank & EMMI (ECB / €STR / EURIBOR)
- *  - GBP: Bank of England & ICE (BoE - SONIA)
- *  - JPY: Bank of Japan & JBA (BOJ - TONA / TIBOR)
- *  - CAD: Bank of Canada & Refinitiv (BoC - CORRA / CDOR)
- *  - AUD: Reserve Bank of Australia & ASX (RBA - AONIA / BBSW)
- *  - CHF: SIX Swiss Exchange (SIX - SARON)
+ * Delegates to historicalFixingStore.ts (Official Publisher Time-Series Repository)
  */
 export function getHistoricalFixingRate(
   indexSymbol: string = 'SOFR',
   dateStr?: string,
   indexTenor?: IndexTenor | string
 ): number | null {
-  const valuationDate = '2026-08-15';
-  if (!dateStr || dateStr >= valuationDate) {
-    return null; // Future date -> evaluate forward curve projection
-  }
-
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return null;
-
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const symbol = (indexSymbol || 'SOFR').toUpperCase();
-  const tenor = (indexTenor || '3M').toUpperCase();
-
-  // 1. USD BENCHMARKS (Source: NY FED - SOFR / FEDFUNDS / LIBOR)
-  if (symbol.includes('SOFR') || symbol.includes('FEDFUNDS') || (symbol.includes('LIBOR') && symbol.includes('USD'))) {
-    if (year <= 2021) return 0.05;
-    if (year === 2022) {
-      if (month <= 3) return 0.20;
-      if (month <= 6) return 0.80;
-      if (month <= 9) return 2.30;
-      return 3.80;
-    }
-    if (year === 2023) {
-      if (month <= 3) return 4.55;
-      if (month <= 6) return 5.05;
-      if (month <= 9) return 5.30;
-      return 5.33;
-    }
-    if (year === 2024) {
-      if (month <= 8) return 5.31;  // NY FED peak target rate 5.25-5.50%
-      if (month === 9 || month === 10) return 4.83; // Post Sept 50bps Fed cut
-      if (month === 11) {
-        if (day <= 3) return 4.86;  // 1-3 Nov 2024 NY FED Fixing (Weekend Carryover)
-        if (day === 4) return 4.82;  // 4 Nov 2024 NY FED Fixing
-        return 4.58;                 // Post Nov 7 25bps Fed cut
-      }
-      return 4.58;                  // Dec 2024
-    }
-    if (year === 2025) {
-      if (month <= 3) return 4.33;
-      if (month <= 6) return 4.08;
-      if (month <= 9) return 3.95;
-      return 3.85;
-    }
-    if (year === 2026) {
-      if (month <= 3) {
-        if (month === 2 && day === 3) return 3.69; // 03/Feb/2026 NY FED Official Published Fixing
-        return 3.69;                               // Q1 2026 NY FED Settled Rate
-      }
-      if (month <= 6) return 3.75;
-      if (month === 7) return 3.68;
-      if (month === 8) {
-        if (day <= 2) return 3.66;  // 1 Aug 2026 NY FED Fixing
-        if (day === 3) return 3.63;  // 3 Aug 2026 NY FED Settled Business Day Fixing
-        if (day <= 10) return 3.63;  // 4-10 Aug 2026 NY FED Fixing
-        if (day <= 14) return 3.62;  // 11-14 Aug 2026 NY FED Fixing
-        return 3.63;
-      }
-      return 3.66;
-    }
-  }
-
-  // 2. EUR BENCHMARKS (Source: ECB - €STR / EMMI - EURIBOR)
-  if (symbol.includes('EURIBOR') || symbol.includes('ESTR') || symbol.includes('EUR')) {
-    if (symbol.includes('ESTR') || symbol.includes('€STR')) {
-      if (year <= 2021) return -0.58;
-      if (year === 2022) return 0.40;
-      if (year === 2023) return 3.40;
-      if (year === 2024) return month <= 6 ? 3.66 : 3.16;
-      if (year === 2025) return 2.66;
-      if (year === 2026) return 2.40;
-    } else {
-      // EURIBOR (1M, 3M, 6M, 12M)
-      const spread = tenor === '1M' ? -0.20 : tenor === '6M' ? +0.10 : tenor === '12M' ? +0.20 : 0;
-      if (year <= 2021) return -0.50 + spread;
-      if (year === 2022) return 0.75 + spread;
-      if (year === 2023) return 3.65 + spread;
-      if (year === 2024) return (month <= 6 ? 3.65 : 3.25) + spread;
-      if (year === 2025) return 2.90 + spread;
-      if (year === 2026) return 2.75 + spread;
-    }
-  }
-
-  // 3. GBP BENCHMARKS (Source: Bank of England - SONIA)
-  if (symbol.includes('SONIA') || symbol.includes('GBP')) {
-    if (year <= 2021) return 0.05;
-    if (year === 2022) return 1.45;
-    if (year === 2023) return 4.93;
-    if (year === 2024) return month <= 8 ? 5.19 : 4.69;
-    if (year === 2025) return 4.44;
-    if (year === 2026) return 4.15;
-  }
-
-  // 4. JPY BENCHMARKS (Source: Bank of Japan - TONA / JBA - TIBOR)
-  if (symbol.includes('TONA') || symbol.includes('TIBOR') || symbol.includes('JPY')) {
-    if (symbol.includes('TIBOR')) {
-      if (year <= 2023) return 0.07;
-      if (year === 2024) return 0.22;
-      if (year === 2025) return 0.35;
-      if (year === 2026) return 0.35;
-    } else {
-      if (year <= 2023) return -0.02;
-      if (year === 2024) return month <= 7 ? 0.10 : 0.25;
-      if (year === 2025) return 0.25;
-      if (year === 2026) return 0.25;
-    }
-  }
-
-  // 5. CAD BENCHMARKS (Source: Bank of Canada - CORRA / Refinitiv - CDOR)
-  if (symbol.includes('CORRA') || symbol.includes('CDOR') || symbol.includes('CAD')) {
-    if (symbol.includes('CDOR')) {
-      if (year <= 2021) return 0.45;
-      if (year === 2022) return 2.50;
-      if (year === 2023) return 5.05;
-      if (year === 2024) return month <= 6 ? 5.20 : 4.00;
-      if (year === 2025) return 3.65;
-      if (year === 2026) return 3.40;
-    } else {
-      if (year <= 2021) return 0.25;
-      if (year === 2022) return 2.25;
-      if (year === 2023) return 4.75;
-      if (year === 2024) return month <= 6 ? 5.00 : 3.75;
-      if (year === 2025) return 3.50;
-      if (year === 2026) return 3.25;
-    }
-  }
-
-  // 6. AUD BENCHMARKS (Source: Reserve Bank of Australia - AONIA / ASX - BBSW)
-  if (symbol.includes('AONIA') || symbol.includes('BBSW') || symbol.includes('AUD')) {
-    if (symbol.includes('BBSW')) {
-      if (year <= 2021) return 0.25;
-      if (year === 2022) return 2.10;
-      if (year === 2023) return 4.15;
-      if (year === 2024) return 4.40;
-      if (year === 2025) return 4.20;
-      if (year === 2026) return 3.90;
-    } else {
-      if (year <= 2021) return 0.10;
-      if (year === 2022) return 1.85;
-      if (year === 2023) return 3.85;
-      if (year === 2024) return 4.35;
-      if (year === 2025) return 4.10;
-      if (year === 2026) return 3.80;
-    }
-  }
-
-  // 7. CHF BENCHMARKS (Source: SIX Swiss Exchange - SARON)
-  if (symbol.includes('SARON') || symbol.includes('CHF')) {
-    if (year <= 2021) return -0.75;
-    if (year === 2022) return 0.25;
-    if (year === 2023) return 1.70;
-    if (year === 2024) return month <= 6 ? 1.45 : 0.95;
-    if (year === 2025) return 0.95;
-    if (year === 2026) return 0.95;
-  }
-
-  return null;
+  const result = getOfficialHistoricalFixingRate(indexSymbol, dateStr, indexTenor);
+  return result ? result.ratePct : null;
 }
 
 /**

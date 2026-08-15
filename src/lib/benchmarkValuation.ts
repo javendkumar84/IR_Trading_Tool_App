@@ -1,5 +1,5 @@
 import { IRSwapTrade, ProductType, Currency, DayCountConvention } from '../types';
-import { generateCashflowSchedule, getBenchmarkFixingRate, derivePeriodFixingRate } from './cashflowGenerator';
+import { generateCashflowSchedule, getBenchmarkFixingRate, getPeriodFixingRate } from './cashflowGenerator';
 
 export interface SideBySidePeriodComparison {
   periodNumber: number;
@@ -117,7 +117,9 @@ export function runModelValidationCheck(
     const benchmarkDf = calculateBenchmarkDiscountFactor(valuationDate, payD, ccy, benchmarkZeroRate);
     
     // Benchmark Projected Cashflow ($)
-    const benchmarkRatePct = derivePeriodFixingRate(benchmarkZeroRate, toolP.periodNumber || 1, 0.032);
+    const indexSym = trade.floatingLeg?.index || trade.leg2?.index || ccy;
+    const indexTen = trade.floatingLeg?.indexTenor || trade.leg2?.indexTenor || '3M';
+    const benchmarkRatePct = getPeriodFixingRate(indexSym, toolP.startDate, toolP.periodNumber || 1, benchmarkZeroRate, indexTen);
     let benchmarkFlow = toolFlow;
 
     if (trade.productType === 'IRS' || trade.productType === 'CAP_FLOOR') {
