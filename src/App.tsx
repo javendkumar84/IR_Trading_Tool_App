@@ -8,6 +8,7 @@ import { DotnetSchemaViewer } from './components/DotnetSchemaViewer';
 import TradeAmendment from './components/TradeAmendment';
 import { RegressionQaSuite } from './components/RegressionQaSuite';
 import { TradeValidationDashboard } from './components/TradeValidationDashboard';
+import { ModelValidationTab } from './components/ModelValidationTab';
 import { EodRiskDashboard } from './components/EodRiskDashboard';
 import { PnlDashboard } from './components/PnlDashboard';
 import { VarDashboard } from './components/VarDashboard';
@@ -219,7 +220,7 @@ export default function App() {
         )}
 
         {activeTab === 'validation' && (
-          <TradeValidationDashboard />
+          <ModelValidationTab trades={trades} onTradeBooked={handleTradeBooked} />
         )}
 
         {activeTab === 'market-data' && (

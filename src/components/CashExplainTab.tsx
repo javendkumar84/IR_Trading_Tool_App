@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { IRSwapTrade, Currency } from '../types';
 import { generateCashflowSchedule, generateIndependentLeg1Schedule, generateIndependentLeg2Schedule, getBenchmarkFixingRate, derivePeriodFixingRate } from '../lib/cashflowGenerator';
+import { calculateBenchmarkDiscountFactor } from '../lib/benchmarkValuation';
 
 interface CashExplainTabProps {
   trades: IRSwapTrade[];
@@ -85,7 +86,7 @@ export const CashExplainTab: React.FC<CashExplainTabProps> = ({ trades }) => {
       const cpnRate = p.ratePct ?? p.rate ?? currentTrade.fixedLeg?.fixedRate ?? currentTrade.parRate ?? 3.85;
       const rawCash = p.cashflowAmount ?? p.cashflow ?? Math.round(notional * (cpnRate / 100) * dcf);
       
-      const df = p.discountFactor || 0.98;
+      const df = p.discountFactor || calculateBenchmarkDiscountFactor(today, payD, ccy, getBenchmarkFixingRate(ccy));
       const pvVal = Math.round(rawCash * df);
 
       // Formula breakdown string for hover tooltip
@@ -138,7 +139,7 @@ export const CashExplainTab: React.FC<CashExplainTabProps> = ({ trades }) => {
       const totalRate = p.ratePct ?? (fixRate + sprd / 100);
       const rawCash = p.cashflowAmount ?? p.cashflow ?? Math.round(notional * (totalRate / 100) * dcf);
       
-      const df = p.discountFactor || 0.985;
+      const df = p.discountFactor || calculateBenchmarkDiscountFactor(today, payD, ccy, getBenchmarkFixingRate(ccy));
       const pvVal = Math.round(rawCash * df);
 
       // Formula breakdown string for hover tooltip
