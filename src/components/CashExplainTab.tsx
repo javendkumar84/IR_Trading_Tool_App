@@ -13,7 +13,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { IRSwapTrade, Currency } from '../types';
-import { generateCashflowSchedule, generateIndependentLeg1Schedule, generateIndependentLeg2Schedule, getBenchmarkFixingRate, derivePeriodFixingRate } from '../lib/cashflowGenerator';
+import { generateCashflowSchedule, generateIndependentLeg1Schedule, generateIndependentLeg2Schedule, getBenchmarkFixingRate, derivePeriodFixingRate, getPeriodFixingRate } from '../lib/cashflowGenerator';
 import { calculateBenchmarkDiscountFactor } from '../lib/benchmarkValuation';
 
 interface CashExplainTabProps {
@@ -135,7 +135,7 @@ export const CashExplainTab: React.FC<CashExplainTabProps> = ({ trades }) => {
       const floatIdx = currentTrade.floatingLeg?.index || currentTrade.leg2?.index || 'SOFR';
       const floatTenor = currentTrade.floatingLeg?.indexTenor || currentTrade.leg2?.indexTenor;
       const defaultBase = getBenchmarkFixingRate(floatIdx || ccy, floatTenor);
-      const fixRate = p.fixingRate ?? p.floatingFixingRate ?? derivePeriodFixingRate(defaultBase, p.periodNumber || 1, 0.035);
+      const fixRate = p.fixingRate ?? p.floatingFixingRate ?? getPeriodFixingRate(floatIdx || ccy, p.startDate, p.periodNumber || 1, defaultBase, floatTenor);
       const sprd = p.spreadBps ?? currentTrade.floatingLeg?.spreadBps ?? currentTrade.leg2?.spreadBps ?? 0;
       const totalRate = p.ratePct ?? (fixRate + sprd / 100);
       const rawCash = p.cashflowAmount ?? p.cashflow ?? Math.round(notional * (totalRate / 100) * dcf);
