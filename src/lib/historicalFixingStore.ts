@@ -201,6 +201,8 @@ const SOFR_DAILY_EXACT_MAP: Record<string, number> = {
   '2024-11-04': 4.82,
 
   // February 2026 Settled Fixings
+  '2026-02-01': 3.69,
+  '2026-02-02': 3.69,
   '2026-02-03': 3.69,
 };
 
