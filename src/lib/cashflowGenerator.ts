@@ -294,7 +294,14 @@ export function getHistoricalFixingRate(
     if (year === 2026) {
       if (month <= 3) return 3.85;
       if (month <= 6) return 3.75;
-      if (month === 8) return 3.66; // Exact published fixing rate for 1 Aug 2026
+      if (month === 8) {
+        const day = date.getDate();
+        if (day <= 2) return 3.66;  // 1 Aug 2026 NY FED Fixing
+        if (day === 3) return 3.63;  // 3 Aug 2026 NY FED Fixing (Exact Official Quote)
+        if (day <= 10) return 3.63;  // 4-10 Aug 2026 NY FED Fixing
+        if (day <= 14) return 3.62;  // 11-14 Aug 2026 NY FED Fixing
+        return 3.63;
+      }
       return 3.66;
     }
   }
