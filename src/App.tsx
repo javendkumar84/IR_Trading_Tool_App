@@ -190,6 +190,7 @@ export default function App() {
 
         {activeTab === 'amend' && (
           <TradeAmendment
+            trades={trades}
             onAmendmentComplete={handleTradeBooked}
           />
         )}

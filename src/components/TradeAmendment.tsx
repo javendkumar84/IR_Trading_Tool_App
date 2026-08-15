@@ -7,6 +7,7 @@ import { generateIRSwapXml } from '../lib/xmlParser';
 import { PRODUCT_VALUATION_MODELS } from './XmlBooking';
 
 interface TradeAmendmentProps {
+  trades?: IRSwapTrade[];
   onAmendmentComplete?: (trade: IRSwapTrade) => void;
 }
 
@@ -18,7 +19,8 @@ interface TradeVersion {
   json_payload: string;
 }
 
-export default function TradeAmendment({ onAmendmentComplete }: TradeAmendmentProps) {
+export default function TradeAmendment({ trades: externalTrades, onAmendmentComplete }: TradeAmendmentProps) {
+  const [dbTradesList, setDbTradesList] = useState<IRSwapTrade[]>(externalTrades || []);
   const [tradeId, setTradeId] = useState<string>('');
   const [loadedTrade, setLoadedTrade] = useState<IRSwapTrade | null>(null);
   const [versions, setVersions] = useState<TradeVersion[]>([]);
@@ -31,6 +33,19 @@ export default function TradeAmendment({ onAmendmentComplete }: TradeAmendmentPr
   const [success, setSuccess] = useState<string>('');
   const [amendmentReason, setAmendmentReason] = useState<string>('');
   const [isAmending, setIsAmending] = useState(false);
+
+  useEffect(() => {
+    if (externalTrades && externalTrades.length > 0) {
+      setDbTradesList(externalTrades);
+    } else {
+      fetch('/api/trades')
+        .then((r) => r.json())
+        .then((data) => {
+          if (Array.isArray(data)) setDbTradesList(data);
+        })
+        .catch((e) => console.error('Failed to fetch trades for Amend selector:', e));
+    }
+  }, [externalTrades]);
 
   // Amendment form state
   const [amendments, setAmendments] = useState<Partial<IRSwapTrade>>({});
@@ -105,6 +120,32 @@ export default function TradeAmendment({ onAmendmentComplete }: TradeAmendmentPr
       businessDayConvention: 'MODFOLLOWING',
     };
 
+    const hasFixedLeg = leg1Type === 'FIXED' || leg2Type === 'FIXED';
+    const hasFloatingLeg = leg1Type === 'FLOATING' || leg2Type === 'FLOATING';
+
+    const fixedLegObj = hasFixedLeg ? {
+      direction: ((leg1Type === 'FIXED' ? leg1Direction : leg2Direction) === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED') as 'PAY_FIXED' | 'RECEIVE_FIXED',
+      notional: leg1Type === 'FIXED' ? leg1Notional : leg2Notional,
+      currency: leg1Type === 'FIXED' ? leg1Currency : leg2Currency,
+      fixedRate: leg1Type === 'FIXED' ? leg1FixedRate : leg2FixedRate,
+      dayCount: leg1Type === 'FIXED' ? leg1DayCount : leg2DayCount,
+      frequency: leg1Type === 'FIXED' ? leg1Freq : leg2Freq,
+      businessDayConvention: 'MODFOLLOWING' as const,
+    } : undefined;
+
+    const floatingLegObj = hasFloatingLeg ? {
+      direction: ((leg2Type === 'FLOATING' ? leg2Direction : leg1Direction) === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED') as 'PAY_FIXED' | 'RECEIVE_FIXED',
+      notional: leg2Type === 'FLOATING' ? leg2Notional : leg1Notional,
+      currency: leg2Type === 'FLOATING' ? leg2Currency : leg1Currency,
+      index: leg2Type === 'FLOATING' ? leg2Index : leg1Index,
+      indexTenor: leg2Type === 'FLOATING' ? leg2IndexTenor : leg1IndexTenor,
+      resetType: leg2Type === 'FLOATING' ? leg2ResetType : leg1ResetType,
+      spreadBps: leg2Type === 'FLOATING' ? leg2SpreadBps : leg1SpreadBps,
+      dayCount: leg2Type === 'FLOATING' ? leg2DayCount : leg1DayCount,
+      frequency: leg2Type === 'FLOATING' ? leg2Freq : leg1Freq,
+      businessDayConvention: 'MODFOLLOWING' as const,
+    } : undefined;
+
     const amendedTradeObj: IRSwapTrade = {
       ...base,
       ...amendments,
@@ -114,27 +155,8 @@ export default function TradeAmendment({ onAmendmentComplete }: TradeAmendmentPr
       valuationModel: valuationModel || base.valuationModel,
       leg1: updatedLeg1,
       leg2: updatedLeg2,
-      fixedLeg: {
-        direction: leg1Direction === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED',
-        notional: leg1Notional,
-        currency: leg1Currency,
-        fixedRate: leg1FixedRate,
-        dayCount: leg1DayCount,
-        frequency: leg1Freq,
-        businessDayConvention: 'MODFOLLOWING',
-      },
-      floatingLeg: {
-        direction: leg2Direction === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED',
-        notional: leg2Notional,
-        currency: leg2Currency,
-        index: leg2Index,
-        indexTenor: leg2IndexTenor,
-        resetType: leg2ResetType,
-        spreadBps: leg2SpreadBps,
-        dayCount: leg2DayCount,
-        frequency: leg2Freq,
-        businessDayConvention: 'MODFOLLOWING',
-      },
+      fixedLeg: fixedLegObj,
+      floatingLeg: floatingLegObj,
     };
 
     setPreviewAmendedTrade(amendedTradeObj);
@@ -155,10 +177,10 @@ export default function TradeAmendment({ onAmendmentComplete }: TradeAmendmentPr
     // Populate Leg 1
     if (trade.leg1) {
       setLeg1Type(trade.leg1.legType || 'FIXED');
-      setLeg1Direction(trade.leg1.direction === 'PAY_FIXED' ? 'PAY' : trade.leg1.direction === 'RECEIVE_FIXED' ? 'RECEIVE' : (trade.leg1.direction as any) || 'PAY');
-      setLeg1Currency(trade.leg1.currency || 'USD');
+      setLeg1Direction(trade.leg1.direction === 'PAY' || trade.leg1.direction === 'PAY_FIXED' ? 'PAY' : 'RECEIVE');
+      setLeg1Currency(trade.leg1.currency || trade.fixedLeg?.currency || 'USD');
       setLeg1Notional(trade.leg1.notional || trade.notionalUsd || 25000000);
-      setLeg1FixedRate(trade.leg1.fixedRate || trade.parRate || 3.85);
+      setLeg1FixedRate(trade.leg1.fixedRate ?? trade.parRate ?? 3.85);
       setLeg1Index(trade.leg1.index || 'SOFR');
       setLeg1IndexTenor(trade.leg1.indexTenor || '3M');
       setLeg1ResetType(trade.leg1.resetType || 'ADVANCE');
@@ -178,10 +200,10 @@ export default function TradeAmendment({ onAmendmentComplete }: TradeAmendmentPr
     // Populate Leg 2
     if (trade.leg2) {
       setLeg2Type(trade.leg2.legType || 'FLOATING');
-      setLeg2Direction(trade.leg2.direction === 'PAY_FIXED' ? 'PAY' : trade.leg2.direction === 'RECEIVE_FIXED' ? 'RECEIVE' : (trade.leg2.direction as any) || 'RECEIVE');
-      setLeg2Currency(trade.leg2.currency || trade.fixedLeg?.currency || 'USD');
+      setLeg2Direction(trade.leg2.direction === 'PAY' || trade.leg2.direction === 'PAY_FIXED' ? 'PAY' : 'RECEIVE');
+      setLeg2Currency(trade.leg2.currency || trade.floatingLeg?.currency || 'USD');
       setLeg2Notional(trade.leg2.notional || trade.floatingLeg?.notional || 25000000);
-      setLeg2FixedRate(trade.leg2.fixedRate || 3.85);
+      setLeg2FixedRate(trade.leg2.fixedRate ?? 3.85);
       setLeg2Index(trade.leg2.index || 'SOFR');
       setLeg2IndexTenor(trade.leg2.indexTenor || '1M');
       setLeg2ResetType(trade.leg2.resetType || 'ADVANCE');
@@ -198,7 +220,7 @@ export default function TradeAmendment({ onAmendmentComplete }: TradeAmendmentPr
       setLeg2ResetType(trade.floatingLeg?.resetType || 'ADVANCE');
       setLeg2SpreadBps(trade.floatingLeg?.spreadBps || 0);
       setLeg2DayCount(trade.floatingLeg?.dayCount || 'ACT/360');
-      setLeg2Freq(trade.floatingLeg.frequency || '3M');
+      setLeg2Freq(trade.floatingLeg?.frequency || '3M');
     }
 
     setAmendments({});
@@ -320,6 +342,32 @@ export default function TradeAmendment({ onAmendmentComplete }: TradeAmendmentPr
         businessDayConvention: 'MODFOLLOWING',
       };
 
+      const hasFixedLeg = leg1Type === 'FIXED' || leg2Type === 'FIXED';
+      const hasFloatingLeg = leg1Type === 'FLOATING' || leg2Type === 'FLOATING';
+
+      const fixedLegObj = hasFixedLeg ? {
+        direction: ((leg1Type === 'FIXED' ? leg1Direction : leg2Direction) === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED') as 'PAY_FIXED' | 'RECEIVE_FIXED',
+        notional: leg1Type === 'FIXED' ? leg1Notional : leg2Notional,
+        currency: leg1Type === 'FIXED' ? leg1Currency : leg2Currency,
+        fixedRate: leg1Type === 'FIXED' ? leg1FixedRate : leg2FixedRate,
+        dayCount: leg1Type === 'FIXED' ? leg1DayCount : leg2DayCount,
+        frequency: leg1Type === 'FIXED' ? leg1Freq : leg2Freq,
+        businessDayConvention: 'MODFOLLOWING' as const,
+      } : undefined;
+
+      const floatingLegObj = hasFloatingLeg ? {
+        direction: ((leg2Type === 'FLOATING' ? leg2Direction : leg1Direction) === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED') as 'PAY_FIXED' | 'RECEIVE_FIXED',
+        notional: leg2Type === 'FLOATING' ? leg2Notional : leg1Notional,
+        currency: leg2Type === 'FLOATING' ? leg2Currency : leg1Currency,
+        index: leg2Type === 'FLOATING' ? leg2Index : leg1Index,
+        indexTenor: leg2Type === 'FLOATING' ? leg2IndexTenor : leg1IndexTenor,
+        resetType: leg2Type === 'FLOATING' ? leg2ResetType : leg1ResetType,
+        spreadBps: leg2Type === 'FLOATING' ? leg2SpreadBps : leg1SpreadBps,
+        dayCount: leg2Type === 'FLOATING' ? leg2DayCount : leg1DayCount,
+        frequency: leg2Type === 'FLOATING' ? leg2Freq : leg1Freq,
+        businessDayConvention: 'MODFOLLOWING' as const,
+      } : undefined;
+
       const finalAmendments: Partial<IRSwapTrade> = {
         ...amendments,
         counterpartyName,
@@ -328,27 +376,8 @@ export default function TradeAmendment({ onAmendmentComplete }: TradeAmendmentPr
         status: newStatus,
         leg1: updatedLeg1,
         leg2: updatedLeg2,
-        fixedLeg: {
-          direction: leg1Direction === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED',
-          notional: leg1Notional,
-          currency: leg1Currency,
-          fixedRate: leg1FixedRate,
-          dayCount: leg1DayCount,
-          frequency: leg1Freq,
-          businessDayConvention: 'MODFOLLOWING',
-        },
-        floatingLeg: {
-          direction: leg2Direction === 'PAY' ? 'PAY_FIXED' : 'RECEIVE_FIXED',
-          notional: leg2Notional,
-          currency: leg2Currency,
-          index: leg2Index,
-          indexTenor: leg2IndexTenor,
-          resetType: leg2ResetType,
-          spreadBps: leg2SpreadBps,
-          dayCount: leg2DayCount,
-          frequency: leg2Freq,
-          businessDayConvention: 'MODFOLLOWING',
-        },
+        fixedLeg: fixedLegObj,
+        floatingLeg: floatingLegObj,
       };
 
       const response = await fetch(`/api/trades/${loadedTrade.tradeId}/amend`, {
@@ -397,25 +426,59 @@ export default function TradeAmendment({ onAmendmentComplete }: TradeAmendmentPr
 
       {/* Load Trade Section */}
       <div className="mb-6 border-b border-slate-800 pb-6">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-300 mb-3 font-mono">1. Load Trade by ID</h3>
-        <div className="flex gap-3 mb-3">
-          <input
-            type="text"
-            value={tradeId}
-            onChange={(e) => {
-              setTradeId(e.target.value);
-              setError('');
-            }}
-            placeholder="Enter Trade ID (e.g., IRS-2026-000101)"
-            className="flex-1 px-4 py-2.5 bg-[#16181d] border border-slate-700 rounded-lg text-white font-mono placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-          />
-          <button
-            onClick={loadTrade}
-            disabled={loading}
-            className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg disabled:opacity-50 font-bold uppercase tracking-wider transition-colors cursor-pointer"
-          >
-            {loading ? 'Loading...' : 'Load Trade'}
-          </button>
+        <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-300 mb-3 font-mono">1. Select or Load Trade from SQLite Database</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+          <div>
+            <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1 font-mono">Booked Trades in SQLite</label>
+            <select
+              onChange={(e) => {
+                const selectedId = e.target.value;
+                setTradeId(selectedId);
+                if (selectedId) {
+                  const listToSearch = (externalTrades && externalTrades.length > 0) ? externalTrades : dbTradesList;
+                  const found = listToSearch.find((t) => t.tradeId === selectedId);
+                  if (found) {
+                    populateFormFromTrade(found);
+                    fetch(`/api/trades/${selectedId}/versions`).then((r) => r.ok ? r.json() : []).then(setVersions);
+                  }
+                }
+              }}
+              value={loadedTrade?.tradeId || tradeId}
+              className="w-full px-3 py-2.5 bg-[#16181d] border border-slate-700 rounded-lg text-white font-mono cursor-pointer"
+            >
+              <option value="">-- Select a Booked Trade --</option>
+              {((externalTrades && externalTrades.length > 0) ? externalTrades : dbTradesList).map((t) => {
+                const legInfo = t.leg1 && t.leg2 ? `${t.leg1.legType}/${t.leg2.legType}` : t.fixedLeg ? 'FIXED/FLOAT' : 'FLOAT/FLOAT';
+                return (
+                  <option key={t.tradeId} value={t.tradeId}>
+                    {t.tradeId} | {t.productType} ({legInfo}) | {t.counterpartyName} ({t.status})
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+          <div>
+            <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1 font-mono">Search by Trade ID</label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={tradeId}
+                onChange={(e) => {
+                  setTradeId(e.target.value);
+                  setError('');
+                }}
+                placeholder="e.g. IRS-2026-000101"
+                className="flex-1 px-4 py-2.5 bg-[#16181d] border border-slate-700 rounded-lg text-white font-mono placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              />
+              <button
+                onClick={loadTrade}
+                disabled={loading}
+                className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg disabled:opacity-50 font-bold uppercase tracking-wider transition-colors cursor-pointer"
+              >
+                {loading ? 'Loading...' : 'Load'}
+              </button>
+            </div>
+          </div>
         </div>
 
         {error && (
