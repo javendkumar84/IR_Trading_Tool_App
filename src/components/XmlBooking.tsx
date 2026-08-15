@@ -1887,10 +1887,15 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
           fixedRate: leg1Type === 'FIXED' ? fixedRate : undefined,
           index: leg1Type === 'FLOATING' ? leg1Index : undefined,
           indexTenor: leg1Type === 'FLOATING' ? leg1Tenor : undefined,
+          resetType: leg1Type === 'FLOATING' ? leg1ResetType : undefined,
           spreadBps: leg1Type === 'FLOATING' ? leg1SpreadBps : undefined,
           dayCount: fixedDayCount,
           frequency: fixedFreq,
-          businessDayConvention: 'MODFOLLOWING',
+          businessDayConvention: leg1PaymentRoll || 'MODFOLLOWING',
+          accrualCalendar: leg1AccrualCalendar,
+          paymentCalendar: leg1PaymentCalendar,
+          accrualRollConvention: leg1AccrualRoll,
+          paymentRollConvention: leg1PaymentRoll,
         };
         tradePayload.leg2 = {
           legType: leg2Type,
@@ -1900,10 +1905,15 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
           fixedRate: leg2Type === 'FIXED' ? leg2FixedRate : undefined,
           index: leg2Type === 'FLOATING' ? floatingIndex : undefined,
           indexTenor: leg2Type === 'FLOATING' ? floatingTenor : undefined,
+          resetType: leg2Type === 'FLOATING' ? leg2ResetType : undefined,
           spreadBps: leg2Type === 'FLOATING' ? spreadBps : undefined,
           dayCount: floatingDayCount,
           frequency: floatingFreq,
-          businessDayConvention: 'MODFOLLOWING',
+          businessDayConvention: leg2PaymentRoll || 'MODFOLLOWING',
+          accrualCalendar: leg2AccrualCalendar,
+          paymentCalendar: leg2PaymentCalendar,
+          accrualRollConvention: leg2AccrualRoll,
+          paymentRollConvention: leg2PaymentRoll,
         };
 
         if (leg1Type === 'FLOATING' && leg2Type === 'FLOATING') {

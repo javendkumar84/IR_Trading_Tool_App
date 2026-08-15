@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { IRSwapTrade, TradeStatus, Currency, DayCountConvention, PaymentFrequency, FloatingIndex, LegType, GenericSwapLeg, IndexTenor, ResetType } from '../types';
+import { IRSwapTrade, TradeStatus, Currency, DayCountConvention, PaymentFrequency, FloatingIndex, LegType, GenericSwapLeg, IndexTenor, ResetType, BusinessCalendar, BusinessDayRollConvention } from '../types';
 import { ChevronDown, ChevronUp, History, Save, X, Layers, Settings, RefreshCw, AlertCircle, CheckCircle2, FileCode, Cpu } from 'lucide-react';
 import { getCounterparties } from '../lib/counterpartyStore';
 import { generateCashflowSchedule, generateIndependentLeg1Schedule, generateIndependentLeg2Schedule } from '../lib/cashflowGenerator';
@@ -78,9 +78,25 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
 
   // Trade Header State for Amendment
   const [counterpartyName, setCounterpartyName] = useState<string>('');
+  const [counterpartyLei, setCounterpartyLei] = useState<string>('');
+  const [traderId, setTraderId] = useState<string>('');
   const [effectiveDate, setEffectiveDate] = useState<string>('');
   const [maturityDate, setMaturityDate] = useState<string>('');
   const [valuationModel, setValuationModel] = useState<string>('');
+  const [clearingHouse, setClearingHouse] = useState<string>('LCH');
+  const [calculationAgent, setCalculationAgent] = useState<string>('CALC_AGENT_SELF');
+
+  // Leg 1 Conventions
+  const [leg1AccrualCal, setLeg1AccrualCal] = useState<BusinessCalendar>('USNY');
+  const [leg1PaymentCal, setLeg1PaymentCal] = useState<BusinessCalendar>('USNY');
+  const [leg1AccrualRoll, setLeg1AccrualRoll] = useState<BusinessDayRollConvention>('MODFOLLOWING');
+  const [leg1PaymentRoll, setLeg1PaymentRoll] = useState<BusinessDayRollConvention>('MODFOLLOWING');
+
+  // Leg 2 Conventions
+  const [leg2AccrualCal, setLeg2AccrualCal] = useState<BusinessCalendar>('USNY');
+  const [leg2PaymentCal, setLeg2PaymentCal] = useState<BusinessCalendar>('USNY');
+  const [leg2AccrualRoll, setLeg2AccrualRoll] = useState<BusinessDayRollConvention>('MODFOLLOWING');
+  const [leg2PaymentRoll, setLeg2PaymentRoll] = useState<BusinessDayRollConvention>('MODFOLLOWING');
 
   // Pending amendment changes & preview state
   const [hasPendingAmendmentChanges, setHasPendingAmendmentChanges] = useState<boolean>(false);
@@ -102,7 +118,11 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
       spreadBps: leg1Type === 'FLOATING' ? leg1SpreadBps : undefined,
       dayCount: leg1DayCount,
       frequency: leg1Freq,
-      businessDayConvention: 'MODFOLLOWING',
+      businessDayConvention: leg1PaymentRoll || 'MODFOLLOWING',
+      accrualCalendar: leg1AccrualCal,
+      paymentCalendar: leg1PaymentCal,
+      accrualRollConvention: leg1AccrualRoll,
+      paymentRollConvention: leg1PaymentRoll,
     };
 
     const updatedLeg2: GenericSwapLeg = {
@@ -117,7 +137,11 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
       spreadBps: leg2Type === 'FLOATING' ? leg2SpreadBps : undefined,
       dayCount: leg2DayCount,
       frequency: leg2Freq,
-      businessDayConvention: 'MODFOLLOWING',
+      businessDayConvention: leg2PaymentRoll || 'MODFOLLOWING',
+      accrualCalendar: leg2AccrualCal,
+      paymentCalendar: leg2PaymentCal,
+      accrualRollConvention: leg2AccrualRoll,
+      paymentRollConvention: leg2PaymentRoll,
     };
 
     const hasFixedLeg = leg1Type === 'FIXED' || leg2Type === 'FIXED';
@@ -130,7 +154,11 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
       fixedRate: leg1Type === 'FIXED' ? leg1FixedRate : leg2FixedRate,
       dayCount: leg1Type === 'FIXED' ? leg1DayCount : leg2DayCount,
       frequency: leg1Type === 'FIXED' ? leg1Freq : leg2Freq,
-      businessDayConvention: 'MODFOLLOWING' as const,
+      businessDayConvention: (leg1Type === 'FIXED' ? leg1PaymentRoll : leg2PaymentRoll) || 'MODFOLLOWING',
+      accrualCalendar: leg1Type === 'FIXED' ? leg1AccrualCal : leg2AccrualCal,
+      paymentCalendar: leg1Type === 'FIXED' ? leg1PaymentCal : leg2PaymentCal,
+      accrualRollConvention: leg1Type === 'FIXED' ? leg1AccrualRoll : leg2AccrualRoll,
+      paymentRollConvention: leg1Type === 'FIXED' ? leg1PaymentRoll : leg2PaymentRoll,
     } : undefined;
 
     const floatingLegObj = hasFloatingLeg ? {
@@ -143,15 +171,23 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
       spreadBps: leg2Type === 'FLOATING' ? leg2SpreadBps : leg1SpreadBps,
       dayCount: leg2Type === 'FLOATING' ? leg2DayCount : leg1DayCount,
       frequency: leg2Type === 'FLOATING' ? leg2Freq : leg1Freq,
-      businessDayConvention: 'MODFOLLOWING' as const,
+      businessDayConvention: (leg2Type === 'FLOATING' ? leg2PaymentRoll : leg1PaymentRoll) || 'MODFOLLOWING',
+      accrualCalendar: leg2Type === 'FLOATING' ? leg2AccrualCal : leg1AccrualCal,
+      paymentCalendar: leg2Type === 'FLOATING' ? leg2PaymentCal : leg1PaymentCal,
+      accrualRollConvention: leg2Type === 'FLOATING' ? leg2AccrualRoll : leg1AccrualRoll,
+      paymentRollConvention: leg2Type === 'FLOATING' ? leg2PaymentRoll : leg1PaymentRoll,
     } : undefined;
 
     const amendedTradeObj: IRSwapTrade = {
       ...base,
       ...amendments,
       counterpartyName,
+      counterpartyLei,
+      traderId,
       effectiveDate,
       maturityDate,
+      clearingHouse,
+      calculationAgent,
       valuationModel: valuationModel || base.valuationModel,
       leg1: updatedLeg1,
       leg2: updatedLeg2,
@@ -169,8 +205,12 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
   const populateFormFromTrade = (trade: IRSwapTrade) => {
     setLoadedTrade(trade);
     setCounterpartyName(trade.counterpartyName || '');
+    setCounterpartyLei(trade.counterpartyLei || '');
+    setTraderId(trade.traderId || 'TRADER_01');
     setEffectiveDate(trade.effectiveDate || '');
     setMaturityDate(trade.maturityDate || '');
+    setClearingHouse(trade.clearingHouse || 'LCH');
+    setCalculationAgent(trade.calculationAgent || 'CALC_AGENT_SELF');
     const productModels = PRODUCT_VALUATION_MODELS[trade.productType || 'IRS'] || [];
     setValuationModel(trade.valuationModel || (productModels[0]?.id || ''));
 
@@ -187,6 +227,10 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
       setLeg1SpreadBps(trade.leg1.spreadBps || 0);
       setLeg1DayCount(trade.leg1.dayCount || '30/360');
       setLeg1Freq(trade.leg1.frequency || '6M');
+      setLeg1AccrualCal(trade.leg1.accrualCalendar || 'USNY');
+      setLeg1PaymentCal(trade.leg1.paymentCalendar || 'USNY');
+      setLeg1AccrualRoll(trade.leg1.accrualRollConvention || 'MODFOLLOWING');
+      setLeg1PaymentRoll(trade.leg1.paymentRollConvention || 'MODFOLLOWING');
     } else if (trade.fixedLeg) {
       setLeg1Type('FIXED');
       setLeg1Direction(trade.fixedLeg?.direction === 'PAY_FIXED' ? 'PAY' : 'RECEIVE');
@@ -195,6 +239,10 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
       setLeg1FixedRate(trade.fixedLeg?.fixedRate || 3.85);
       setLeg1DayCount(trade.fixedLeg?.dayCount || '30/360');
       setLeg1Freq(trade.fixedLeg?.frequency || '6M');
+      setLeg1AccrualCal(trade.fixedLeg?.accrualCalendar || 'USNY');
+      setLeg1PaymentCal(trade.fixedLeg?.paymentCalendar || 'USNY');
+      setLeg1AccrualRoll(trade.fixedLeg?.accrualRollConvention || 'MODFOLLOWING');
+      setLeg1PaymentRoll(trade.fixedLeg?.paymentRollConvention || 'MODFOLLOWING');
     }
 
     // Populate Leg 2
@@ -210,6 +258,10 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
       setLeg2SpreadBps(trade.leg2.spreadBps || 0);
       setLeg2DayCount(trade.leg2.dayCount || 'ACT/360');
       setLeg2Freq(trade.leg2.frequency || '3M');
+      setLeg2AccrualCal(trade.leg2.accrualCalendar || 'USNY');
+      setLeg2PaymentCal(trade.leg2.paymentCalendar || 'USNY');
+      setLeg2AccrualRoll(trade.leg2.accrualRollConvention || 'MODFOLLOWING');
+      setLeg2PaymentRoll(trade.leg2.paymentRollConvention || 'MODFOLLOWING');
     } else if (trade.floatingLeg) {
       setLeg2Type('FLOATING');
       setLeg2Direction(trade.floatingLeg?.direction === 'PAY_FIXED' ? 'PAY' : 'RECEIVE');
@@ -221,6 +273,8 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
       setLeg2SpreadBps(trade.floatingLeg?.spreadBps || 0);
       setLeg2DayCount(trade.floatingLeg?.dayCount || 'ACT/360');
       setLeg2Freq(trade.floatingLeg?.frequency || '3M');
+      setLeg2AccrualCal(trade.floatingLeg?.accrualCalendar || 'USNY');
+      setLeg2PaymentCal(trade.floatingLeg?.paymentCalendar || 'USNY');
     }
 
     setAmendments({});
