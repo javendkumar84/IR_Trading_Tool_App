@@ -221,24 +221,24 @@ export function getBenchmarkFixingRate(indexOrCcy?: string, indexTenor?: IndexTe
 
   if (upper.includes('SOFR') || upper.includes('USD')) baseRate = 3.85;
   else if (upper.includes('EURIBOR') || upper.includes('ESTR') || upper.includes('EUR')) baseRate = 2.75;
-  else if (upper.includes('SONIA') || upper.includes('GBP')) baseRate = 4.25;
-  else if (upper.includes('TONA') || upper.includes('JPY')) baseRate = 0.45;
-  else if (upper.includes('SARON') || upper.includes('CHF')) baseRate = 1.15;
+  else if (upper.includes('SONIA') || upper.includes('GBP')) baseRate = 4.15;
+  else if (upper.includes('TONA') || upper.includes('JPY')) baseRate = 0.25;
+  else if (upper.includes('SARON') || upper.includes('CHF')) baseRate = 1.10;
   else if (upper.includes('CDOR') || upper.includes('CORRA') || upper.includes('CAD')) baseRate = 3.25;
   else if (upper.includes('AONIA') || upper.includes('BBSW') || upper.includes('AUD')) baseRate = 3.80;
 
   if (indexTenor) {
     const tUpper = indexTenor.toUpperCase();
-    if (tUpper === '1D') return parseFloat((baseRate - 0.05).toFixed(4));
-    if (tUpper === '1M') return parseFloat((baseRate - 0.02).toFixed(4));
-    if (tUpper === '3M') return parseFloat(baseRate.toFixed(4));
-    if (tUpper === '6M') return parseFloat((baseRate + 0.07).toFixed(4));
-    if (tUpper === '12M' || tUpper === '1Y') return parseFloat((baseRate + 0.15).toFixed(4));
-    if (tUpper === '2Y') return parseFloat((baseRate + 0.10).toFixed(4));
-    if (tUpper === '5Y') return parseFloat((baseRate + 0.20).toFixed(4));
-    if (tUpper === '10Y') return parseFloat((baseRate + 0.30).toFixed(4));
-    if (tUpper === '20Y') return parseFloat((baseRate + 0.40).toFixed(4));
-    if (tUpper === '30Y') return parseFloat((baseRate + 0.45).toFixed(4));
+    if (tUpper === '1D') return parseFloat(baseRate.toFixed(4));                                // SOFR 1D  = 3.8500%
+    if (tUpper === '1M') return parseFloat((baseRate + 0.05).toFixed(4));                       // SOFR 1M  = 3.9000%
+    if (tUpper === '3M') return parseFloat((baseRate + 0.12).toFixed(4));                       // SOFR 3M  = 3.9700%
+    if (tUpper === '6M') return parseFloat((baseRate + 0.18).toFixed(4));                       // SOFR 6M  = 4.0300%
+    if (tUpper === '12M' || tUpper === '1Y') return parseFloat((baseRate + 0.25).toFixed(4)); // SOFR 1Y  = 4.1000%
+    if (tUpper === '2Y') return parseFloat((baseRate + 0.38).toFixed(4));                       // SOFR 2Y  = 4.2300%
+    if (tUpper === '5Y') return parseFloat((baseRate + 0.55).toFixed(4));                       // SOFR 5Y  = 4.4000%
+    if (tUpper === '10Y') return parseFloat((baseRate + 0.72).toFixed(4));                      // SOFR 10Y = 4.5700%
+    if (tUpper === '20Y') return parseFloat((baseRate + 0.80).toFixed(4));                      // SOFR 20Y = 4.6500%
+    if (tUpper === '30Y') return parseFloat((baseRate + 0.85).toFixed(4));                      // SOFR 30Y = 4.7000%
   }
 
   return baseRate;
