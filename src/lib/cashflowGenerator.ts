@@ -1,6 +1,7 @@
 import { IRSwapTrade, ProductType, Currency, DayCountConvention, PaymentFrequency, ResetType, GenericSwapLeg, LegType, BusinessCalendar, BusinessDayRollConvention, IndexTenor } from '../types';
 import { convertCurrency } from './fxRates';
 import { getOfficialHistoricalFixingRate, OFFICIAL_INDEX_REGISTRY } from './historicalFixingStore';
+import { adjustBusinessDay, isBusinessDay, getBusinessDayDifference } from './businessCalendar';
 
 export interface CashflowPeriod {
   periodNumber: number;
@@ -399,11 +400,16 @@ export function generateIRSwapCashflowSchedule(
       const irDelta = Math.round(leg1Notional * leg1Dcf * 0.0001 * discountFactor);
       totalIrDelta += irDelta;
 
+      const accrualCal = leg1.accrualCalendar || leg2.accrualCalendar || trade.fixedLeg?.accrualCalendar || trade.floatingLeg?.accrualCalendar || 'USNY';
+      const paymentCal = leg1.paymentCalendar || leg2.paymentCalendar || trade.fixedLeg?.paymentCalendar || trade.floatingLeg?.paymentCalendar || 'USNY';
+      const accrualRoll = leg1.accrualRollConvention || leg2.accrualRollConvention || trade.fixedLeg?.accrualRollConvention || trade.floatingLeg?.accrualRollConvention || 'MODFOLLOWING';
+      const paymentRoll = leg1.paymentRollConvention || leg2.paymentRollConvention || trade.fixedLeg?.paymentRollConvention || trade.floatingLeg?.paymentRollConvention || 'MODFOLLOWING';
+
       const resetType: ResetType = leg2.resetType || leg1.resetType || trade.floatingLeg?.resetType || 'ADVANCE';
-      const resetStartDate = ov.resetStartDate || effStart;
-      const resetEndDate = ov.resetEndDate || effEnd;
-      const payResetDate = ov.payResetDate || addDays(effEnd, 2);
-      const fixingDate = resetType === 'ARREARS' ? addDays(effEnd, -2) : addDays(effStart, -2);
+      const resetStartDate = ov.resetStartDate || adjustBusinessDay(effStart, accrualCal, accrualRoll);
+      const resetEndDate = ov.resetEndDate || adjustBusinessDay(effEnd, accrualCal, accrualRoll);
+      const payResetDate = ov.payResetDate || adjustBusinessDay(effEnd, paymentCal, paymentRoll);
+      const fixingDate = adjustBusinessDay(resetType === 'ARREARS' ? addDays(effEnd, -2) : addDays(effStart, -2), accrualCal, 'PRECEDING');
 
       const leg1Desc = leg1.legType === 'FIXED' ? `Fixed: ${leg1Rate}%` : `Float (${leg1.index || 'SOFR'} ${leg1.indexTenor || '3M'}): ${leg1Fixing}% + ${leg1Spread}bps`;
       const leg2Desc = leg2.legType === 'FIXED' ? `Fixed: ${leg2Rate}%` : `Float (${leg2.index || 'SOFR'} ${leg2.indexTenor || '1M'}): ${leg2Fixing}% + ${leg2Spread}bps`;
@@ -1732,12 +1738,17 @@ export function generateIndependentLeg1Schedule(
     const ov = overrides[`L1-${periodNum}`] || overrides[`P-${periodNum}`] || {};
     const effStart = ov.startDate || currStart;
     const effEnd = ov.endDate || defaultEnd;
-    const resetStart = ov.resetStartDate || effStart;
-    const resetEnd = ov.resetEndDate || effEnd;
-    const payDate = ov.payResetDate || addDays(effEnd, 2);
+    const accrualCal = trade.leg1?.accrualCalendar || trade.fixedLeg?.accrualCalendar || 'USNY';
+    const paymentCal = trade.leg1?.paymentCalendar || trade.fixedLeg?.paymentCalendar || 'USNY';
+    const accrualRoll = trade.leg1?.accrualRollConvention || trade.fixedLeg?.accrualRollConvention || 'MODFOLLOWING';
+    const paymentRoll = trade.leg1?.paymentRollConvention || trade.fixedLeg?.paymentRollConvention || 'MODFOLLOWING';
 
-    const numDays = getNumberOfDays(effStart, effEnd);
-    const dcf = getDayCountFraction(effStart, effEnd, convention);
+    const resetStart = ov.resetStartDate || adjustBusinessDay(effStart, accrualCal, accrualRoll);
+    const resetEnd = ov.resetEndDate || adjustBusinessDay(effEnd, accrualCal, accrualRoll);
+    const payDate = ov.payResetDate || adjustBusinessDay(effEnd, paymentCal, paymentRoll);
+
+    const numDays = getNumberOfDays(resetStart, resetEnd);
+    const dcf = getDayCountFraction(resetStart, resetEnd, convention);
 
     let flowRate = ratePct;
     let periodFixing: number | undefined = undefined;
@@ -1859,12 +1870,17 @@ export function generateIndependentLeg2Schedule(
     const ov = overrides[`L2-${periodNum}`] || overrides[`P-${periodNum}`] || {};
     const effStart = ov.startDate || currStart;
     const effEnd = ov.endDate || defaultEnd;
-    const resetStart = ov.resetStartDate || effStart;
-    const resetEnd = ov.resetEndDate || effEnd;
-    const payDate = ov.payResetDate || addDays(effEnd, 2);
+    const accrualCal = trade.leg2?.accrualCalendar || trade.floatingLeg?.accrualCalendar || 'USNY';
+    const paymentCal = trade.leg2?.paymentCalendar || trade.floatingLeg?.paymentCalendar || 'USNY';
+    const accrualRoll = trade.leg2?.accrualRollConvention || trade.floatingLeg?.accrualRollConvention || 'MODFOLLOWING';
+    const paymentRoll = trade.leg2?.paymentRollConvention || trade.floatingLeg?.paymentRollConvention || 'MODFOLLOWING';
 
-    const numDays = getNumberOfDays(effStart, effEnd);
-    const dcf = getDayCountFraction(effStart, effEnd, convention);
+    const resetStart = ov.resetStartDate || adjustBusinessDay(effStart, accrualCal, accrualRoll);
+    const resetEnd = ov.resetEndDate || adjustBusinessDay(effEnd, accrualCal, accrualRoll);
+    const payDate = ov.payResetDate || adjustBusinessDay(effEnd, paymentCal, paymentRoll);
+
+    const numDays = getNumberOfDays(resetStart, resetEnd);
+    const dcf = getDayCountFraction(resetStart, resetEnd, convention);
 
     const base2 = getBenchmarkFixingRate(trade.leg2?.index || trade.floatingLeg?.index || ccy, trade.leg2?.indexTenor || trade.floatingLeg?.indexTenor);
     const periodFixingRate = getPeriodFixingRate(trade.leg2?.index || trade.floatingLeg?.index || ccy, effStart, periodNum, base2, trade.leg2?.indexTenor || trade.floatingLeg?.indexTenor);
