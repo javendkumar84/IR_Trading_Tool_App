@@ -37,7 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'audit', label: 'Audit Trail', icon: ShieldCheck },
     { id: 'dotnet', label: '.NET Models', icon: Server },
     { id: 'qa', label: 'QA Suite', icon: TestTubes },
-    { id: 'validation', label: 'Validation', icon: CheckSquare },
+    { id: 'validation', label: 'Model Validation', icon: CheckSquare },
   ] as const;
 
   const handleTabClick = (id: typeof activeTab) => {
