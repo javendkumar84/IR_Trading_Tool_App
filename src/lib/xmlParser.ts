@@ -32,6 +32,17 @@ import {
   getEstimatedParRate,
 } from './financialMath';
 
+export function parseTenorParts(tenor: string | undefined, defaultMult = '3', defaultUnit = 'M') {
+  if (!tenor) return { periodMultiplier: defaultMult, period: defaultUnit };
+  const mult = tenor.replace(/\D/g, '') || defaultMult;
+  let unit = tenor.replace(/\d/g, '').toUpperCase() || defaultUnit;
+  if (unit === 'Y' || unit === 'YEAR' || unit === 'YEARS') unit = 'Y';
+  else if (unit === 'D' || unit === 'DAY' || unit === 'DAYS') unit = 'D';
+  else if (unit === 'W' || unit === 'WEEK' || unit === 'WEEKS') unit = 'W';
+  else unit = 'M';
+  return { periodMultiplier: mult, period: unit };
+}
+
 /**
  * Generates ISO 20022 / FpML 5.11 compliant XML representation for any derivative product
  */
@@ -60,16 +71,10 @@ export function generateIRSwapXml(trade: Partial<IRSwapTrade>): string {
                 terminationDate: { unadjustedDate: maturityDate },
               },
               paymentDates: {
-                paymentFrequency: {
-                  periodMultiplier: (trade.leg1.frequency || '3M').replace(/\D/g, '') || '3',
-                  period: 'M',
-                },
+                paymentFrequency: parseTenorParts(trade.leg1.frequency || '3M', '3', 'M'),
               },
               resetDates: {
-                resetFrequency: {
-                  periodMultiplier: (trade.leg1.indexTenor || '1M').replace(/\D/g, '') || '1',
-                  period: 'M',
-                },
+                resetFrequency: parseTenorParts(trade.leg1.indexTenor || '1M', '1', 'M'),
                 resetType: trade.leg1.resetType || 'ADVANCE',
               },
               calculationPeriodAmount: {
@@ -82,10 +87,7 @@ export function generateIRSwapXml(trade: Partial<IRSwapTrade>): string {
                   },
                   floatingRateCalculation: {
                     floatingRateIndex: trade.leg1.index || 'SOFR',
-                    indexTenor: {
-                      periodMultiplier: (trade.leg1.indexTenor || '1M').replace(/\D/g, '') || '1',
-                      period: 'M',
-                    },
+                    indexTenor: parseTenorParts(trade.leg1.indexTenor || '1M', '1', 'M'),
                     spreadRate: ((trade.leg1.spreadBps || 0) / 10000).toFixed(6),
                   },
                   dayCountFraction: trade.leg1.dayCount,
@@ -101,16 +103,10 @@ export function generateIRSwapXml(trade: Partial<IRSwapTrade>): string {
                 terminationDate: { unadjustedDate: maturityDate },
               },
               paymentDates: {
-                paymentFrequency: {
-                  periodMultiplier: (trade.leg2.frequency || '3M').replace(/\D/g, '') || '3',
-                  period: 'M',
-                },
+                paymentFrequency: parseTenorParts(trade.leg2.frequency || '3M', '3', 'M'),
               },
               resetDates: {
-                resetFrequency: {
-                  periodMultiplier: (trade.leg2.indexTenor || '3M').replace(/\D/g, '') || '3',
-                  period: 'M',
-                },
+                resetFrequency: parseTenorParts(trade.leg2.indexTenor || '3M', '3', 'M'),
                 resetType: trade.leg2.resetType || 'ARREARS',
               },
               calculationPeriodAmount: {
@@ -123,10 +119,7 @@ export function generateIRSwapXml(trade: Partial<IRSwapTrade>): string {
                   },
                   floatingRateCalculation: {
                     floatingRateIndex: trade.leg2.index || 'SOFR',
-                    indexTenor: {
-                      periodMultiplier: (trade.leg2.indexTenor || '3M').replace(/\D/g, '') || '3',
-                      period: 'M',
-                    },
+                    indexTenor: parseTenorParts(trade.leg2.indexTenor || '3M', '3', 'M'),
                     spreadRate: ((trade.leg2.spreadBps || 0) / 10000).toFixed(6),
                   },
                   dayCountFraction: trade.leg2.dayCount,
@@ -201,16 +194,10 @@ export function generateIRSwapXml(trade: Partial<IRSwapTrade>): string {
                 terminationDate: { unadjustedDate: maturityDate },
               },
               paymentDates: {
-                paymentFrequency: {
-                  periodMultiplier: floatingLeg.frequency.replace(/\D/g, '') || '3',
-                  period: 'M',
-                },
+                paymentFrequency: parseTenorParts(floatingLeg.frequency || '3M', '3', 'M'),
               },
               resetDates: {
-                resetFrequency: {
-                  periodMultiplier: floatingLeg.indexTenor.replace(/\D/g, '') || '3',
-                  period: 'M',
-                },
+                resetFrequency: parseTenorParts(floatingLeg.indexTenor || '3M', '3', 'M'),
                 resetType: floatingLeg.resetType || 'ADVANCE',
               },
               calculationPeriodAmount: {
@@ -223,10 +210,7 @@ export function generateIRSwapXml(trade: Partial<IRSwapTrade>): string {
                   },
                   floatingRateCalculation: {
                     floatingRateIndex: floatingLeg.index,
-                    indexTenor: {
-                      periodMultiplier: floatingLeg.indexTenor.replace(/\D/g, '') || '3',
-                      period: 'M',
-                    },
+                    indexTenor: parseTenorParts(floatingLeg.indexTenor || '3M', '3', 'M'),
                     spreadRate: (floatingLeg.spreadBps / 10000).toFixed(6),
                   },
                   dayCountFraction: floatingLeg.dayCount,
@@ -1069,14 +1053,20 @@ export function parseIRSwapXml(xmlString: string): XmlParseResult {
 
         const floatDetail1 = floatCalc1.floatingRateCalculation || {};
         const index1 = (floatDetail1.floatingRateIndex || 'SOFR') as FloatingIndex;
-        const tenor1 = `${floatDetail1.indexTenor?.periodMultiplier || '1'}${floatDetail1.indexTenor?.period || 'M'}`;
+        const mult1 = floatDetail1.indexTenor?.periodMultiplier || '1';
+        const unit1 = floatDetail1.indexTenor?.period || 'M';
+        const tenor1 = `${mult1}${unit1}`;
         const isPay1 = floatingStream.payerPartyReference?.['@_href'] === 'PartyA';
+        const spread1 = Math.round(parseFloat(floatDetail1.spreadRate || '0') * 10000);
 
         const floatCalc2 = floatingStream2.calculationPeriodAmount.calculation;
         const floatDetail2 = floatCalc2.floatingRateCalculation || {};
         const index2 = (floatDetail2.floatingRateIndex || 'SOFR') as FloatingIndex;
-        const tenor2 = `${floatDetail2.indexTenor?.periodMultiplier || '3'}${floatDetail2.indexTenor?.period || 'M'}`;
+        const mult2 = floatDetail2.indexTenor?.periodMultiplier || '3';
+        const unit2 = floatDetail2.indexTenor?.period || 'M';
+        const tenor2 = `${mult2}${unit2}`;
         const isPay2 = floatingStream2.payerPartyReference?.['@_href'] === 'PartyA';
+        const spread2 = Math.round(parseFloat(floatDetail2.spreadRate || '0') * 10000);
 
         const calcDates = floatingStream.calculationPeriodDates || {};
         effectiveDate = calcDates.effectiveDate?.unadjustedDate || '2026-08-01';
@@ -1089,7 +1079,7 @@ export function parseIRSwapXml(xmlString: string): XmlParseResult {
           currency: ccy,
           index: index1,
           indexTenor: tenor1 as IndexTenor,
-          spreadBps: 0,
+          spreadBps: spread1,
           dayCount: (floatCalc1.dayCountFraction || 'ACT/360') as DayCountConvention,
           frequency: tenor1 as PaymentFrequency,
           resetType: floatingStream.resetDates?.resetType || 'ADVANCE',
@@ -1103,7 +1093,7 @@ export function parseIRSwapXml(xmlString: string): XmlParseResult {
           currency: ccy,
           index: index2,
           indexTenor: tenor2 as IndexTenor,
-          spreadBps: 12,
+          spreadBps: spread2,
           dayCount: (floatCalc2.dayCountFraction || 'ACT/360') as DayCountConvention,
           frequency: tenor2 as PaymentFrequency,
           resetType: floatingStream2.resetDates?.resetType || 'ARREARS',
