@@ -1072,6 +1072,16 @@ export function parseIRSwapXml(xmlString: string): XmlParseResult {
         effectiveDate = calcDates.effectiveDate?.unadjustedDate || '2026-08-01';
         maturityDate = calcDates.terminationDate?.unadjustedDate || '2031-08-01';
 
+        const pf1Node = floatingStream.paymentDates?.paymentFrequency || {};
+        const pf1Mult = pf1Node.periodMultiplier || '6';
+        const pf1Unit = pf1Node.period || 'M';
+        const payFreq1 = `${pf1Mult}${pf1Unit}`;
+
+        const pf2Node = floatingStream2?.paymentDates?.paymentFrequency || {};
+        const pf2Mult = pf2Node.periodMultiplier || '6';
+        const pf2Unit = pf2Node.period || 'M';
+        const payFreq2 = `${pf2Mult}${pf2Unit}`;
+
         leg1 = {
           legType: 'FLOATING',
           direction: isPay1 ? 'PAY_FIXED' : 'RECEIVE_FIXED',
@@ -1081,7 +1091,7 @@ export function parseIRSwapXml(xmlString: string): XmlParseResult {
           indexTenor: tenor1 as IndexTenor,
           spreadBps: spread1,
           dayCount: (floatCalc1.dayCountFraction || 'ACT/360') as DayCountConvention,
-          frequency: tenor1 as PaymentFrequency,
+          frequency: payFreq1 as PaymentFrequency,
           resetType: floatingStream.resetDates?.resetType || 'ADVANCE',
           businessDayConvention: 'MODFOLLOWING',
         };
@@ -1095,7 +1105,7 @@ export function parseIRSwapXml(xmlString: string): XmlParseResult {
           indexTenor: tenor2 as IndexTenor,
           spreadBps: spread2,
           dayCount: (floatCalc2.dayCountFraction || 'ACT/360') as DayCountConvention,
-          frequency: tenor2 as PaymentFrequency,
+          frequency: payFreq2 as PaymentFrequency,
           resetType: floatingStream2.resetDates?.resetType || 'ARREARS',
           businessDayConvention: 'MODFOLLOWING',
         };

@@ -260,8 +260,8 @@ export function generateIRSwapCashflowSchedule(
     const leg1Convention = leg1.dayCount || '30/360';
     const leg2Convention = leg2.dayCount || 'ACT/360';
 
-    const leg1Freq = leg1.frequency || '6M';
-    const leg2Freq = leg2.frequency || '3M';
+    const leg1Freq = leg1.frequency || trade.fixedLeg?.frequency || '6M';
+    const leg2Freq = leg2.frequency || trade.floatingLeg?.frequency || leg1Freq || '6M';
 
     const periods: CashflowPeriod[] = [];
     let currStart = trade.effectiveDate || '2026-08-01';
@@ -278,7 +278,11 @@ export function generateIRSwapCashflowSchedule(
     const discountRate = (trade.parRate || 3.85) / 100;
 
     while (currStart < maturity && periodNum <= 120) {
-      let defaultEnd = getNextPeriodEndDate(currStart, leg1Freq);
+      const monthsMap: Record<string, number> = { '1D': 0.033, '1M': 1, '3M': 3, '6M': 6, '1Y': 12 };
+      const leg1M = monthsMap[leg1Freq] || 6;
+      const leg2M = monthsMap[leg2Freq] || 6;
+      const stepFreq = leg1M <= leg2M ? leg1Freq : leg2Freq;
+      let defaultEnd = getNextPeriodEndDate(currStart, stepFreq);
       if (defaultEnd > maturity) defaultEnd = maturity;
 
       // Apply overrides for main period (key 'P-{periodNum}')
@@ -441,8 +445,8 @@ export function generateIRSwapCashflowSchedule(
   const floatConvention = floating?.dayCount || 'ACT/360';
 
   const freqMonthsMap: Record<string, number> = { '1M': 1, '3M': 3, '6M': 6, '1Y': 12 };
-  const fixedFreq = fixed?.frequency || '6M';
-  const floatFreq = floating?.frequency || '3M';
+  const fixedFreq = fixed?.frequency || trade.leg1?.frequency || '6M';
+  const floatFreq = floating?.frequency || trade.leg2?.frequency || fixedFreq || '6M';
   const stepMonths = freqMonthsMap[fixedFreq] || 6;
 
   const periods: CashflowPeriod[] = [];
@@ -1651,7 +1655,7 @@ export function generateIndependentLeg1Schedule(
   const overrides = dateOverrides || trade.scheduleDateOverrides || {};
   const ccy = trade.leg1?.currency || trade.fixedLeg?.currency || trade.rangeAccrualDetails?.currency || trade.snowRangeDetails?.currency || trade.tarnDetails?.currency || trade.snowballDetails?.currency || 'USD';
   const notional = trade.leg1?.notional || trade.fixedLeg?.notional || trade.rangeAccrualDetails?.notional || trade.snowRangeDetails?.notional || trade.tarnDetails?.notional || trade.snowballDetails?.notional || trade.notionalUsd || 25000000;
-  const freq = trade.leg1?.frequency || trade.fixedLeg?.frequency || trade.rangeAccrualDetails?.paymentFrequency || trade.snowRangeDetails?.paymentFrequency || trade.tarnDetails?.paymentFrequency || trade.snowballDetails?.paymentFrequency || '6M';
+  const freq = trade.leg1?.frequency || trade.fixedLeg?.frequency || trade.rangeAccrualDetails?.paymentFrequency || trade.snowRangeDetails?.paymentFrequency || trade.tarnDetails?.paymentFrequency || trade.snowballDetails?.paymentFrequency || trade.leg2?.frequency || trade.floatingLeg?.frequency || '6M';
   const convention = trade.leg1?.dayCount || trade.fixedLeg?.dayCount || trade.rangeAccrualDetails?.dayCount || trade.snowRangeDetails?.dayCount || trade.tarnDetails?.dayCount || trade.snowballDetails?.dayCount || '30/360';
   const legType = trade.leg1?.legType || (trade.fixedLeg ? 'FIXED' : 'FLOATING');
 
@@ -1779,10 +1783,10 @@ export function generateIndependentLeg2Schedule(
   dateOverrides?: Record<string, { startDate?: string; endDate?: string; resetStartDate?: string; resetEndDate?: string; payResetDate?: string }>
 ): IndependentLegSchedule {
   const overrides = dateOverrides || trade.scheduleDateOverrides || {};
-  const ccy = trade.floatingLeg?.currency || trade.leg2?.currency || trade.rangeAccrualDetails?.currency || trade.snowRangeDetails?.currency || trade.tarnDetails?.currency || trade.snowballDetails?.currency || 'USD';
-  const notional = trade.floatingLeg?.notional || trade.leg2?.notional || trade.rangeAccrualDetails?.fundingNotional || trade.snowRangeDetails?.fundingNotional || trade.tarnDetails?.fundingNotional || trade.snowballDetails?.fundingNotional || trade.notionalUsd || 25000000;
-  const freq = trade.floatingLeg?.frequency || trade.leg2?.frequency || trade.rangeAccrualDetails?.fundingPaymentFrequency || trade.snowRangeDetails?.fundingPaymentFrequency || trade.tarnDetails?.fundingPaymentFrequency || trade.snowballDetails?.fundingPaymentFrequency || '3M';
-  const convention = trade.floatingLeg?.dayCount || trade.leg2?.dayCount || trade.rangeAccrualDetails?.fundingDayCount || trade.snowRangeDetails?.fundingDayCount || trade.tarnDetails?.fundingDayCount || trade.snowballDetails?.fundingDayCount || 'ACT/360';
+  const ccy = trade.leg2?.currency || trade.floatingLeg?.currency || trade.rangeAccrualDetails?.currency || trade.snowRangeDetails?.currency || trade.tarnDetails?.currency || trade.snowballDetails?.currency || 'USD';
+  const notional = trade.leg2?.notional || trade.floatingLeg?.notional || trade.rangeAccrualDetails?.fundingNotional || trade.snowRangeDetails?.fundingNotional || trade.tarnDetails?.fundingNotional || trade.snowballDetails?.fundingNotional || trade.notionalUsd || 25000000;
+  const freq = trade.leg2?.frequency || trade.floatingLeg?.frequency || trade.rangeAccrualDetails?.fundingPaymentFrequency || trade.snowRangeDetails?.fundingPaymentFrequency || trade.tarnDetails?.fundingPaymentFrequency || trade.snowballDetails?.fundingPaymentFrequency || trade.leg1?.frequency || trade.fixedLeg?.frequency || '6M';
+  const convention = trade.leg2?.dayCount || trade.floatingLeg?.dayCount || trade.rangeAccrualDetails?.fundingDayCount || trade.snowRangeDetails?.fundingDayCount || trade.tarnDetails?.fundingDayCount || trade.snowballDetails?.fundingDayCount || 'ACT/360';
 
   const spreadBps = trade.floatingLeg?.spreadBps || trade.leg2?.spreadBps || trade.rangeAccrualDetails?.fundingSpreadBps || trade.snowRangeDetails?.fundingSpreadBps || trade.tarnDetails?.fundingSpreadBps || trade.snowballDetails?.fundingSpreadBps || 0;
   const legType = trade.leg2?.legType || trade.rangeAccrualDetails?.fundingLegType || trade.snowRangeDetails?.fundingLegType || trade.tarnDetails?.fundingLegType || trade.snowballDetails?.fundingLegType || 'FLOATING';
