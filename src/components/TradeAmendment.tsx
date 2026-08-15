@@ -98,6 +98,31 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
   const [leg2AccrualRoll, setLeg2AccrualRoll] = useState<BusinessDayRollConvention>('MODFOLLOWING');
   const [leg2PaymentRoll, setLeg2PaymentRoll] = useState<BusinessDayRollConvention>('MODFOLLOWING');
 
+  // Specialized Product Amendment States
+  const [capFloorStrike, setCapFloorStrike] = useState<number>(4.0);
+  const [capFloorPremium, setCapFloorPremium] = useState<number>(125000);
+  const [swaptionStrike, setSwaptionStrike] = useState<number>(3.75);
+  const [swaptionPremium, setSwaptionPremium] = useState<number>(250000);
+  const [fxForwardRate, setFxForwardRate] = useState<number>(1.085);
+  const [fxSpotRate, setFxSpotRate] = useState<number>(1.082);
+  const [fxOptStrikePrice, setFxOptStrikePrice] = useState<number>(1.09);
+  const [fxOptPremium, setFxOptPremium] = useState<number>(180000);
+  const [rangeLowerBarrier, setRangeLowerBarrier] = useState<number>(2.5);
+  const [rangeUpperBarrier, setRangeUpperBarrier] = useState<number>(4.5);
+  const [rangeCouponRate, setRangeCouponRate] = useState<number>(5.25);
+  const [snowBaseCoupon, setSnowBaseCoupon] = useState<number>(5.5);
+  const [tarnTargetCap, setTarnTargetCap] = useState<number>(10.0);
+  const [tarnStrikeRate, setTarnStrikeRate] = useState<number>(6.5);
+  const [snowballInitialCoupon, setSnowballInitialCoupon] = useState<number>(6.0);
+  const [snowballBonusStep, setSnowballBonusStep] = useState<number>(1.5);
+  const [bondCleanPrice, setBondCleanPrice] = useState<number>(98.5);
+  const [bondYtm, setBondYtm] = useState<number>(4.55);
+  const [fraRate, setFraRate] = useState<number>(3.95);
+  const [depositRate, setDepositRate] = useState<number>(4.1);
+  const [repoRate, setRepoRate] = useState<number>(3.75);
+  const [dualDigitalTrigger1, setDualDigitalTrigger1] = useState<number>(4.0);
+  const [dualDigitalTrigger2, setDualDigitalTrigger2] = useState<number>(3.5);
+
   // Pending amendment changes & preview state
   const [hasPendingAmendmentChanges, setHasPendingAmendmentChanges] = useState<boolean>(false);
   const [previewAmendedTrade, setPreviewAmendedTrade] = useState<IRSwapTrade | null>(null);
@@ -193,6 +218,19 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
       leg2: updatedLeg2,
       fixedLeg: fixedLegObj,
       floatingLeg: floatingLegObj,
+      capFloorDetails: base.capFloorDetails ? { ...base.capFloorDetails, strikeRate: capFloorStrike, premiumAmount: capFloorPremium } : undefined,
+      swaptionDetails: base.swaptionDetails ? { ...base.swaptionDetails, strikeRate: swaptionStrike, premiumAmount: swaptionPremium } : undefined,
+      fxForwardDetails: base.fxForwardDetails ? { ...base.fxForwardDetails, forwardRate: fxForwardRate, spotRate: fxSpotRate } : undefined,
+      fxOptionDetails: base.fxOptionDetails ? { ...base.fxOptionDetails, strikePrice: fxOptStrikePrice, premiumAmount: fxOptPremium } : undefined,
+      rangeAccrualDetails: base.rangeAccrualDetails ? { ...base.rangeAccrualDetails, lowerBarrierRate: rangeLowerBarrier, upperBarrierRate: rangeUpperBarrier, accrualCouponRate: rangeCouponRate } : undefined,
+      snowRangeDetails: base.snowRangeDetails ? { ...base.snowRangeDetails, baseCouponRate: snowBaseCoupon } : undefined,
+      tarnDetails: base.tarnDetails ? { ...base.tarnDetails, targetCapPct: tarnTargetCap, strikeRate: tarnStrikeRate } : undefined,
+      snowballDetails: base.snowballDetails ? { ...base.snowballDetails, initialCouponRate: snowballInitialCoupon, bonusStepRate: snowballBonusStep } : undefined,
+      bondDetails: base.bondDetails ? { ...base.bondDetails, cleanPrice: bondCleanPrice, yieldToMaturity: bondYtm } : undefined,
+      fraDetails: base.fraDetails ? { ...base.fraDetails, fraRate } : undefined,
+      depositDetails: base.depositDetails ? { ...base.depositDetails, depositRate } : undefined,
+      repoDetails: base.repoDetails ? { ...base.repoDetails, repoRate } : undefined,
+      dualDigitalDetails: base.dualDigitalDetails ? { ...base.dualDigitalDetails, trigger1Rate: dualDigitalTrigger1, trigger2Rate: dualDigitalTrigger2 } : undefined,
     };
 
     setPreviewAmendedTrade(amendedTradeObj);
@@ -243,7 +281,62 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
       setLeg1PaymentCal(trade.fixedLeg?.paymentCalendar || 'USNY');
       setLeg1AccrualRoll(trade.fixedLeg?.accrualRollConvention || 'MODFOLLOWING');
       setLeg1PaymentRoll(trade.fixedLeg?.paymentRollConvention || 'MODFOLLOWING');
+      setLeg2AccrualRoll(trade.floatingLeg?.accrualRollConvention || 'MODFOLLOWING');
+      setLeg2PaymentRoll(trade.floatingLeg?.paymentRollConvention || 'MODFOLLOWING');
     }
+
+    // Populate Specialized Product Details
+    if (trade.capFloorDetails) {
+      setCapFloorStrike(trade.capFloorDetails.strikeRate || 4.0);
+      setCapFloorPremium(trade.capFloorDetails.premiumAmount || 125000);
+    }
+    if (trade.swaptionDetails) {
+      setSwaptionStrike(trade.swaptionDetails.strikeRate || 3.75);
+      setSwaptionPremium(trade.swaptionDetails.premiumAmount || 250000);
+    }
+    if (trade.fxForwardDetails) {
+      setFxForwardRate(trade.fxForwardDetails.forwardRate || 1.085);
+      setFxSpotRate(trade.fxForwardDetails.spotRate || 1.082);
+    }
+    if (trade.fxOptionDetails) {
+      setFxOptStrikePrice(trade.fxOptionDetails.strikePrice || 1.09);
+      setFxOptPremium(trade.fxOptionDetails.premiumAmount || 180000);
+    }
+    if (trade.rangeAccrualDetails) {
+      setRangeLowerBarrier(trade.rangeAccrualDetails.lowerBarrierRate || 2.5);
+      setRangeUpperBarrier(trade.rangeAccrualDetails.upperBarrierRate || 4.5);
+      setRangeCouponRate(trade.rangeAccrualDetails.accrualCouponRate || 5.25);
+    }
+    if (trade.snowRangeDetails) {
+      setSnowBaseCoupon(trade.snowRangeDetails.baseCouponRate || 5.5);
+    }
+    if (trade.tarnDetails) {
+      setTarnTargetCap(trade.tarnDetails.targetCapPct || 10.0);
+      setTarnStrikeRate(trade.tarnDetails.strikeRate || 6.5);
+    }
+    if (trade.snowballDetails) {
+      setSnowballInitialCoupon(trade.snowballDetails.initialCouponRate || 6.0);
+      setSnowballBonusStep(trade.snowballDetails.bonusStepRate || 1.5);
+    }
+    if (trade.bondDetails) {
+      setBondCleanPrice(trade.bondDetails.cleanPrice || 98.5);
+      setBondYtm(trade.bondDetails.yieldToMaturity || 4.55);
+    }
+    if (trade.fraDetails) {
+      setFraRate(trade.fraDetails.fraRate || 3.95);
+    }
+    if (trade.depositDetails) {
+      setDepositRate(trade.depositDetails.depositRate || 4.1);
+    }
+    if (trade.repoDetails) {
+      setRepoRate(trade.repoDetails.repoRate || 3.75);
+    }
+    if (trade.dualDigitalDetails) {
+      setDualDigitalTrigger1(trade.dualDigitalDetails.trigger1Rate || 4.0);
+      setDualDigitalTrigger2(trade.dualDigitalDetails.trigger2Rate || 3.5);
+    }
+
+    setAmendments({});
 
     // Populate Leg 2
     if (trade.leg2) {

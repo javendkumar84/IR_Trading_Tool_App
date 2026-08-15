@@ -2157,6 +2157,59 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
           dayCount: ddDayCount,
           paymentFrequency: '1Y',
         };
+      } else if (selectedProduct === 'BOND') {
+        tradePayload.bondDetails = {
+          bondType,
+          isin: bondIsin,
+          issuer: bondIssuer,
+          couponRate: bondCouponRate,
+          couponFrequency: bondCouponFreq,
+          faceValue: 100,
+          cleanPrice: bondCleanPrice,
+          dirtyPrice: bondCleanPrice + (bondCouponRate * 0.25),
+          yieldToMaturity: bondYtm,
+          currency,
+          notional: bondNotional,
+          dayCount: bondDayCount,
+        };
+      } else if (selectedProduct === 'FRA') {
+        tradePayload.effectiveDate = fraFixingDate;
+        tradePayload.maturityDate = fraPaymentDate;
+        tradePayload.fraDetails = {
+          fraRate,
+          fixingIndex: fraIndex,
+          indexTenor: fraTenor,
+          fixingDate: fraFixingDate,
+          paymentDate: fraPaymentDate,
+          settlementType: 'CASH',
+          currency,
+          notional: fraNotional,
+          dayCount: fraDayCount,
+        };
+      } else if (selectedProduct === 'DEPOSIT') {
+        tradePayload.depositDetails = {
+          direction: depositDirection,
+          depositRate,
+          termDays: depositTermDays,
+          interestAmount: (depositNotional * depositRate * depositTermDays) / (360 * 100),
+          compoundingFrequency: 'NONE',
+          currency,
+          notional: depositNotional,
+          dayCount: depositDayCount,
+        };
+      } else if (selectedProduct === 'REPO') {
+        tradePayload.repoDetails = {
+          repoType,
+          collateralIsin: repoCollateralIsin,
+          collateralDescription: `${currency} Sovereign Collateral`,
+          repoRate,
+          haircutPct: repoHaircut,
+          purchasePrice: repoNotional,
+          repurchasePrice: repoNotional * (1 + (repoRate * 0.01 * 30 / 360)),
+          currency,
+          notional: repoNotional,
+          dayCount: repoDayCount,
+        };
       }
 
       tradePayload.valuationModel = getValuationModelForProduct(selectedProduct, selectedValuationModelMap[selectedProduct]).name;
