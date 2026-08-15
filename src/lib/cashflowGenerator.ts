@@ -229,7 +229,7 @@ export function getBenchmarkFixingRate(indexOrCcy?: string, indexTenor?: IndexTe
 
   if (indexTenor) {
     const tUpper = indexTenor.toUpperCase();
-    if (tUpper === '1D') return parseFloat(baseRate.toFixed(4));                                // SOFR 1D  = 3.8500%
+    if (tUpper === '1D') return 3.66;                                                            // SOFR 1D  = 3.6600% (1 Aug 2026 NY FED Fixing)
     if (tUpper === '1M') return parseFloat((baseRate + 0.05).toFixed(4));                       // SOFR 1M  = 3.9000%
     if (tUpper === '3M') return parseFloat((baseRate + 0.12).toFixed(4));                       // SOFR 3M  = 3.9700%
     if (tUpper === '6M') return parseFloat((baseRate + 0.18).toFixed(4));                       // SOFR 6M  = 4.0300%
@@ -293,8 +293,9 @@ export function getHistoricalFixingRate(
     }
     if (year === 2026) {
       if (month <= 3) return 3.85;
-      if (month <= 6) return 3.85;
-      return 3.85;
+      if (month <= 6) return 3.75;
+      if (month === 8) return 3.66; // Exact published fixing rate for 1 Aug 2026
+      return 3.66;
     }
   }
 

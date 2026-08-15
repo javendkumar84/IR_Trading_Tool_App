@@ -49,7 +49,7 @@ export const MarketDataTab: React.FC<MarketDataTabProps> = ({
 
     const base = baseRates[selectedCurrency] || 3.85;
     const tenors = [
-      { tenor: '1D', days: 1, zeroRate: base, spread: 0 },
+      { tenor: '1D', days: 1, zeroRate: selectedCurrency === 'USD' ? 3.66 : base, spread: 0 },
       { tenor: '1M', days: 30, zeroRate: base + 0.05, spread: 2 },
       { tenor: '3M', days: 90, zeroRate: base + 0.12, spread: 4 },
       { tenor: '6M', days: 180, zeroRate: base + 0.18, spread: 7 },
