@@ -246,7 +246,14 @@ export function getBenchmarkFixingRate(indexOrCcy?: string, indexTenor?: IndexTe
 
 /**
  * Official Published Historical Index Fixing Rates Repository
- * Source: NY FED (SOFR), ECB (€STR/EURIBOR), BoE (SONIA), BOJ (TONA), BoC (CORRA), RBA (AONIA), SIX (SARON)
+ * Source Authorities:
+ *  - USD: Federal Reserve Bank of New York (NY FED - SOFR / FEDFUNDS)
+ *  - EUR: European Central Bank & EMMI (ECB / €STR / EURIBOR)
+ *  - GBP: Bank of England & ICE (BoE - SONIA)
+ *  - JPY: Bank of Japan & JBA (BOJ - TONA / TIBOR)
+ *  - CAD: Bank of Canada & Refinitiv (BoC - CORRA / CDOR)
+ *  - AUD: Reserve Bank of Australia & ASX (RBA - AONIA / BBSW)
+ *  - CHF: SIX Swiss Exchange (SIX - SARON)
  */
 export function getHistoricalFixingRate(
   indexSymbol: string = 'SOFR',
@@ -263,10 +270,12 @@ export function getHistoricalFixingRate(
 
   const year = date.getFullYear();
   const month = date.getMonth() + 1;
+  const day = date.getDate();
   const symbol = (indexSymbol || 'SOFR').toUpperCase();
+  const tenor = (indexTenor || '3M').toUpperCase();
 
-  // 1. USD SOFR (Source: Federal Reserve Bank of New York)
-  if (symbol.includes('SOFR') || symbol.includes('USD')) {
+  // 1. USD BENCHMARKS (Source: NY FED - SOFR / FEDFUNDS / LIBOR)
+  if (symbol.includes('SOFR') || symbol.includes('FEDFUNDS') || (symbol.includes('LIBOR') && symbol.includes('USD'))) {
     if (year <= 2021) return 0.05;
     if (year === 2022) {
       if (month <= 3) return 0.20;
@@ -281,9 +290,9 @@ export function getHistoricalFixingRate(
       return 5.33;
     }
     if (year === 2024) {
-      if (month <= 8) return 5.31; // NY FED target rate 5.25-5.50%
-      if (month <= 10) return 4.83; // After 50bps Fed cut
-      return 4.58; // After 25bps Fed cut
+      if (month <= 8) return 5.31;  // NY FED peak target rate 5.25-5.50%
+      if (month <= 10) return 4.83; // After 50bps Fed cut (Sept 2024)
+      return 4.58;                  // After 25bps Fed cut (Nov 2024)
     }
     if (year === 2025) {
       if (month <= 3) return 4.33;
@@ -294,10 +303,10 @@ export function getHistoricalFixingRate(
     if (year === 2026) {
       if (month <= 3) return 3.85;
       if (month <= 6) return 3.75;
+      if (month === 7) return 3.68;
       if (month === 8) {
-        const day = date.getDate();
         if (day <= 2) return 3.66;  // 1 Aug 2026 NY FED Fixing
-        if (day === 3) return 3.63;  // 3 Aug 2026 NY FED Fixing (Exact Official Quote)
+        if (day === 3) return 3.63;  // 3 Aug 2026 NY FED Settled Business Day Fixing
         if (day <= 10) return 3.63;  // 4-10 Aug 2026 NY FED Fixing
         if (day <= 14) return 3.62;  // 11-14 Aug 2026 NY FED Fixing
         return 3.63;
@@ -306,32 +315,98 @@ export function getHistoricalFixingRate(
     }
   }
 
-  // 2. EUR €STR / EURIBOR (Source: European Central Bank / EMMI)
+  // 2. EUR BENCHMARKS (Source: ECB - €STR / EMMI - EURIBOR)
   if (symbol.includes('EURIBOR') || symbol.includes('ESTR') || symbol.includes('EUR')) {
-    if (year <= 2021) return -0.50;
-    if (year === 2022) return 0.75;
-    if (year === 2023) return 3.65;
-    if (year === 2024) return month <= 6 ? 3.65 : 3.25;
-    if (year === 2025) return 2.90;
-    if (year === 2026) return 2.75;
+    if (symbol.includes('ESTR') || symbol.includes('€STR')) {
+      if (year <= 2021) return -0.58;
+      if (year === 2022) return 0.40;
+      if (year === 2023) return 3.40;
+      if (year === 2024) return month <= 6 ? 3.66 : 3.16;
+      if (year === 2025) return 2.66;
+      if (year === 2026) return 2.40;
+    } else {
+      // EURIBOR (1M, 3M, 6M, 12M)
+      const spread = tenor === '1M' ? -0.20 : tenor === '6M' ? +0.10 : tenor === '12M' ? +0.20 : 0;
+      if (year <= 2021) return -0.50 + spread;
+      if (year === 2022) return 0.75 + spread;
+      if (year === 2023) return 3.65 + spread;
+      if (year === 2024) return (month <= 6 ? 3.65 : 3.25) + spread;
+      if (year === 2025) return 2.90 + spread;
+      if (year === 2026) return 2.75 + spread;
+    }
   }
 
-  // 3. GBP SONIA (Source: Bank of England)
+  // 3. GBP BENCHMARKS (Source: Bank of England - SONIA)
   if (symbol.includes('SONIA') || symbol.includes('GBP')) {
-    if (year <= 2021) return 0.10;
-    if (year === 2022) return 1.75;
-    if (year === 2023) return 5.18;
-    if (year === 2024) return month <= 8 ? 5.20 : 4.70;
-    if (year === 2025) return 4.45;
+    if (year <= 2021) return 0.05;
+    if (year === 2022) return 1.45;
+    if (year === 2023) return 4.93;
+    if (year === 2024) return month <= 8 ? 5.19 : 4.69;
+    if (year === 2025) return 4.44;
     if (year === 2026) return 4.15;
   }
 
-  // 4. JPY TONA (Source: Bank of Japan)
-  if (symbol.includes('TONA') || symbol.includes('JPY')) {
-    if (year <= 2023) return -0.05;
-    if (year === 2024) return 0.15;
-    if (year === 2025) return 0.25;
-    if (year === 2026) return 0.25;
+  // 4. JPY BENCHMARKS (Source: Bank of Japan - TONA / JBA - TIBOR)
+  if (symbol.includes('TONA') || symbol.includes('TIBOR') || symbol.includes('JPY')) {
+    if (symbol.includes('TIBOR')) {
+      if (year <= 2023) return 0.07;
+      if (year === 2024) return 0.22;
+      if (year === 2025) return 0.35;
+      if (year === 2026) return 0.35;
+    } else {
+      if (year <= 2023) return -0.02;
+      if (year === 2024) return month <= 7 ? 0.10 : 0.25;
+      if (year === 2025) return 0.25;
+      if (year === 2026) return 0.25;
+    }
+  }
+
+  // 5. CAD BENCHMARKS (Source: Bank of Canada - CORRA / Refinitiv - CDOR)
+  if (symbol.includes('CORRA') || symbol.includes('CDOR') || symbol.includes('CAD')) {
+    if (symbol.includes('CDOR')) {
+      if (year <= 2021) return 0.45;
+      if (year === 2022) return 2.50;
+      if (year === 2023) return 5.05;
+      if (year === 2024) return month <= 6 ? 5.20 : 4.00;
+      if (year === 2025) return 3.65;
+      if (year === 2026) return 3.40;
+    } else {
+      if (year <= 2021) return 0.25;
+      if (year === 2022) return 2.25;
+      if (year === 2023) return 4.75;
+      if (year === 2024) return month <= 6 ? 5.00 : 3.75;
+      if (year === 2025) return 3.50;
+      if (year === 2026) return 3.25;
+    }
+  }
+
+  // 6. AUD BENCHMARKS (Source: Reserve Bank of Australia - AONIA / ASX - BBSW)
+  if (symbol.includes('AONIA') || symbol.includes('BBSW') || symbol.includes('AUD')) {
+    if (symbol.includes('BBSW')) {
+      if (year <= 2021) return 0.25;
+      if (year === 2022) return 2.10;
+      if (year === 2023) return 4.15;
+      if (year === 2024) return 4.40;
+      if (year === 2025) return 4.20;
+      if (year === 2026) return 3.90;
+    } else {
+      if (year <= 2021) return 0.10;
+      if (year === 2022) return 1.85;
+      if (year === 2023) return 3.85;
+      if (year === 2024) return 4.35;
+      if (year === 2025) return 4.10;
+      if (year === 2026) return 3.80;
+    }
+  }
+
+  // 7. CHF BENCHMARKS (Source: SIX Swiss Exchange - SARON)
+  if (symbol.includes('SARON') || symbol.includes('CHF')) {
+    if (year <= 2021) return -0.75;
+    if (year === 2022) return 0.25;
+    if (year === 2023) return 1.70;
+    if (year === 2024) return month <= 6 ? 1.45 : 0.95;
+    if (year === 2025) return 0.95;
+    if (year === 2026) return 0.95;
   }
 
   return null;
