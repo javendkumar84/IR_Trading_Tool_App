@@ -306,7 +306,10 @@ export function getHistoricalFixingRate(
       return 3.85;
     }
     if (year === 2026) {
-      if (month <= 3) return 3.85;
+      if (month <= 3) {
+        if (month === 2 && day === 3) return 3.69; // 03/Feb/2026 NY FED Official Published Fixing
+        return 3.69;                               // Q1 2026 NY FED Settled Rate
+      }
       if (month <= 6) return 3.75;
       if (month === 7) return 3.68;
       if (month === 8) {
