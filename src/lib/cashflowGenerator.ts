@@ -1,4 +1,4 @@
-import { IRSwapTrade, ProductType, Currency, DayCountConvention, PaymentFrequency, ResetType, GenericSwapLeg, LegType, BusinessCalendar, BusinessDayRollConvention } from '../types';
+import { IRSwapTrade, ProductType, Currency, DayCountConvention, PaymentFrequency, ResetType, GenericSwapLeg, LegType, BusinessCalendar, BusinessDayRollConvention, IndexTenor } from '../types';
 import { convertCurrency } from './fxRates';
 
 export interface CashflowPeriod {
@@ -214,17 +214,34 @@ function getNextPeriodEndDate(startDateStr: string, frequency: string): string {
 /**
  * Returns baseline benchmark rate (%) for a given index symbol or currency
  */
-export function getBenchmarkFixingRate(indexOrCcy?: string): number {
+export function getBenchmarkFixingRate(indexOrCcy?: string, indexTenor?: IndexTenor | string): number {
   if (!indexOrCcy) return 3.85;
   const upper = indexOrCcy.toUpperCase();
-  if (upper.includes('SOFR') || upper.includes('USD')) return 3.85;
-  if (upper.includes('EURIBOR') || upper.includes('ESTR') || upper.includes('EUR')) return 2.75;
-  if (upper.includes('SONIA') || upper.includes('GBP')) return 4.25;
-  if (upper.includes('TONA') || upper.includes('JPY')) return 0.45;
-  if (upper.includes('SARON') || upper.includes('CHF')) return 1.15;
-  if (upper.includes('CDOR') || upper.includes('CORRA') || upper.includes('CAD')) return 3.25;
-  if (upper.includes('AONIA') || upper.includes('BBSW') || upper.includes('AUD')) return 3.80;
-  return 3.85;
+  let baseRate = 3.85;
+
+  if (upper.includes('SOFR') || upper.includes('USD')) baseRate = 3.85;
+  else if (upper.includes('EURIBOR') || upper.includes('ESTR') || upper.includes('EUR')) baseRate = 2.75;
+  else if (upper.includes('SONIA') || upper.includes('GBP')) baseRate = 4.25;
+  else if (upper.includes('TONA') || upper.includes('JPY')) baseRate = 0.45;
+  else if (upper.includes('SARON') || upper.includes('CHF')) baseRate = 1.15;
+  else if (upper.includes('CDOR') || upper.includes('CORRA') || upper.includes('CAD')) baseRate = 3.25;
+  else if (upper.includes('AONIA') || upper.includes('BBSW') || upper.includes('AUD')) baseRate = 3.80;
+
+  if (indexTenor) {
+    const tUpper = indexTenor.toUpperCase();
+    if (tUpper === '1D') return parseFloat((baseRate - 0.05).toFixed(4));
+    if (tUpper === '1M') return parseFloat((baseRate - 0.02).toFixed(4));
+    if (tUpper === '3M') return parseFloat(baseRate.toFixed(4));
+    if (tUpper === '6M') return parseFloat((baseRate + 0.07).toFixed(4));
+    if (tUpper === '12M' || tUpper === '1Y') return parseFloat((baseRate + 0.15).toFixed(4));
+    if (tUpper === '2Y') return parseFloat((baseRate + 0.10).toFixed(4));
+    if (tUpper === '5Y') return parseFloat((baseRate + 0.20).toFixed(4));
+    if (tUpper === '10Y') return parseFloat((baseRate + 0.30).toFixed(4));
+    if (tUpper === '20Y') return parseFloat((baseRate + 0.40).toFixed(4));
+    if (tUpper === '30Y') return parseFloat((baseRate + 0.45).toFixed(4));
+  }
+
+  return baseRate;
 }
 
 /**
@@ -301,7 +318,7 @@ export function generateIRSwapCashflowSchedule(
       if (leg1.legType === 'FIXED') {
         leg1Rate = leg1.fixedRate ?? trade.fixedLeg?.fixedRate ?? trade.parRate ?? 3.85;
       } else {
-        const base1 = getBenchmarkFixingRate(leg1.index || leg1.currency || trade.fixedLeg?.currency || 'USD');
+        const base1 = getBenchmarkFixingRate(leg1.index || leg1.currency || trade.fixedLeg?.currency || 'USD', leg1.indexTenor);
         leg1Fixing = derivePeriodFixingRate(base1, periodNum, 0.03);
         leg1Rate = parseFloat((leg1Fixing + leg1Spread / 100).toFixed(4));
       }
@@ -317,7 +334,7 @@ export function generateIRSwapCashflowSchedule(
       if (leg2.legType === 'FIXED') {
         leg2Rate = (leg2 as GenericSwapLeg).fixedRate ?? trade.fixedLeg?.fixedRate ?? 3.85;
       } else {
-        const base2 = getBenchmarkFixingRate(leg2.index || leg2.currency || trade.floatingLeg?.currency || 'USD');
+        const base2 = getBenchmarkFixingRate(leg2.index || leg2.currency || trade.floatingLeg?.currency || 'USD', leg2.indexTenor);
         leg2Fixing = derivePeriodFixingRate(base2, periodNum, 0.04);
         leg2Rate = parseFloat((leg2Fixing + leg2Spread / 100).toFixed(4));
       }

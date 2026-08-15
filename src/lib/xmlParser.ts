@@ -56,171 +56,89 @@ export function generateIRSwapXml(trade: Partial<IRSwapTrade>): string {
   let productXmlNode: any = {};
 
   if (productType === 'IRS') {
-    const isDualFloating = trade.leg1?.legType === 'FLOATING' && trade.leg2?.legType === 'FLOATING';
+    const leg1: GenericSwapLeg = trade.leg1 || {
+      legType: trade.fixedLeg ? 'FIXED' : 'FLOATING',
+      direction: trade.fixedLeg?.direction || 'PAY_FIXED',
+      notional: trade.fixedLeg?.notional || trade.notionalUsd || 10000000,
+      currency: trade.fixedLeg?.currency || 'USD',
+      fixedRate: trade.fixedLeg?.fixedRate ?? trade.parRate ?? 3.85,
+      dayCount: trade.fixedLeg?.dayCount || '30/360',
+      frequency: trade.fixedLeg?.frequency || '6M',
+      businessDayConvention: 'MODFOLLOWING',
+    };
 
-    if (isDualFloating && trade.leg1 && trade.leg2) {
-      productXmlNode = {
-        swap: {
-          swapStream: [
-            {
-              '@_id': 'FloatingLeg1',
-              payerPartyReference: (trade.leg1.direction === 'PAY' || trade.leg1.direction === 'PAY_FIXED') ? { '@_href': 'PartyA' } : { '@_href': 'PartyB' },
-              receiverPartyReference: (trade.leg1.direction === 'PAY' || trade.leg1.direction === 'PAY_FIXED') ? { '@_href': 'PartyB' } : { '@_href': 'PartyA' },
-              calculationPeriodDates: {
-                effectiveDate: { unadjustedDate: effectiveDate },
-                terminationDate: { unadjustedDate: maturityDate },
-              },
-              paymentDates: {
-                paymentFrequency: parseTenorParts(trade.leg1.frequency || '3M', '3', 'M'),
-              },
-              resetDates: {
-                resetFrequency: parseTenorParts(trade.leg1.indexTenor || '1M', '1', 'M'),
-                resetType: trade.leg1.resetType || 'ADVANCE',
-              },
-              calculationPeriodAmount: {
-                calculation: {
-                  notionalSchedule: {
-                    notionalStepSchedule: {
-                      initialValue: trade.leg1.notional,
-                      currency: trade.leg1.currency,
-                    },
-                  },
-                  floatingRateCalculation: {
-                    floatingRateIndex: trade.leg1.index || 'SOFR',
-                    indexTenor: parseTenorParts(trade.leg1.indexTenor || '1M', '1', 'M'),
-                    spreadRate: ((trade.leg1.spreadBps || 0) / 10000).toFixed(6),
-                  },
-                  dayCountFraction: trade.leg1.dayCount,
-                },
-              },
-            },
-            {
-              '@_id': 'FloatingLeg2',
-              payerPartyReference: (trade.leg2.direction === 'PAY' || trade.leg2.direction === 'PAY_FIXED') ? { '@_href': 'PartyA' } : { '@_href': 'PartyB' },
-              receiverPartyReference: (trade.leg2.direction === 'PAY' || trade.leg2.direction === 'PAY_FIXED') ? { '@_href': 'PartyB' } : { '@_href': 'PartyA' },
-              calculationPeriodDates: {
-                effectiveDate: { unadjustedDate: effectiveDate },
-                terminationDate: { unadjustedDate: maturityDate },
-              },
-              paymentDates: {
-                paymentFrequency: parseTenorParts(trade.leg2.frequency || '3M', '3', 'M'),
-              },
-              resetDates: {
-                resetFrequency: parseTenorParts(trade.leg2.indexTenor || '3M', '3', 'M'),
-                resetType: trade.leg2.resetType || 'ARREARS',
-              },
-              calculationPeriodAmount: {
-                calculation: {
-                  notionalSchedule: {
-                    notionalStepSchedule: {
-                      initialValue: trade.leg2.notional,
-                      currency: trade.leg2.currency,
-                    },
-                  },
-                  floatingRateCalculation: {
-                    floatingRateIndex: trade.leg2.index || 'SOFR',
-                    indexTenor: parseTenorParts(trade.leg2.indexTenor || '3M', '3', 'M'),
-                    spreadRate: ((trade.leg2.spreadBps || 0) / 10000).toFixed(6),
-                  },
-                  dayCountFraction: trade.leg2.dayCount,
-                },
-              },
-            },
-          ],
+    const leg2: GenericSwapLeg = trade.leg2 || {
+      legType: trade.floatingLeg ? 'FLOATING' : 'FIXED',
+      direction: trade.floatingLeg?.direction || 'RECEIVE_FIXED',
+      notional: trade.floatingLeg?.notional || trade.notionalUsd || 10000000,
+      currency: trade.floatingLeg?.currency || 'USD',
+      index: trade.floatingLeg?.index || 'SOFR',
+      indexTenor: trade.floatingLeg?.indexTenor || '3M',
+      resetType: trade.floatingLeg?.resetType || 'ADVANCE',
+      spreadBps: trade.floatingLeg?.spreadBps || 0,
+      dayCount: trade.floatingLeg?.dayCount || 'ACT/360',
+      frequency: trade.floatingLeg?.frequency || '3M',
+      businessDayConvention: 'MODFOLLOWING',
+    };
+
+    const buildStreamNode = (leg: GenericSwapLeg, id: string) => {
+      const isPay = leg.direction === 'PAY' || leg.direction === 'PAY_FIXED';
+      const calcNode: any = {
+        notionalSchedule: {
+          notionalStepSchedule: {
+            initialValue: leg.notional,
+            currency: leg.currency,
+          },
+        },
+        dayCountFraction: leg.dayCount,
+      };
+
+      if (leg.legType === 'FIXED') {
+        calcNode.fixedRateSchedule = {
+          initialValue: ((leg.fixedRate ?? 3.85) / 100).toFixed(6),
+        };
+      } else {
+        calcNode.floatingRateCalculation = {
+          floatingRateIndex: leg.index || 'SOFR',
+          indexTenor: parseTenorParts(leg.indexTenor || '3M', '3', 'M'),
+          spreadRate: ((leg.spreadBps || 0) / 10000).toFixed(6),
+        };
+      }
+
+      const streamObj: any = {
+        '@_id': id,
+        payerPartyReference: isPay ? { '@_href': 'PartyA' } : { '@_href': 'PartyB' },
+        receiverPartyReference: isPay ? { '@_href': 'PartyB' } : { '@_href': 'PartyA' },
+        calculationPeriodDates: {
+          effectiveDate: { unadjustedDate: effectiveDate },
+          terminationDate: { unadjustedDate: maturityDate },
+        },
+        paymentDates: {
+          paymentFrequency: parseTenorParts(leg.frequency || '6M', '6', 'M'),
+        },
+        calculationPeriodAmount: {
+          calculation: calcNode,
         },
       };
-    } else {
-      const fixedLeg: FixedLeg = trade.fixedLeg || {
-        direction: 'PAY_FIXED',
-        notional: 10000000,
-        currency: 'USD',
-        fixedRate: 3.85,
-        dayCount: '30/360',
-        frequency: '6M',
-        businessDayConvention: 'MODFOLLOWING',
-      };
 
-      const floatingLeg: FloatingLeg = trade.floatingLeg || {
-        direction: 'RECEIVE_FIXED',
-        notional: 10000000,
-        currency: 'USD',
-        index: 'SOFR',
-        indexTenor: '3M',
-        resetType: 'ADVANCE',
-        spreadBps: 0,
-        dayCount: 'ACT/360',
-        frequency: '3M',
-        businessDayConvention: 'MODFOLLOWING',
-      };
+      if (leg.legType === 'FLOATING') {
+        streamObj.resetDates = {
+          resetFrequency: parseTenorParts(leg.indexTenor || '3M', '3', 'M'),
+          resetType: leg.resetType || 'ADVANCE',
+        };
+      }
 
-      productXmlNode = {
-        swap: {
-          swapStream: [
-            {
-              '@_id': 'FixedLeg',
-              payerPartyReference: fixedLeg.direction === 'PAY_FIXED' ? { '@_href': 'PartyA' } : { '@_href': 'PartyB' },
-              receiverPartyReference: fixedLeg.direction === 'PAY_FIXED' ? { '@_href': 'PartyB' } : { '@_href': 'PartyA' },
-              calculationPeriodDates: {
-                effectiveDate: { unadjustedDate: effectiveDate },
-                terminationDate: { unadjustedDate: maturityDate },
-              },
-              paymentDates: {
-                paymentFrequency: {
-                  periodMultiplier: fixedLeg.frequency.replace(/\D/g, '') || '6',
-                  period: fixedLeg.frequency.includes('M') ? 'M' : 'Y',
-                },
-              },
-              calculationPeriodAmount: {
-                calculation: {
-                  notionalSchedule: {
-                    notionalStepSchedule: {
-                      initialValue: fixedLeg.notional,
-                      currency: fixedLeg.currency,
-                    },
-                  },
-                  fixedRateSchedule: {
-                    initialValue: (fixedLeg.fixedRate / 100).toFixed(6),
-                  },
-                  dayCountFraction: fixedLeg.dayCount,
-                },
-              },
-            },
-            {
-              '@_id': 'FloatingLeg',
-              payerPartyReference: floatingLeg.direction === 'PAY_FIXED' ? { '@_href': 'PartyA' } : { '@_href': 'PartyB' },
-              receiverPartyReference: floatingLeg.direction === 'PAY_FIXED' ? { '@_href': 'PartyB' } : { '@_href': 'PartyA' },
-              calculationPeriodDates: {
-                effectiveDate: { unadjustedDate: effectiveDate },
-                terminationDate: { unadjustedDate: maturityDate },
-              },
-              paymentDates: {
-                paymentFrequency: parseTenorParts(floatingLeg.frequency || '3M', '3', 'M'),
-              },
-              resetDates: {
-                resetFrequency: parseTenorParts(floatingLeg.indexTenor || '3M', '3', 'M'),
-                resetType: floatingLeg.resetType || 'ADVANCE',
-              },
-              calculationPeriodAmount: {
-                calculation: {
-                  notionalSchedule: {
-                    notionalStepSchedule: {
-                      initialValue: floatingLeg.notional,
-                      currency: floatingLeg.currency,
-                    },
-                  },
-                  floatingRateCalculation: {
-                    floatingRateIndex: floatingLeg.index,
-                    indexTenor: parseTenorParts(floatingLeg.indexTenor || '3M', '3', 'M'),
-                    spreadRate: (floatingLeg.spreadBps / 10000).toFixed(6),
-                  },
-                  dayCountFraction: floatingLeg.dayCount,
-                },
-              },
-            },
-          ],
-        },
-      };
-    }
+      return streamObj;
+    };
+
+    productXmlNode = {
+      swap: {
+        swapStream: [
+          buildStreamNode(leg1, 'Leg1_Stream'),
+          buildStreamNode(leg2, 'Leg2_Stream'),
+        ],
+      },
+    };
   } else if (productType === 'CAP_FLOOR') {
     const details: CapFloorDetails = trade.capFloorDetails || {
       capFloorType: 'CAP',
@@ -980,144 +898,141 @@ export function parseIRSwapXml(xmlString: string): XmlParseResult {
     if (productType === 'IRS') {
       const swapNode = tradeNode.swap || {};
       const streams = Array.isArray(swapNode.swapStream) ? swapNode.swapStream : swapNode.swapStream ? [swapNode.swapStream] : [];
-      let fixedStream: any = null;
-      let floatingStream: any = null;
-      let floatingStream2: any = null;
+      
+      const parseStream = (streamNode: any): GenericSwapLeg | undefined => {
+        if (!streamNode) return undefined;
+        const calc = streamNode.calculationPeriodAmount?.calculation || {};
+        const notionalNode = calc.notionalSchedule?.notionalStepSchedule || {};
+        const notionalVal = parseFloat(notionalNode.initialValue || '10000000');
+        const ccyVal = (notionalNode.currency || 'USD') as Currency;
+        const isPay = streamNode.payerPartyReference?.['@_href'] === 'PartyA';
 
-      streams.forEach((s: any) => {
-        const calc = s.calculationPeriodAmount?.calculation || {};
-        if (calc.fixedRateSchedule) fixedStream = s;
-        else if (calc.floatingRateCalculation) {
-          if (!floatingStream) floatingStream = s;
-          else floatingStream2 = s;
+        const pfNode = streamNode.paymentDates?.paymentFrequency || {};
+        const pfMult = pfNode.periodMultiplier || '6';
+        const pfUnit = pfNode.period || 'M';
+        const payFreq = `${pfMult}${pfUnit}` as PaymentFrequency;
+
+        if (calc.fixedRateSchedule) {
+          let fixedRateVal = parseFloat(calc.fixedRateSchedule.initialValue || '0.0385');
+          if (fixedRateVal < 0.2) fixedRateVal *= 100;
+          return {
+            legType: 'FIXED',
+            direction: isPay ? 'PAY_FIXED' : 'RECEIVE_FIXED',
+            notional: notionalVal,
+            currency: ccyVal,
+            fixedRate: fixedRateVal,
+            dayCount: (calc.dayCountFraction || '30/360') as DayCountConvention,
+            frequency: payFreq,
+            businessDayConvention: 'MODFOLLOWING',
+          };
+        } else if (calc.floatingRateCalculation) {
+          const floatDetail = calc.floatingRateCalculation || {};
+          const flIndex = (floatDetail.floatingRateIndex || 'SOFR') as FloatingIndex;
+          const mult = floatDetail.indexTenor?.periodMultiplier || '3';
+          const unit = floatDetail.indexTenor?.period || 'M';
+          const idxTenor = `${mult}${unit}` as IndexTenor;
+          const spread = Math.round(parseFloat(floatDetail.spreadRate || '0') * 10000);
+          const rType = (streamNode.resetDates?.resetType || 'ADVANCE') as ResetType;
+
+          return {
+            legType: 'FLOATING',
+            direction: isPay ? 'PAY_FIXED' : 'RECEIVE_FIXED',
+            notional: notionalVal,
+            currency: ccyVal,
+            index: flIndex,
+            indexTenor: idxTenor,
+            spreadBps: spread,
+            resetType: rType,
+            dayCount: (calc.dayCountFraction || 'ACT/360') as DayCountConvention,
+            frequency: payFreq,
+            businessDayConvention: 'MODFOLLOWING',
+          };
         }
-      });
+        return undefined;
+      };
 
-      if (fixedStream && floatingStream) {
-        const fixedCalc = fixedStream.calculationPeriodAmount.calculation;
-        const fixedNotionalNode = fixedCalc.notionalSchedule?.notionalStepSchedule || {};
-        const fixedNotional = parseFloat(fixedNotionalNode.initialValue || '10000000');
-        const currency = (fixedNotionalNode.currency || 'USD') as Currency;
-        notionalUsd = fixedNotional;
+      if (streams.length >= 2) {
+        leg1 = parseStream(streams[0]);
+        leg2 = parseStream(streams[1]);
+        const calcDates = streams[0].calculationPeriodDates || streams[1].calculationPeriodDates || {};
+        effectiveDate = calcDates.effectiveDate?.unadjustedDate || '2026-08-01';
+        maturityDate = calcDates.terminationDate?.unadjustedDate || '2031-08-01';
+      } else if (streams.length === 1) {
+        leg1 = parseStream(streams[0]);
+        const calcDates = streams[0].calculationPeriodDates || {};
+        effectiveDate = calcDates.effectiveDate?.unadjustedDate || '2026-08-01';
+        maturityDate = calcDates.terminationDate?.unadjustedDate || '2031-08-01';
+      }
 
-        let fixedRateVal = parseFloat(fixedCalc.fixedRateSchedule?.initialValue || '0.0385');
-        if (fixedRateVal < 0.2) fixedRateVal = fixedRateVal * 100;
+      if (leg1) {
+        notionalUsd = leg1.notional;
+        if (leg1.legType === 'FIXED') {
+          fixedLeg = {
+            direction: leg1.direction as any,
+            notional: leg1.notional,
+            currency: leg1.currency,
+            fixedRate: leg1.fixedRate || 3.85,
+            dayCount: leg1.dayCount,
+            frequency: leg1.frequency,
+            businessDayConvention: 'MODFOLLOWING',
+          };
+        } else {
+          floatingLeg = {
+            direction: leg1.direction as any,
+            notional: leg1.notional,
+            currency: leg1.currency,
+            index: leg1.index || 'SOFR',
+            indexTenor: leg1.indexTenor || '3M',
+            resetType: leg1.resetType || 'ADVANCE',
+            spreadBps: leg1.spreadBps || 0,
+            dayCount: leg1.dayCount,
+            frequency: leg1.frequency,
+            businessDayConvention: 'MODFOLLOWING',
+          };
+        }
+      }
 
-        const fixedDayCount = (fixedCalc.dayCountFraction || '30/360') as DayCountConvention;
-        const calcPeriodDates = fixedStream.calculationPeriodDates || {};
-        effectiveDate = calcPeriodDates.effectiveDate?.unadjustedDate || '2026-08-01';
-        maturityDate = calcPeriodDates.terminationDate?.unadjustedDate || '2031-08-01';
+      if (leg2) {
+        if (leg2.legType === 'FIXED') {
+          fixedLeg = {
+            direction: leg2.direction as any,
+            notional: leg2.notional,
+            currency: leg2.currency,
+            fixedRate: leg2.fixedRate || 3.85,
+            dayCount: leg2.dayCount,
+            frequency: leg2.frequency,
+            businessDayConvention: 'MODFOLLOWING',
+          };
+        } else {
+          floatingLeg = {
+            direction: leg2.direction as any,
+            notional: leg2.notional,
+            currency: leg2.currency,
+            index: leg2.index || 'SOFR',
+            indexTenor: leg2.indexTenor || '3M',
+            resetType: leg2.resetType || 'ADVANCE',
+            spreadBps: leg2.spreadBps || 0,
+            dayCount: leg2.dayCount,
+            frequency: leg2.frequency,
+            businessDayConvention: 'MODFOLLOWING',
+          };
+        }
+      }
 
-        const isPayerPartyA = fixedStream.payerPartyReference?.['@_href'] === 'PartyA';
-        const payReceive = isPayerPartyA ? 'PAY_FIXED' : 'RECEIVE_FIXED';
+      tenorYears = calculateTenorYears(effectiveDate, maturityDate);
+      const mainCcy = leg1?.currency || fixedLeg?.currency || floatingLeg?.currency || 'USD';
+      const estParRate = getEstimatedParRate(mainCcy, tenorYears);
 
-        const floatCalc = floatingStream.calculationPeriodAmount.calculation;
-        const floatCalcDetail = floatCalc.floatingRateCalculation || {};
-        const floatingIndex = (floatCalcDetail.floatingRateIndex || 'SOFR') as FloatingIndex;
-
-        fixedLeg = {
-          direction: payReceive,
-          notional: fixedNotional,
-          currency,
-          fixedRate: fixedRateVal,
-          dayCount: fixedDayCount,
-          frequency: '6M',
-          businessDayConvention: 'MODFOLLOWING',
-        };
-
-        floatingLeg = {
-          direction: payReceive === 'PAY_FIXED' ? 'RECEIVE_FIXED' : 'PAY_FIXED',
-          notional: fixedNotional,
-          currency,
-          index: floatingIndex,
-          indexTenor: '3M',
-          spreadBps: 0,
-          dayCount: 'ACT/360',
-          frequency: '3M',
-          businessDayConvention: 'MODFOLLOWING',
-        };
-
-        tenorYears = calculateTenorYears(effectiveDate, maturityDate);
-        const estParRate = getEstimatedParRate(currency, tenorYears);
+      if (leg1 && leg2 && leg1.legType === 'FLOATING' && leg2.legType === 'FLOATING') {
+        fixedLeg = undefined;
+        parRate = estParRate;
+        dv01 = calculateDv01(notionalUsd, estParRate, tenorYears, leg1.indexTenor || '3M');
+        markToMarket = 0;
+      } else if (fixedLeg && floatingLeg) {
         const val = calculateMarkToMarket(fixedLeg, floatingLeg, tenorYears, estParRate);
         parRate = val.parRate;
         dv01 = val.dv01;
         markToMarket = val.mtm;
-      } else if (floatingStream && floatingStream2) {
-        // Dual Floating Leg Basis Swap
-        const floatCalc1 = floatingStream.calculationPeriodAmount.calculation;
-        const notionalNode1 = floatCalc1.notionalSchedule?.notionalStepSchedule || {};
-        const notional1 = parseFloat(notionalNode1.initialValue || '10000000');
-        const ccy = (notionalNode1.currency || 'USD') as Currency;
-        notionalUsd = notional1;
-
-        const floatDetail1 = floatCalc1.floatingRateCalculation || {};
-        const index1 = (floatDetail1.floatingRateIndex || 'SOFR') as FloatingIndex;
-        const mult1 = floatDetail1.indexTenor?.periodMultiplier || '1';
-        const unit1 = floatDetail1.indexTenor?.period || 'M';
-        const tenor1 = `${mult1}${unit1}`;
-        const isPay1 = floatingStream.payerPartyReference?.['@_href'] === 'PartyA';
-        const spread1 = Math.round(parseFloat(floatDetail1.spreadRate || '0') * 10000);
-
-        const floatCalc2 = floatingStream2.calculationPeriodAmount.calculation;
-        const floatDetail2 = floatCalc2.floatingRateCalculation || {};
-        const index2 = (floatDetail2.floatingRateIndex || 'SOFR') as FloatingIndex;
-        const mult2 = floatDetail2.indexTenor?.periodMultiplier || '3';
-        const unit2 = floatDetail2.indexTenor?.period || 'M';
-        const tenor2 = `${mult2}${unit2}`;
-        const isPay2 = floatingStream2.payerPartyReference?.['@_href'] === 'PartyA';
-        const spread2 = Math.round(parseFloat(floatDetail2.spreadRate || '0') * 10000);
-
-        const calcDates = floatingStream.calculationPeriodDates || {};
-        effectiveDate = calcDates.effectiveDate?.unadjustedDate || '2026-08-01';
-        maturityDate = calcDates.terminationDate?.unadjustedDate || '2031-08-01';
-
-        const pf1Node = floatingStream.paymentDates?.paymentFrequency || {};
-        const pf1Mult = pf1Node.periodMultiplier || '6';
-        const pf1Unit = pf1Node.period || 'M';
-        const payFreq1 = `${pf1Mult}${pf1Unit}`;
-
-        const pf2Node = floatingStream2?.paymentDates?.paymentFrequency || {};
-        const pf2Mult = pf2Node.periodMultiplier || '6';
-        const pf2Unit = pf2Node.period || 'M';
-        const payFreq2 = `${pf2Mult}${pf2Unit}`;
-
-        leg1 = {
-          legType: 'FLOATING',
-          direction: isPay1 ? 'PAY_FIXED' : 'RECEIVE_FIXED',
-          notional: notional1,
-          currency: ccy,
-          index: index1,
-          indexTenor: tenor1 as IndexTenor,
-          spreadBps: spread1,
-          dayCount: (floatCalc1.dayCountFraction || 'ACT/360') as DayCountConvention,
-          frequency: payFreq1 as PaymentFrequency,
-          resetType: floatingStream.resetDates?.resetType || 'ADVANCE',
-          businessDayConvention: 'MODFOLLOWING',
-        };
-
-        leg2 = {
-          legType: 'FLOATING',
-          direction: isPay2 ? 'PAY_FIXED' : 'RECEIVE_FIXED',
-          notional: notional1,
-          currency: ccy,
-          index: index2,
-          indexTenor: tenor2 as IndexTenor,
-          spreadBps: spread2,
-          dayCount: (floatCalc2.dayCountFraction || 'ACT/360') as DayCountConvention,
-          frequency: payFreq2 as PaymentFrequency,
-          resetType: floatingStream2.resetDates?.resetType || 'ARREARS',
-          businessDayConvention: 'MODFOLLOWING',
-        };
-
-        // Clear fixedLeg for dual floating leg basis swaps so it does not default to PAY_FIXED
-        fixedLeg = undefined;
-
-        tenorYears = calculateTenorYears(effectiveDate, maturityDate);
-        const estParRate = getEstimatedParRate(ccy, tenorYears);
-        parRate = estParRate;
-        dv01 = calculateDv01(notional1, estParRate, tenorYears, '3M');
-        markToMarket = 0;
       }
     } else if (productType === 'CAP_FLOOR') {
       const capNode = tradeNode.capFloor || {};
