@@ -1707,14 +1707,14 @@ export function generateIndependentLeg1Schedule(
     let periodSpread: number | undefined = undefined;
 
     if (legType === 'FLOATING') {
-      const base1 = getBenchmarkFixingRate(trade.leg1?.index || trade.leg1?.currency || ccy);
+      const base1 = getBenchmarkFixingRate(trade.leg1?.index || trade.leg1?.currency || ccy, trade.leg1?.indexTenor);
       periodFixing = derivePeriodFixingRate(base1, periodNum, 0.03);
       periodSpread = trade.leg1?.spreadBps || 0;
       flowRate = parseFloat((periodFixing + periodSpread / 100).toFixed(4));
     } else if (trade.productType === 'RANGE_ACCRUAL' && trade.rangeAccrualDetails) {
       const lowerB = trade.rangeAccrualDetails.lowerBarrierRate || 3.0;
       const upperB = trade.rangeAccrualDetails.upperBarrierRate || 5.0;
-      const baseIdx = getBenchmarkFixingRate(trade.rangeAccrualDetails.referenceIndex || ccy);
+      const baseIdx = getBenchmarkFixingRate(trade.rangeAccrualDetails.referenceIndex || ccy, trade.leg1?.indexTenor);
       periodFixing = derivePeriodFixingRate(baseIdx, periodNum, 0.03);
       if (periodFixing < lowerB || periodFixing > upperB) flowRate = 0;
     } else if (trade.productType === 'SNOW_RANGE' && trade.snowRangeDetails) {
@@ -1722,7 +1722,7 @@ export function generateIndependentLeg1Schedule(
       const upperB = trade.snowRangeDetails.upperBarrierRate || 4.75;
       const baseC = trade.snowRangeDetails.baseCouponRate || 5.50;
       const mult = trade.snowRangeDetails.memoryEnabled ? (trade.snowRangeDetails.memoryMultiplier || 1.0) : 0;
-      const baseIdx = getBenchmarkFixingRate(trade.snowRangeDetails.referenceIndex || ccy);
+      const baseIdx = getBenchmarkFixingRate(trade.snowRangeDetails.referenceIndex || ccy, trade.leg1?.indexTenor);
       periodFixing = derivePeriodFixingRate(baseIdx, periodNum, 0.03);
       const isInside = periodFixing >= lowerB && periodFixing <= upperB;
       const fraction = isInside ? 1.0 : 0.8;
@@ -1732,7 +1732,7 @@ export function generateIndependentLeg1Schedule(
       const targetCap = trade.tarnDetails.targetCapPct || 10.0;
       const strike = trade.tarnDetails.strikeRate || 6.50;
       const leverage = trade.tarnDetails.leverageFactor || 1.5;
-      const baseIdx = getBenchmarkFixingRate(trade.tarnDetails.referenceIndex || ccy);
+      const baseIdx = getBenchmarkFixingRate(trade.tarnDetails.referenceIndex || ccy, trade.leg1?.indexTenor);
       periodFixing = derivePeriodFixingRate(baseIdx, periodNum, 0.03);
       let rawRate = strike - leverage * periodFixing;
       if (rawRate < (trade.tarnDetails.floorRate || 0)) rawRate = trade.tarnDetails.floorRate || 0;
@@ -1747,7 +1747,7 @@ export function generateIndependentLeg1Schedule(
       const initC = trade.snowballDetails.initialCouponRate || 6.0;
       const bonus = trade.snowballDetails.bonusStepRate || 1.5;
       const leverage = trade.snowballDetails.leverageFactor || 1.0;
-      const baseIdx = getBenchmarkFixingRate(trade.snowballDetails.referenceIndex || ccy);
+      const baseIdx = getBenchmarkFixingRate(trade.snowballDetails.referenceIndex || ccy, trade.leg1?.indexTenor);
       periodFixing = derivePeriodFixingRate(baseIdx, periodNum, 0.03);
       if (periodNum === 1) {
         flowRate = initC;
@@ -1829,7 +1829,7 @@ export function generateIndependentLeg2Schedule(
     const numDays = getNumberOfDays(effStart, effEnd);
     const dcf = getDayCountFraction(effStart, effEnd, convention);
 
-    const base2 = getBenchmarkFixingRate(trade.leg2?.index || trade.floatingLeg?.index || ccy);
+    const base2 = getBenchmarkFixingRate(trade.leg2?.index || trade.floatingLeg?.index || ccy, trade.leg2?.indexTenor || trade.floatingLeg?.indexTenor);
     const periodFixingRate = derivePeriodFixingRate(base2, periodNum, 0.035);
     const totalRatePct = legType === 'FIXED'
       ? (trade.leg2?.fixedRate || trade.fixedLeg?.fixedRate || 3.85)
