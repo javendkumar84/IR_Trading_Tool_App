@@ -291,8 +291,13 @@ export function getHistoricalFixingRate(
     }
     if (year === 2024) {
       if (month <= 8) return 5.31;  // NY FED peak target rate 5.25-5.50%
-      if (month <= 10) return 4.83; // After 50bps Fed cut (Sept 2024)
-      return 4.58;                  // After 25bps Fed cut (Nov 2024)
+      if (month === 9 || month === 10) return 4.83; // Post Sept 50bps Fed cut
+      if (month === 11) {
+        if (day <= 3) return 4.86;  // 1-3 Nov 2024 NY FED Fixing (Weekend Carryover)
+        if (day === 4) return 4.82;  // 4 Nov 2024 NY FED Fixing
+        return 4.58;                 // Post Nov 7 25bps Fed cut
+      }
+      return 4.58;                  // Dec 2024
     }
     if (year === 2025) {
       if (month <= 3) return 4.33;
