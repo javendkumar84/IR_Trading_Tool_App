@@ -1,4 +1,4 @@
-import { IRSwapTrade, ProductType, Currency, DayCountConvention, PaymentFrequency, ResetType, GenericSwapLeg, LegType, BusinessCalendar, BusinessDayRollConvention, IndexTenor } from '../types';
+import { IRSwapTrade, ProductType, Currency, DayCountConvention, PaymentFrequency, ResetType, GenericSwapLeg, FixedLeg, LegType, BusinessCalendar, BusinessDayRollConvention, IndexTenor } from '../types';
 import { convertCurrency } from './fxRates';
 import { getOfficialHistoricalFixingRate, OFFICIAL_INDEX_REGISTRY, getFixingLagDays } from './historicalFixingStore';
 import { adjustBusinessDay, isBusinessDay, getBusinessDayDifference } from './businessCalendar';
@@ -142,6 +142,31 @@ function addDays(dateStr: string, days: number): string {
   if (isNaN(d.getTime())) return dateStr;
   d.setDate(d.getDate() + days);
   return d.toISOString().split('T')[0];
+}
+
+/**
+ * Safely resolves the agreed fixed rate for a leg or trade, preventing 0% falsy fallback bugs
+ */
+export function resolveFixedRate(
+  leg?: GenericSwapLeg | FixedLeg,
+  trade?: IRSwapTrade
+): number {
+  if (leg && 'fixedRate' in leg && typeof leg.fixedRate === 'number' && !isNaN(leg.fixedRate)) {
+    return leg.fixedRate;
+  }
+  if (trade?.leg1 && 'fixedRate' in trade.leg1 && typeof trade.leg1.fixedRate === 'number' && !isNaN(trade.leg1.fixedRate)) {
+    return trade.leg1.fixedRate;
+  }
+  if (trade?.leg2 && 'fixedRate' in trade.leg2 && typeof trade.leg2.fixedRate === 'number' && !isNaN(trade.leg2.fixedRate)) {
+    return trade.leg2.fixedRate;
+  }
+  if (trade?.fixedLeg?.fixedRate !== undefined && typeof trade.fixedLeg.fixedRate === 'number' && !isNaN(trade.fixedLeg.fixedRate)) {
+    return trade.fixedLeg.fixedRate;
+  }
+  if (trade?.parRate !== undefined && typeof trade.parRate === 'number' && !isNaN(trade.parRate)) {
+    return trade.parRate;
+  }
+  return 3.85;
 }
 
 /**
@@ -384,7 +409,7 @@ export function generateIRSwapCashflowSchedule(
       let leg1Fixing = 0;
       let leg1Spread = leg1.spreadBps || 0;
       if (leg1.legType === 'FIXED') {
-        leg1Rate = leg1.fixedRate ?? trade.fixedLeg?.fixedRate ?? trade.parRate ?? 3.85;
+        leg1Rate = resolveFixedRate(leg1, trade);
       } else {
         const base1 = getBenchmarkFixingRate(leg1.index || leg1.currency || trade.fixedLeg?.currency || 'USD', leg1.indexTenor);
         leg1Fixing = getPeriodFixingRate(leg1.index || leg1.currency || 'USD', leg1FixingDate, periodNum, base1, leg1.indexTenor, valDateStr, effStart, effEnd, leg1Convention);
@@ -400,7 +425,7 @@ export function generateIRSwapCashflowSchedule(
       let leg2Fixing = 0;
       let leg2Spread = leg2.spreadBps || 0;
       if (leg2.legType === 'FIXED') {
-        leg2Rate = (leg2 as GenericSwapLeg).fixedRate ?? trade.fixedLeg?.fixedRate ?? 3.85;
+        leg2Rate = resolveFixedRate(leg2, trade);
       } else {
         const base2 = getBenchmarkFixingRate(leg2.index || leg2.currency || trade.floatingLeg?.currency || 'USD', leg2.indexTenor);
         leg2Fixing = getPeriodFixingRate(leg2.index || leg2.currency || 'USD', leg2FixingDate, periodNum, base2, leg2.indexTenor, valDateStr, effStart, effEnd, leg2Convention);
@@ -520,7 +545,7 @@ export function generateIRSwapCashflowSchedule(
 
   const fixedNotional = fixed?.notional || trade.notionalUsd || 25000000;
   const floatNotional = floating?.notional || fixedNotional;
-  const couponRate = fixed?.fixedRate ?? trade.parRate ?? 3.85;
+  const couponRate = resolveFixedRate(fixed, trade);
 
   const fixedConvention = fixed?.dayCount || '30/360';
   const floatConvention = floating?.dayCount || 'ACT/360';
@@ -1753,7 +1778,7 @@ export function generateIndependentLeg1Schedule(
   const convention = trade.leg1?.dayCount || trade.fixedLeg?.dayCount || trade.rangeAccrualDetails?.dayCount || trade.snowRangeDetails?.dayCount || trade.tarnDetails?.dayCount || trade.snowballDetails?.dayCount || '30/360';
   const legType = trade.leg1?.legType || (trade.fixedLeg ? 'FIXED' : 'FLOATING');
 
-  const ratePct = trade.leg1?.fixedRate || trade.fixedLeg?.fixedRate || trade.rangeAccrualDetails?.accrualCouponRate || trade.snowRangeDetails?.baseCouponRate || trade.tarnDetails?.strikeRate || trade.snowballDetails?.initialCouponRate || trade.parRate || 3.85;
+  const ratePct = legType === 'FIXED' ? resolveFixedRate(trade.leg1 || trade.fixedLeg, trade) : (trade.rangeAccrualDetails?.accrualCouponRate ?? trade.snowRangeDetails?.baseCouponRate ?? trade.tarnDetails?.strikeRate ?? trade.snowballDetails?.initialCouponRate ?? resolveFixedRate(undefined, trade));
 
   let currStart = trade.effectiveDate || '2026-08-01';
   const maturity = trade.maturityDate || addMonths(currStart, Math.round((trade.tenorYears || 5) * 12));
@@ -1927,7 +1952,7 @@ export function generateIndependentLeg2Schedule(
     const base2 = getBenchmarkFixingRate(idxSym2, trade.leg2?.indexTenor || trade.floatingLeg?.indexTenor);
     const periodFixingRate = getPeriodFixingRate(idxSym2, fixingObsDate2, periodNum, base2, trade.leg2?.indexTenor || trade.floatingLeg?.indexTenor);
     const totalRatePct = legType === 'FIXED'
-      ? (trade.leg2?.fixedRate || trade.fixedLeg?.fixedRate || 3.85)
+      ? resolveFixedRate(trade.leg2, trade)
       : parseFloat((periodFixingRate + spreadBps / 100).toFixed(4));
 
     const rawFlow = Math.round(notional * (totalRatePct / 100) * dcf);

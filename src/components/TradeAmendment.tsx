@@ -275,7 +275,7 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
       setLeg1Direction(trade.fixedLeg?.direction === 'PAY_FIXED' ? 'PAY' : 'RECEIVE');
       setLeg1Currency(trade.fixedLeg?.currency || 'USD');
       setLeg1Notional(trade.fixedLeg?.notional || trade.notionalUsd || 25000000);
-      setLeg1FixedRate(trade.fixedLeg?.fixedRate || 3.85);
+      setLeg1FixedRate(trade.leg1?.fixedRate ?? trade.fixedLeg?.fixedRate ?? trade.parRate ?? 3.85);
       setLeg1DayCount(trade.fixedLeg?.dayCount || '30/360');
       setLeg1Freq(trade.fixedLeg?.frequency || '6M');
       setLeg1AccrualCal(trade.fixedLeg?.accrualCalendar || 'USNY');
