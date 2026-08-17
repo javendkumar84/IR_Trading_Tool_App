@@ -207,9 +207,50 @@ const SOFR_DAILY_EXACT_MAP: Record<string, number> = {
 };
 
 /**
+ * Bulletproof date normalizer converting any input date format
+ * (YYYY-MM-DD, DD/MM/YYYY, DD-MM-YYYY, YYYY/MM/DD, DD-Mon-YYYY) into clean YYYY-MM-DD ISO string.
+ */
+export function normalizeToIsoDate(dateStr: string): string {
+  if (!dateStr) return '';
+  const trimmed = dateStr.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+
+  // Match DD/MM/YYYY or DD-MM-YYYY
+  const dmyMatch = trimmed.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (dmyMatch) {
+    const p1 = parseInt(dmyMatch[1], 10);
+    const p2 = parseInt(dmyMatch[2], 10);
+    const year = dmyMatch[3];
+    let day = p1;
+    let month = p2;
+    if (p2 > 12 && p1 <= 12) {
+      day = p2;
+      month = p1;
+    }
+    const mm = String(month).padStart(2, '0');
+    const dd = String(day).padStart(2, '0');
+    return `${year}-${mm}-${dd}`;
+  }
+
+  // Match YYYY/MM/DD
+  const ymdMatch = trimmed.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+  if (ymdMatch) {
+    const year = ymdMatch[1];
+    const month = ymdMatch[2].padStart(2, '0');
+    const day = ymdMatch[3].padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  const dt = new Date(trimmed);
+  if (isNaN(dt.getTime())) return trimmed;
+  return dt.toISOString().split('T')[0];
+}
+
+/**
  * Helper to roll a weekend date to the preceding business day (Friday)
  */
-export function getPreviousBusinessDayISO(dateIso: string): string {
+export function getPreviousBusinessDayISO(dateIsoInput: string): string {
+  const dateIso = normalizeToIsoDate(dateIsoInput);
   const dt = new Date(dateIso);
   if (isNaN(dt.getTime())) return dateIso;
   const dayOfWeek = dt.getDay(); // 0 = Sun, 6 = Sat
@@ -230,16 +271,19 @@ export function getPreviousBusinessDayISO(dateIso: string): string {
  */
 export function getOfficialHistoricalFixingRate(
   indexSymbol: string = 'SOFR',
-  dateStr?: string,
+  dateStrInput?: string,
   indexTenor?: IndexTenor | string,
   valuationDateISO: string = '2026-08-15'
 ): { ratePct: number; publisher: string; settledDate: string } | null {
-  if (!dateStr || dateStr >= valuationDateISO) {
+  if (!dateStrInput) return null;
+  const normalizedDate = normalizeToIsoDate(dateStrInput);
+
+  if (!normalizedDate || normalizedDate >= valuationDateISO) {
     return null; // Future date -> Forward curve forecast required
   }
 
   // Business day rolling for weekends
-  const settledDate = getPreviousBusinessDayISO(dateStr);
+  const settledDate = getPreviousBusinessDayISO(normalizedDate);
   const symbol = (indexSymbol || 'SOFR').toUpperCase();
   const tenor = (indexTenor || '3M').toUpperCase();
   const meta = OFFICIAL_INDEX_REGISTRY[symbol] || OFFICIAL_INDEX_REGISTRY.SOFR;

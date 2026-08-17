@@ -446,14 +446,14 @@ export function generateIRSwapCashflowSchedule(
         paymentRollConvention: leg1.paymentRollConvention || 'MODFOLLOWING',
 
         fixedCouponRate: leg1.legType === 'FIXED' ? leg1Rate : leg2.legType === 'FIXED' ? leg2Rate : leg1Rate,
-        floatingFixingRate: leg1.legType === 'FLOATING' ? leg1Fixing : leg2Fixing,
-        floatingSpreadBps: leg1.legType === 'FLOATING' ? leg1Spread : leg2Spread,
-        floatingTotalRate: leg1.legType === 'FLOATING' ? leg1Rate : leg2Rate,
+        floatingFixingRate: leg1.legType === 'FLOATING' ? leg1Fixing : leg2.legType === 'FLOATING' ? leg2Fixing : leg1Fixing,
+        floatingSpreadBps: leg1.legType === 'FLOATING' ? leg1Spread : leg2.legType === 'FLOATING' ? leg2Spread : 0,
+        floatingTotalRate: leg1.legType === 'FLOATING' ? leg1Rate : leg2.legType === 'FLOATING' ? leg2Rate : leg2Rate,
 
-        couponRate: leg1Rate,
-        fixingRate: leg2Fixing || leg2Rate,
-        fixedRate: leg1Rate,
-        floatingRate: leg2Rate,
+        couponRate: leg1.legType === 'FIXED' ? leg1Rate : leg2.legType === 'FIXED' ? leg2Rate : leg1Rate,
+        fixingRate: leg1.legType === 'FLOATING' ? leg1Fixing : leg2.legType === 'FLOATING' ? leg2Fixing : leg2Fixing,
+        fixedRate: leg1.legType === 'FIXED' ? leg1Rate : leg2Rate,
+        floatingRate: leg1.legType === 'FLOATING' ? leg1Rate : leg2Rate,
 
         fixedCashflow: Math.round(leg1Flow),
         floatingCashflow: Math.round(leg2FlowConverted),
