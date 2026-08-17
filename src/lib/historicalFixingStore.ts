@@ -19,6 +19,23 @@ export interface HistoricalFixingEntry {
 }
 
 /**
+ * Returns exact fixing observation lag in days for any benchmark index:
+ *  - Overnight OIS (SOFR, €STR, SONIA, TONA, CORRA, AONIA, SARON): 0 days (observed on reset date T_reset)
+ *  - Term Indices (EURIBOR, LIBOR, CDOR, BBSW, TIBOR): 2 business days (observed on T_reset - 2 business days)
+ */
+export function getFixingLagDays(indexSymbol: string = 'SOFR'): number {
+  const sym = (indexSymbol || 'SOFR').toUpperCase();
+  const meta = OFFICIAL_INDEX_REGISTRY[sym];
+  if (meta && meta.isOvernightOis) {
+    return 0;
+  }
+  if (sym.includes('SOFR') || sym.includes('ESTR') || sym.includes('€STR') || sym.includes('SONIA') || sym.includes('TONA') || sym.includes('CORRA') || sym.includes('AONIA') || sym.includes('SARON')) {
+    return 0;
+  }
+  return 2;
+}
+
+/**
  * Official Publisher Metadata Registry for Supported Benchmark Indices
  */
 export const OFFICIAL_INDEX_REGISTRY: Record<string, IndexMetadata> = {

@@ -1,6 +1,6 @@
 import { IRSwapTrade, ProductType, Currency, DayCountConvention, PaymentFrequency, ResetType, GenericSwapLeg, LegType, BusinessCalendar, BusinessDayRollConvention, IndexTenor } from '../types';
 import { convertCurrency } from './fxRates';
-import { getOfficialHistoricalFixingRate, OFFICIAL_INDEX_REGISTRY } from './historicalFixingStore';
+import { getOfficialHistoricalFixingRate, OFFICIAL_INDEX_REGISTRY, getFixingLagDays } from './historicalFixingStore';
 import { adjustBusinessDay, isBusinessDay, getBusinessDayDifference } from './businessCalendar';
 
 export interface CashflowPeriod {
@@ -349,6 +349,14 @@ export function generateIRSwapCashflowSchedule(
       const leg1Dcf = getDayCountFraction(effStart, effEnd, leg1Convention);
       const leg2Dcf = getDayCountFraction(effStart, effEnd, leg2Convention);
 
+      const resetType: ResetType = leg2.resetType || leg1.resetType || trade.floatingLeg?.resetType || 'ADVANCE';
+      const accrualCal = leg1.accrualCalendar || leg2.accrualCalendar || trade.fixedLeg?.accrualCalendar || trade.floatingLeg?.accrualCalendar || 'USNY';
+      const fixingLag1 = getFixingLagDays(leg1.index || leg1.currency || 'SOFR');
+      const fixingLag2 = getFixingLagDays(leg2.index || leg2.currency || 'SOFR');
+
+      const leg1FixingDate = adjustBusinessDay(resetType === 'ARREARS' ? addDays(effEnd, -fixingLag1) : addDays(effStart, -fixingLag1), accrualCal, 'PRECEDING');
+      const leg2FixingDate = adjustBusinessDay(resetType === 'ARREARS' ? addDays(effEnd, -fixingLag2) : addDays(effStart, -fixingLag2), accrualCal, 'PRECEDING');
+
       // LEG 1 RATE & CASHFLOW
       let leg1Rate = 0;
       let leg1Fixing = 0;
@@ -357,7 +365,7 @@ export function generateIRSwapCashflowSchedule(
         leg1Rate = leg1.fixedRate ?? trade.fixedLeg?.fixedRate ?? trade.parRate ?? 3.85;
       } else {
         const base1 = getBenchmarkFixingRate(leg1.index || leg1.currency || trade.fixedLeg?.currency || 'USD', leg1.indexTenor);
-        leg1Fixing = getPeriodFixingRate(leg1.index || leg1.currency || 'USD', effStart, periodNum, base1, leg1.indexTenor);
+        leg1Fixing = getPeriodFixingRate(leg1.index || leg1.currency || 'USD', leg1FixingDate, periodNum, base1, leg1.indexTenor);
         leg1Rate = parseFloat((leg1Fixing + leg1Spread / 100).toFixed(4));
       }
 
@@ -373,7 +381,7 @@ export function generateIRSwapCashflowSchedule(
         leg2Rate = (leg2 as GenericSwapLeg).fixedRate ?? trade.fixedLeg?.fixedRate ?? 3.85;
       } else {
         const base2 = getBenchmarkFixingRate(leg2.index || leg2.currency || trade.floatingLeg?.currency || 'USD', leg2.indexTenor);
-        leg2Fixing = getPeriodFixingRate(leg2.index || leg2.currency || 'USD', effStart, periodNum, base2, leg2.indexTenor);
+        leg2Fixing = getPeriodFixingRate(leg2.index || leg2.currency || 'USD', leg2FixingDate, periodNum, base2, leg2.indexTenor);
         leg2Rate = parseFloat((leg2Fixing + leg2Spread / 100).toFixed(4));
       }
 
@@ -400,16 +408,15 @@ export function generateIRSwapCashflowSchedule(
       const irDelta = Math.round(leg1Notional * leg1Dcf * 0.0001 * discountFactor);
       totalIrDelta += irDelta;
 
-      const accrualCal = leg1.accrualCalendar || leg2.accrualCalendar || trade.fixedLeg?.accrualCalendar || trade.floatingLeg?.accrualCalendar || 'USNY';
-      const paymentCal = leg1.paymentCalendar || leg2.paymentCalendar || trade.fixedLeg?.paymentCalendar || trade.floatingLeg?.paymentCalendar || 'USNY';
       const accrualRoll = leg1.accrualRollConvention || leg2.accrualRollConvention || trade.fixedLeg?.accrualRollConvention || trade.floatingLeg?.accrualRollConvention || 'MODFOLLOWING';
+      const paymentCal = leg1.paymentCalendar || leg2.paymentCalendar || trade.fixedLeg?.paymentCalendar || trade.floatingLeg?.paymentCalendar || 'USNY';
       const paymentRoll = leg1.paymentRollConvention || leg2.paymentRollConvention || trade.fixedLeg?.paymentRollConvention || trade.floatingLeg?.paymentRollConvention || 'MODFOLLOWING';
 
-      const resetType: ResetType = leg2.resetType || leg1.resetType || trade.floatingLeg?.resetType || 'ADVANCE';
       const resetStartDate = ov.resetStartDate || adjustBusinessDay(effStart, accrualCal, accrualRoll);
       const resetEndDate = ov.resetEndDate || adjustBusinessDay(effEnd, accrualCal, accrualRoll);
       const payResetDate = ov.payResetDate || adjustBusinessDay(effEnd, paymentCal, paymentRoll);
-      const fixingDate = adjustBusinessDay(resetType === 'ARREARS' ? addDays(effEnd, -2) : addDays(effStart, -2), accrualCal, 'PRECEDING');
+      const effectiveFixingLag = leg1.legType === 'FLOATING' ? fixingLag1 : leg2.legType === 'FLOATING' ? fixingLag2 : 0;
+      const fixingDate = adjustBusinessDay(resetType === 'ARREARS' ? addDays(effEnd, -effectiveFixingLag) : addDays(effStart, -effectiveFixingLag), accrualCal, 'PRECEDING');
 
       const leg1Desc = leg1.legType === 'FIXED' ? `Fixed: ${leg1Rate}%` : `Float (${leg1.index || 'SOFR'} ${leg1.indexTenor || '3M'}): ${leg1Fixing}% + ${leg1Spread}bps`;
       const leg2Desc = leg2.legType === 'FIXED' ? `Fixed: ${leg2Rate}%` : `Float (${leg2.index || 'SOFR'} ${leg2.indexTenor || '1M'}): ${leg2Fixing}% + ${leg2Spread}bps`;
@@ -541,11 +548,21 @@ export function generateIRSwapCashflowSchedule(
     const fixedAmountRaw = fixedNotional * (couponRate / 100) * fixedDcf;
     const fixedCashflowInFixedCcy = isPayFixed ? -fixedAmountRaw : fixedAmountRaw;
 
+    const accrualCal = fixed?.accrualCalendar || floating?.accrualCalendar || 'USNY';
+    const paymentCal = fixed?.paymentCalendar || floating?.paymentCalendar || 'USNY';
+    const accrualRoll = fixed?.accrualRollConvention || floating?.accrualRollConvention || 'MODFOLLOWING';
+    const paymentRoll = fixed?.paymentRollConvention || floating?.paymentRollConvention || 'MODFOLLOWING';
+    const resetType: ResetType = floating?.resetType || trade.floatingLeg?.resetType || 'ADVANCE';
+
+    const floatIdxSym = floating?.index || floatCcy || 'USD';
+    const floatLag = getFixingLagDays(floatIdxSym);
+    const fixingDate = adjustBusinessDay(resetType === 'ARREARS' ? addDays(effEnd, -floatLag) : addDays(effStart, -floatLag), accrualCal, 'PRECEDING');
+
     // Projected Floating Leg Benchmark Fixing Rate & Total Rate
     const spreadBps = floating?.spreadBps || 0;
     const spreadPercent = spreadBps / 100;
-    const baseFloat = getBenchmarkFixingRate(floating?.index || floatCcy || 'USD', floating?.indexTenor || trade.leg2?.indexTenor);
-    const floatingFixingRate = getPeriodFixingRate(floating?.index || floatCcy || 'USD', effStart, periodNum, baseFloat, floating?.indexTenor || trade.leg2?.indexTenor);
+    const baseFloat = getBenchmarkFixingRate(floatIdxSym, floating?.indexTenor || trade.leg2?.indexTenor);
+    const floatingFixingRate = getPeriodFixingRate(floatIdxSym, fixingDate, periodNum, baseFloat, floating?.indexTenor || trade.leg2?.indexTenor);
     const floatingTotalRate = parseFloat((floatingFixingRate + spreadPercent).toFixed(4));
 
     const floatAmountRaw = floatNotional * (floatingTotalRate / 100) * floatDcf;
@@ -572,17 +589,9 @@ export function generateIRSwapCashflowSchedule(
     const irDelta = Math.round(fixedNotional * fixedDcf * 0.0001 * discountFactor);
     totalIrDelta += irDelta;
 
-    const accrualCal = fixed?.accrualCalendar || floating?.accrualCalendar || 'USNY';
-    const paymentCal = fixed?.paymentCalendar || floating?.paymentCalendar || 'USNY';
-    const accrualRoll = fixed?.accrualRollConvention || floating?.accrualRollConvention || 'MODFOLLOWING';
-    const paymentRoll = fixed?.paymentRollConvention || floating?.paymentRollConvention || 'MODFOLLOWING';
-
-    // Reset dates calculations
-    const resetType: ResetType = floating?.resetType || trade.floatingLeg?.resetType || 'ADVANCE';
     const resetStartDate = ov.resetStartDate || adjustBusinessDay(effStart, accrualCal, accrualRoll);
     const resetEndDate = ov.resetEndDate || adjustBusinessDay(effEnd, accrualCal, accrualRoll);
     const payResetDate = ov.payResetDate || adjustBusinessDay(effEnd, paymentCal, paymentRoll);
-    const fixingDate = adjustBusinessDay(resetType === 'ARREARS' ? addDays(effEnd, -2) : addDays(effStart, -2), accrualCal, 'PRECEDING');
 
     periods.push({
       periodNumber: periodNum,
@@ -1766,8 +1775,12 @@ export function generateIndependentLeg1Schedule(
     let periodSpread: number | undefined = undefined;
 
     if (legType === 'FLOATING') {
-      const base1 = getBenchmarkFixingRate(trade.leg1?.index || trade.leg1?.currency || ccy, trade.leg1?.indexTenor);
-      periodFixing = getPeriodFixingRate(trade.leg1?.index || trade.leg1?.currency || ccy, effStart, periodNum, base1, trade.leg1?.indexTenor);
+      const idxSym1 = trade.leg1?.index || trade.leg1?.currency || ccy;
+      const lag1 = getFixingLagDays(idxSym1);
+      const resetType1: ResetType = trade.leg1?.resetType || (trade.fixedLeg as any)?.resetType || 'ADVANCE';
+      const fixingObsDate1 = adjustBusinessDay(resetType1 === 'ARREARS' ? addDays(effEnd, -lag1) : addDays(effStart, -lag1), accrualCal, 'PRECEDING');
+      const base1 = getBenchmarkFixingRate(idxSym1, trade.leg1?.indexTenor);
+      periodFixing = getPeriodFixingRate(idxSym1, fixingObsDate1, periodNum, base1, trade.leg1?.indexTenor);
       periodSpread = trade.leg1?.spreadBps || 0;
       flowRate = parseFloat((periodFixing + periodSpread / 100).toFixed(4));
     } else if (trade.productType === 'RANGE_ACCRUAL' && trade.rangeAccrualDetails) {
@@ -1893,8 +1906,12 @@ export function generateIndependentLeg2Schedule(
     const numDays = getNumberOfDays(resetStart, resetEnd);
     const dcf = getDayCountFraction(resetStart, resetEnd, convention);
 
-    const base2 = getBenchmarkFixingRate(trade.leg2?.index || trade.floatingLeg?.index || ccy, trade.leg2?.indexTenor || trade.floatingLeg?.indexTenor);
-    const periodFixingRate = getPeriodFixingRate(trade.leg2?.index || trade.floatingLeg?.index || ccy, effStart, periodNum, base2, trade.leg2?.indexTenor || trade.floatingLeg?.indexTenor);
+    const idxSym2 = trade.leg2?.index || trade.floatingLeg?.index || ccy;
+    const lag2 = getFixingLagDays(idxSym2);
+    const resetType2: ResetType = trade.leg2?.resetType || trade.floatingLeg?.resetType || 'ADVANCE';
+    const fixingObsDate2 = adjustBusinessDay(resetType2 === 'ARREARS' ? addDays(effEnd, -lag2) : addDays(effStart, -lag2), accrualCal, 'PRECEDING');
+    const base2 = getBenchmarkFixingRate(idxSym2, trade.leg2?.indexTenor || trade.floatingLeg?.indexTenor);
+    const periodFixingRate = getPeriodFixingRate(idxSym2, fixingObsDate2, periodNum, base2, trade.leg2?.indexTenor || trade.floatingLeg?.indexTenor);
     const totalRatePct = legType === 'FIXED'
       ? (trade.leg2?.fixedRate || trade.fixedLeg?.fixedRate || 3.85)
       : parseFloat((periodFixingRate + spreadBps / 100).toFixed(4));
