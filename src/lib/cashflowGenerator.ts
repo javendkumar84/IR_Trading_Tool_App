@@ -572,12 +572,17 @@ export function generateIRSwapCashflowSchedule(
     const irDelta = Math.round(fixedNotional * fixedDcf * 0.0001 * discountFactor);
     totalIrDelta += irDelta;
 
+    const accrualCal = fixed?.accrualCalendar || floating?.accrualCalendar || 'USNY';
+    const paymentCal = fixed?.paymentCalendar || floating?.paymentCalendar || 'USNY';
+    const accrualRoll = fixed?.accrualRollConvention || floating?.accrualRollConvention || 'MODFOLLOWING';
+    const paymentRoll = fixed?.paymentRollConvention || floating?.paymentRollConvention || 'MODFOLLOWING';
+
     // Reset dates calculations
     const resetType: ResetType = floating?.resetType || trade.floatingLeg?.resetType || 'ADVANCE';
-    const resetStartDate = ov.resetStartDate || effStart;
-    const resetEndDate = ov.resetEndDate || effEnd;
-    const payResetDate = ov.payResetDate || addDays(effEnd, 2);
-    const fixingDate = resetType === 'ARREARS' ? addDays(effEnd, -2) : addDays(effStart, -2);
+    const resetStartDate = ov.resetStartDate || adjustBusinessDay(effStart, accrualCal, accrualRoll);
+    const resetEndDate = ov.resetEndDate || adjustBusinessDay(effEnd, accrualCal, accrualRoll);
+    const payResetDate = ov.payResetDate || adjustBusinessDay(effEnd, paymentCal, paymentRoll);
+    const fixingDate = adjustBusinessDay(resetType === 'ARREARS' ? addDays(effEnd, -2) : addDays(effStart, -2), accrualCal, 'PRECEDING');
 
     periods.push({
       periodNumber: periodNum,
@@ -749,10 +754,16 @@ export function generateCapFloorCashflowSchedule(trade: IRSwapTrade): CashflowSc
     const irDelta = Math.round(notional * dcf * 0.0001 * discountFactor);
     totalIrDelta += irDelta;
 
-    const resetStartDate = currStart;
-    const resetEndDate = currEnd;
-    const payResetDate = addDays(currEnd, 2);
-    const fixingDate = addDays(currStart, -2);
+    const accrualCal = details?.accrualCalendar || 'USNY';
+    const paymentCal = details?.paymentCalendar || 'USNY';
+    const accrualRoll = details?.accrualRollConvention || 'MODFOLLOWING';
+    const paymentRoll = details?.paymentRollConvention || 'MODFOLLOWING';
+    const resetType: ResetType = details?.resetType || 'ADVANCE';
+
+    const resetStartDate = adjustBusinessDay(currStart, accrualCal, accrualRoll);
+    const resetEndDate = adjustBusinessDay(currEnd, accrualCal, accrualRoll);
+    const payResetDate = adjustBusinessDay(currEnd, paymentCal, paymentRoll);
+    const fixingDate = adjustBusinessDay(resetType === 'ARREARS' ? addDays(currEnd, -2) : addDays(currStart, -2), accrualCal, 'PRECEDING');
 
     periods.push({
       periodNumber: periodNum,
@@ -2045,14 +2056,23 @@ export function generateBondCashflowSchedule(trade: IRSwapTrade): CashflowSchedu
 
     totalFixed += netFlow;
 
+    const accrualCal = details?.accrualCalendar || 'USNY';
+    const paymentCal = details?.paymentCalendar || 'USNY';
+    const accrualRoll = details?.accrualRollConvention || 'MODFOLLOWING';
+    const paymentRoll = details?.paymentRollConvention || 'MODFOLLOWING';
+
+    const resetStartDate = adjustBusinessDay(currStart, accrualCal, accrualRoll);
+    const resetEndDate = adjustBusinessDay(currEnd, accrualCal, accrualRoll);
+    const paymentDate = adjustBusinessDay(currEnd, paymentCal, paymentRoll);
+
     periods.push({
       periodNumber: periodNum,
       startDate: currStart,
       endDate: currEnd,
-      paymentDate: currEnd,
-      resetStartDate: currStart,
-      resetEndDate: currEnd,
-      payResetDate: currEnd,
+      paymentDate,
+      resetStartDate,
+      resetEndDate,
+      payResetDate: paymentDate,
       numberOfDays: numDays,
       dayCountFraction: dcf,
       dayCountConvention: dayCount,
