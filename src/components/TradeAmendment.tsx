@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FormattedNumberInput } from './FormattedNumberInput';
 import { IRSwapTrade, TradeStatus, Currency, DayCountConvention, PaymentFrequency, FloatingIndex, LegType, GenericSwapLeg, IndexTenor, ResetType, BusinessCalendar, BusinessDayRollConvention } from '../types';
 import { ChevronDown, ChevronUp, History, Save, X, Layers, Settings, RefreshCw, AlertCircle, CheckCircle2, FileCode, Cpu } from 'lucide-react';
 import { getCounterparties } from '../lib/counterpartyStore';
@@ -912,12 +913,10 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
                   {/* Leg 1 Notional */}
                   <div>
                     <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Leg 1 Notional ({leg1Currency})</label>
-                    <input
-                      type="number"
-                      step="100000"
+                    <FormattedNumberInput
                       value={leg1Notional}
-                      onChange={(e) => setLeg1Notional(Number(e.target.value))}
-                      className="w-full bg-[#16181d] border border-slate-700 rounded p-2 text-sm text-white font-mono font-bold"
+                      onChange={setLeg1Notional}
+                      className="w-full bg-[#16181d] border border-slate-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-500"
                     />
                   </div>
 
@@ -1095,12 +1094,10 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
                   {/* Leg 2 Notional */}
                   <div>
                     <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Leg 2 Notional ({leg2Currency})</label>
-                    <input
-                      type="number"
-                      step="100000"
+                    <FormattedNumberInput
                       value={leg2Notional}
-                      onChange={(e) => setLeg2Notional(Number(e.target.value))}
-                      className="w-full bg-[#16181d] border border-slate-700 rounded p-2 text-sm text-white font-mono font-bold"
+                      onChange={setLeg2Notional}
+                      className="w-full bg-[#16181d] border border-slate-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-500"
                     />
                   </div>
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FormattedNumberInput } from './FormattedNumberInput';
 import { FileCode, Download, Copy, CheckCircle2, AlertCircle, Layers, Calendar, DollarSign, Building, Plus, Info, X, Calculator, Activity, RefreshCw, Cpu, Terminal, Globe } from 'lucide-react';
 import {
   CapFloorDetails,
@@ -2897,12 +2898,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
 
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Leg 1 Notional ({leg1Currency})</label>
-                  <input
-                    type="number"
-                    step="100000"
+                  <FormattedNumberInput
                     value={notional}
-                    onChange={(e) => setNotional(Number(e.target.value))}
-                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold"
+                    onChange={setNotional}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-500"
                     required
                   />
                 </div>
@@ -3133,12 +3132,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
 
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Leg 2 Notional ({leg2Currency})</label>
-                  <input
-                    type="number"
-                    step="100000"
+                  <FormattedNumberInput
                     value={floatingNotional}
-                    onChange={(e) => setFloatingNotional(Number(e.target.value))}
-                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold"
+                    onChange={setFloatingNotional}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-500"
                   />
                 </div>
 
@@ -3594,12 +3591,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
 
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Underlying Swap Notional ({currency})</label>
-                  <input
-                    type="number"
-                    step="100000"
+                  <FormattedNumberInput
                     value={swaptionNotional}
-                    onChange={(e) => setSwaptionNotional(Number(e.target.value))}
-                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono"
+                    onChange={setSwaptionNotional}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-500"
                     required
                   />
                 </div>
@@ -3855,12 +3850,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
 
                   <div>
                     <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Leg 1 Notional ({currency})</label>
-                    <input
-                      type="number"
-                      step="100000"
+                    <FormattedNumberInput
                       value={rangeNotional}
-                      onChange={(e) => setRangeNotional(Number(e.target.value))}
-                      className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono"
+                      onChange={setRangeNotional}
+                      className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-500"
                       required
                     />
                   </div>
@@ -5091,12 +5084,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
 
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Base Notional ({fxBaseCurrency})</label>
-                  <input
-                    type="number"
-                    step="100000"
+                  <FormattedNumberInput
                     value={fxBaseAmount}
-                    onChange={(e) => setFxBaseAmount(Number(e.target.value))}
-                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono"
+                    onChange={setFxBaseAmount}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-500"
                     required
                   />
                 </div>
@@ -5744,12 +5735,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
 
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Purchase Cash Notional ({currency})</label>
-                  <input
-                    type="number"
-                    step="100000"
+                  <FormattedNumberInput
                     value={repoNotional}
-                    onChange={(e) => setRepoNotional(Number(e.target.value))}
-                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold"
+                    onChange={setRepoNotional}
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-500"
                     required
                   />
                 </div>
@@ -6166,12 +6155,10 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
 
                   <div>
                     <label className="block text-[10px] uppercase font-bold text-gray-400 mb-1">Trade Notional ({currency})</label>
-                    <input
-                      type="number"
-                      step="100000"
+                    <FormattedNumberInput
                       value={ddNotional}
-                      onChange={(e) => setDdNotional(Number(e.target.value))}
-                      className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold"
+                      onChange={setDdNotional}
+                      className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-500"
                       required
                     />
                   </div>
