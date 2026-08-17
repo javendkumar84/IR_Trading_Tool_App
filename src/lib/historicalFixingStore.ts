@@ -195,11 +195,22 @@ const SOFR_MONTHLY_HISTORY_MAP: Record<string, number> = {
  * Daily Historical Overrides for Specific Settled NY FED SOFR Business Day Fixings
  */
 const SOFR_DAILY_EXACT_MAP: Record<string, number> = {
-  // August 2026 Settled Fixings
-  '2026-08-01': 3.66,
-  '2026-08-02': 3.66,
-  '2026-08-03': 3.63,
-  '2026-08-04': 3.63,
+  // August 2024 Settled NY FED Fixings
+  '2024-08-01': 5.35,
+  '2024-08-02': 5.35,
+  '2024-08-03': 5.35,
+  '2024-08-04': 5.35,
+
+  // August 2025 Settled NY FED Fixings
+  '2025-08-01': 4.39,
+  '2025-08-02': 4.39,
+  '2025-08-03': 4.39,
+
+  // August 2026 Settled NY FED Fixings
+  '2026-08-01': 3.65,
+  '2026-08-02': 3.65,
+  '2026-08-03': 3.65,
+  '2026-08-04': 3.65,
   '2026-08-05': 3.63,
   '2026-08-06': 3.63,
   '2026-08-07': 3.63,
