@@ -2,6 +2,7 @@ import { IRSwapTrade, ProductType, Currency, DayCountConvention, PaymentFrequenc
 import { convertCurrency } from './fxRates';
 import { getOfficialHistoricalFixingRate, OFFICIAL_INDEX_REGISTRY, getFixingLagDays } from './historicalFixingStore';
 import { adjustBusinessDay, isBusinessDay, getBusinessDayDifference } from './businessCalendar';
+import { calculateForwardRate, getDiscountFactorFromValuationDate } from './yieldCurveStore';
 
 export interface CashflowPeriod {
   periodNumber: number;
@@ -266,19 +267,32 @@ export function getHistoricalFixingRate(
 }
 
 /**
- * Returns exact fixing rate for a given period: historical published fixing for past dates, or forward curve projection for future dates
+ * Global Banking Standard Period Fixing Rate Resolver
+ *  - Historical Date (T_fixing <= T_asof): Returns official published rate from historicalFixingStore.ts
+ *  - Future Date (T_fixing > T_asof): Forecasts forward rate F(T1, T2) = (1/tau) * [ DF(T1)/DF(T2) - 1 ]
  */
 export function getPeriodFixingRate(
   indexSymbol: string,
   dateStr: string,
   periodNum: number,
   baseRate: number,
-  indexTenor?: IndexTenor | string
+  indexTenor?: IndexTenor | string,
+  valuationDateISO: string = '2026-08-15',
+  periodStartDateISO?: string,
+  periodEndDateISO?: string,
+  dayCountConvention: DayCountConvention = 'ACT/360'
 ): number {
-  const historical = getHistoricalFixingRate(indexSymbol, dateStr, indexTenor);
-  if (historical !== null) {
-    return historical;
+  const officialRes = getOfficialHistoricalFixingRate(indexSymbol, dateStr, indexTenor, valuationDateISO);
+  if (officialRes !== null) {
+    return officialRes.ratePct;
   }
+  
+  // Future date -> Derive forward rate via yield curve equation F(T1, T2) = (1/tau) * [ DF(T1)/DF(T2) - 1 ]
+  if (periodStartDateISO && periodEndDateISO) {
+    const ccy = (OFFICIAL_INDEX_REGISTRY[indexSymbol]?.currency || 'USD') as Currency;
+    return calculateForwardRate(ccy, periodStartDateISO, periodEndDateISO, dayCountConvention, valuationDateISO, baseRate);
+  }
+
   return derivePeriodFixingRate(baseRate, periodNum, 0.035);
 }
 
@@ -351,11 +365,19 @@ export function generateIRSwapCashflowSchedule(
 
       const resetType: ResetType = leg2.resetType || leg1.resetType || trade.floatingLeg?.resetType || 'ADVANCE';
       const accrualCal = leg1.accrualCalendar || leg2.accrualCalendar || trade.fixedLeg?.accrualCalendar || trade.floatingLeg?.accrualCalendar || 'USNY';
+      const paymentCal = leg1.paymentCalendar || leg2.paymentCalendar || trade.fixedLeg?.paymentCalendar || trade.floatingLeg?.paymentCalendar || 'USNY';
+      const accrualRoll = leg1.accrualRollConvention || leg2.accrualRollConvention || trade.fixedLeg?.accrualRollConvention || trade.floatingLeg?.accrualRollConvention || 'MODFOLLOWING';
+      const paymentRoll = leg1.paymentRollConvention || leg2.paymentRollConvention || trade.fixedLeg?.paymentRollConvention || trade.floatingLeg?.paymentRollConvention || 'MODFOLLOWING';
+
       const fixingLag1 = getFixingLagDays(leg1.index || leg1.currency || 'SOFR');
       const fixingLag2 = getFixingLagDays(leg2.index || leg2.currency || 'SOFR');
+      const effectiveFixingLag = leg1.legType === 'FLOATING' ? fixingLag1 : leg2.legType === 'FLOATING' ? fixingLag2 : 0;
 
       const leg1FixingDate = adjustBusinessDay(resetType === 'ARREARS' ? addDays(effEnd, -fixingLag1) : addDays(effStart, -fixingLag1), accrualCal, 'PRECEDING');
       const leg2FixingDate = adjustBusinessDay(resetType === 'ARREARS' ? addDays(effEnd, -fixingLag2) : addDays(effStart, -fixingLag2), accrualCal, 'PRECEDING');
+      const fixingDate = adjustBusinessDay(resetType === 'ARREARS' ? addDays(effEnd, -effectiveFixingLag) : addDays(effStart, -effectiveFixingLag), accrualCal, 'PRECEDING');
+
+      const valDateStr = '2026-08-15'; // Active Valuation Date (EOD As-Of Date)
 
       // LEG 1 RATE & CASHFLOW
       let leg1Rate = 0;
@@ -365,7 +387,7 @@ export function generateIRSwapCashflowSchedule(
         leg1Rate = leg1.fixedRate ?? trade.fixedLeg?.fixedRate ?? trade.parRate ?? 3.85;
       } else {
         const base1 = getBenchmarkFixingRate(leg1.index || leg1.currency || trade.fixedLeg?.currency || 'USD', leg1.indexTenor);
-        leg1Fixing = getPeriodFixingRate(leg1.index || leg1.currency || 'USD', leg1FixingDate, periodNum, base1, leg1.indexTenor);
+        leg1Fixing = getPeriodFixingRate(leg1.index || leg1.currency || 'USD', leg1FixingDate, periodNum, base1, leg1.indexTenor, valDateStr, effStart, effEnd, leg1Convention);
         leg1Rate = parseFloat((leg1Fixing + leg1Spread / 100).toFixed(4));
       }
 
@@ -381,7 +403,7 @@ export function generateIRSwapCashflowSchedule(
         leg2Rate = (leg2 as GenericSwapLeg).fixedRate ?? trade.fixedLeg?.fixedRate ?? 3.85;
       } else {
         const base2 = getBenchmarkFixingRate(leg2.index || leg2.currency || trade.floatingLeg?.currency || 'USD', leg2.indexTenor);
-        leg2Fixing = getPeriodFixingRate(leg2.index || leg2.currency || 'USD', leg2FixingDate, periodNum, base2, leg2.indexTenor);
+        leg2Fixing = getPeriodFixingRate(leg2.index || leg2.currency || 'USD', leg2FixingDate, periodNum, base2, leg2.indexTenor, valDateStr, effStart, effEnd, leg2Convention);
         leg2Rate = parseFloat((leg2Fixing + leg2Spread / 100).toFixed(4));
       }
 
@@ -399,24 +421,16 @@ export function generateIRSwapCashflowSchedule(
       totalFloating += Math.round(leg2FlowConverted);
       totalNet += netCashflow;
 
-      const valDateStr = trade.tradeDate || trade.effectiveDate || '2026-08-01';
-      const yearsFromValDate = Math.max(0, getNumberOfDays(valDateStr, effEnd) / 365.25);
-      const discountFactor = valDateStr >= effEnd ? 1.0 : parseFloat((1 / Math.pow(1 + discountRate, yearsFromValDate)).toFixed(5));
+      const resetStartDate = ov.resetStartDate || adjustBusinessDay(effStart, accrualCal, accrualRoll);
+      const resetEndDate = ov.resetEndDate || adjustBusinessDay(effEnd, accrualCal, accrualRoll);
+      const payResetDate = ov.payResetDate || adjustBusinessDay(effEnd, paymentCal, paymentRoll);
+
+      const discountFactor = getDiscountFactorFromValuationDate(leg1Ccy as Currency, valDateStr, payResetDate, discountRate * 100);
       const discountedCashflow = Math.round(netCashflow * discountFactor);
       totalPV += discountedCashflow;
 
       const irDelta = Math.round(leg1Notional * leg1Dcf * 0.0001 * discountFactor);
       totalIrDelta += irDelta;
-
-      const accrualRoll = leg1.accrualRollConvention || leg2.accrualRollConvention || trade.fixedLeg?.accrualRollConvention || trade.floatingLeg?.accrualRollConvention || 'MODFOLLOWING';
-      const paymentCal = leg1.paymentCalendar || leg2.paymentCalendar || trade.fixedLeg?.paymentCalendar || trade.floatingLeg?.paymentCalendar || 'USNY';
-      const paymentRoll = leg1.paymentRollConvention || leg2.paymentRollConvention || trade.fixedLeg?.paymentRollConvention || trade.floatingLeg?.paymentRollConvention || 'MODFOLLOWING';
-
-      const resetStartDate = ov.resetStartDate || adjustBusinessDay(effStart, accrualCal, accrualRoll);
-      const resetEndDate = ov.resetEndDate || adjustBusinessDay(effEnd, accrualCal, accrualRoll);
-      const payResetDate = ov.payResetDate || adjustBusinessDay(effEnd, paymentCal, paymentRoll);
-      const effectiveFixingLag = leg1.legType === 'FLOATING' ? fixingLag1 : leg2.legType === 'FLOATING' ? fixingLag2 : 0;
-      const fixingDate = adjustBusinessDay(resetType === 'ARREARS' ? addDays(effEnd, -effectiveFixingLag) : addDays(effStart, -effectiveFixingLag), accrualCal, 'PRECEDING');
 
       const leg1Desc = leg1.legType === 'FIXED' ? `Fixed: ${leg1Rate}%` : `Float (${leg1.index || 'SOFR'} ${leg1.indexTenor || '3M'}): ${leg1Fixing}% + ${leg1Spread}bps`;
       const leg2Desc = leg2.legType === 'FIXED' ? `Fixed: ${leg2Rate}%` : `Float (${leg2.index || 'SOFR'} ${leg2.indexTenor || '1M'}): ${leg2Fixing}% + ${leg2Spread}bps`;
