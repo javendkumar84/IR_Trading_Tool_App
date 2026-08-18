@@ -317,7 +317,7 @@ async function runCliQaSuite() {
       updatedAt: new Date().toISOString(),
     };
     const xml = generateIRSwapXml(basisTrade);
-    const pass = xml.includes('SOFR') && xml.includes('FloatingLeg1') && xml.includes('FloatingLeg2') && xml.includes('periodMultiplier>1') && xml.includes('periodMultiplier>3');
+    const pass = xml.includes('SOFR') && (xml.includes('Leg1_Stream') || xml.includes('FloatingLeg1')) && (xml.includes('Leg2_Stream') || xml.includes('FloatingLeg2')) && xml.includes('periodMultiplier>1') && xml.includes('periodMultiplier>3');
     results.push({
       id: 'TC-08',
       name: 'Dual Floating Leg Basis Swap Tenor Mismatch Test',
