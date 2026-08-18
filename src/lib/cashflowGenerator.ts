@@ -311,7 +311,7 @@ export function getPeriodFixingRate(
   if (officialRes !== null) {
     return officialRes.ratePct;
   }
-  
+
   // Future date -> Derive forward rate via yield curve equation F(T1, T2) = (1/tau) * [ DF(T1)/DF(T2) - 1 ]
   if (periodStartDateISO && periodEndDateISO) {
     const ccy = (OFFICIAL_INDEX_REGISTRY[indexSymbol]?.currency || 'USD') as Currency;
