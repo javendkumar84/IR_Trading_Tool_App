@@ -1769,9 +1769,11 @@ export function generateSnowballCashflowSchedule(trade: IRSwapTrade): CashflowSc
 
 export function generateIndependentLeg1Schedule(
   trade: IRSwapTrade,
-  dateOverrides?: Record<string, { startDate?: string; endDate?: string; resetStartDate?: string; resetEndDate?: string; payResetDate?: string }>
+  dateOverrides?: Record<string, { startDate?: string; endDate?: string; resetStartDate?: string; resetEndDate?: string; payResetDate?: string }>,
+  valuationDateOverride?: string
 ): IndependentLegSchedule {
   const overrides = dateOverrides || trade.scheduleDateOverrides || {};
+  const valDateStr = valuationDateOverride || '2026-08-20';
   const ccy = trade.leg1?.currency || trade.fixedLeg?.currency || trade.rangeAccrualDetails?.currency || trade.snowRangeDetails?.currency || trade.tarnDetails?.currency || trade.snowballDetails?.currency || 'USD';
   const notional = trade.leg1?.notional || trade.fixedLeg?.notional || trade.rangeAccrualDetails?.notional || trade.snowRangeDetails?.notional || trade.tarnDetails?.notional || trade.snowballDetails?.notional || trade.notionalUsd || 25000000;
   const freq = trade.leg1?.frequency || trade.fixedLeg?.frequency || trade.rangeAccrualDetails?.paymentFrequency || trade.snowRangeDetails?.paymentFrequency || trade.tarnDetails?.paymentFrequency || trade.snowballDetails?.paymentFrequency || trade.leg2?.frequency || trade.floatingLeg?.frequency || '6M';
@@ -1819,7 +1821,7 @@ export function generateIndependentLeg1Schedule(
       const resetType1: ResetType = trade.leg1?.resetType || (trade.fixedLeg as any)?.resetType || 'ADVANCE';
       const fixingObsDate1 = adjustBusinessDay(resetType1 === 'ARREARS' ? addDays(effEnd, -lag1) : addDays(effStart, -lag1), accrualCal, 'PRECEDING');
       const base1 = getBenchmarkFixingRate(idxSym1, trade.leg1?.indexTenor);
-      periodFixing = getPeriodFixingRate(idxSym1, fixingObsDate1, periodNum, base1, trade.leg1?.indexTenor);
+      periodFixing = getPeriodFixingRate(idxSym1, fixingObsDate1, periodNum, base1, trade.leg1?.indexTenor, valDateStr, effStart, effEnd, convention);
       periodSpread = trade.leg1?.spreadBps || 0;
       flowRate = parseFloat((periodFixing + periodSpread / 100).toFixed(4));
     } else if (trade.productType === 'RANGE_ACCRUAL' && trade.rangeAccrualDetails) {
@@ -1908,9 +1910,11 @@ export function generateIndependentLeg1Schedule(
 
 export function generateIndependentLeg2Schedule(
   trade: IRSwapTrade,
-  dateOverrides?: Record<string, { startDate?: string; endDate?: string; resetStartDate?: string; resetEndDate?: string; payResetDate?: string }>
+  dateOverrides?: Record<string, { startDate?: string; endDate?: string; resetStartDate?: string; resetEndDate?: string; payResetDate?: string }>,
+  valuationDateOverride?: string
 ): IndependentLegSchedule {
   const overrides = dateOverrides || trade.scheduleDateOverrides || {};
+  const valDateStr = valuationDateOverride || '2026-08-20';
   const ccy = trade.leg2?.currency || trade.floatingLeg?.currency || trade.rangeAccrualDetails?.currency || trade.snowRangeDetails?.currency || trade.tarnDetails?.currency || trade.snowballDetails?.currency || 'USD';
   const notional = trade.leg2?.notional || trade.floatingLeg?.notional || trade.rangeAccrualDetails?.fundingNotional || trade.snowRangeDetails?.fundingNotional || trade.tarnDetails?.fundingNotional || trade.snowballDetails?.fundingNotional || trade.notionalUsd || 25000000;
   const freq = trade.leg2?.frequency || trade.floatingLeg?.frequency || trade.rangeAccrualDetails?.fundingPaymentFrequency || trade.snowRangeDetails?.fundingPaymentFrequency || trade.tarnDetails?.fundingPaymentFrequency || trade.snowballDetails?.fundingPaymentFrequency || trade.leg1?.frequency || trade.fixedLeg?.frequency || '6M';
@@ -1950,7 +1954,7 @@ export function generateIndependentLeg2Schedule(
     const resetType2: ResetType = trade.leg2?.resetType || trade.floatingLeg?.resetType || 'ADVANCE';
     const fixingObsDate2 = adjustBusinessDay(resetType2 === 'ARREARS' ? addDays(effEnd, -lag2) : addDays(effStart, -lag2), accrualCal, 'PRECEDING');
     const base2 = getBenchmarkFixingRate(idxSym2, trade.leg2?.indexTenor || trade.floatingLeg?.indexTenor);
-    const periodFixingRate = getPeriodFixingRate(idxSym2, fixingObsDate2, periodNum, base2, trade.leg2?.indexTenor || trade.floatingLeg?.indexTenor);
+    const periodFixingRate = getPeriodFixingRate(idxSym2, fixingObsDate2, periodNum, base2, trade.leg2?.indexTenor || trade.floatingLeg?.indexTenor, valDateStr, effStart, effEnd, convention);
     const totalRatePct = legType === 'FIXED'
       ? resolveFixedRate(trade.leg2, trade)
       : parseFloat((periodFixingRate + spreadBps / 100).toFixed(4));

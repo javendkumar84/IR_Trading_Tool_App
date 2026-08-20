@@ -135,7 +135,7 @@ export const CashExplainTab: React.FC<CashExplainTabProps> = ({ trades }) => {
       const floatIdx = currentTrade.floatingLeg?.index || currentTrade.leg2?.index || 'SOFR';
       const floatTenor = currentTrade.floatingLeg?.indexTenor || currentTrade.leg2?.indexTenor;
       const defaultBase = getBenchmarkFixingRate(floatIdx || ccy, floatTenor);
-      const fixRate = p.floatingFixingRate ?? p.fixingRate ?? getPeriodFixingRate(floatIdx || ccy, p.resetStartDate || p.startDate, p.periodNumber || 1, defaultBase, floatTenor);
+      const fixRate = p.floatingFixingRate ?? p.fixingRate ?? getPeriodFixingRate(floatIdx || ccy, p.resetStartDate || p.startDate, p.periodNumber || 1, defaultBase, floatTenor, today, p.startDate, p.endDate);
       const sprd = p.spreadBps ?? currentTrade.floatingLeg?.spreadBps ?? currentTrade.leg2?.spreadBps ?? 0;
       const totalRate = p.ratePct ?? (fixRate + sprd / 100);
       const rawCash = p.cashflowAmount ?? p.cashflow ?? Math.round(notional * (totalRate / 100) * dcf);
