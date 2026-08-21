@@ -78,6 +78,7 @@ export interface CapFloorDetails {
   direction: 'BUY' | 'SELL'; // Buy = Long Cap/Floor, Sell = Short Cap/Floor
   strikeRate: number; // e.g. 4.00 (%)
   underlyingIndex: FloatingIndex;
+  floatingIndex?: FloatingIndex;
   indexTenor: IndexTenor;
   resetType?: ResetType; // 'ADVANCE' or 'ARREARS'
   currency: Currency;
@@ -172,6 +173,7 @@ export interface RangeAccrualDetails {
   fundingDirection?: 'PAY' | 'RECEIVE';
   fundingIndex?: FloatingIndex;
   fundingTenor?: IndexTenor;
+  fundingIndexTenor?: IndexTenor;
   fundingSpreadBps?: number;
   fundingFixedRate?: number;
   fundingResetType?: ResetType;
@@ -319,6 +321,7 @@ export interface BondDetails {
 export interface FraDetails {
   fraRate: number; // Agreed FRA Rate, e.g. 3.95 (%)
   fixingIndex: FloatingIndex;
+  floatingIndex?: FloatingIndex;
   indexTenor: IndexTenor;
   fixingDate: string; // YYYY-MM-DD
   paymentDate: string; // YYYY-MM-DD (FRA settles at start of forward period)

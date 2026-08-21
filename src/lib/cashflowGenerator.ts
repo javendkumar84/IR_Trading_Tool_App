@@ -732,7 +732,8 @@ export function generateIRSwapCashflowSchedule(
 /**
  * Generates Cashflow Schedule for Interest Rate Cap / Floor
  */
-export function generateCapFloorCashflowSchedule(trade: IRSwapTrade): CashflowScheduleSummary {
+export function generateCapFloorCashflowSchedule(trade: IRSwapTrade, valuationDateOverride?: string): CashflowScheduleSummary {
+  const valDateStr = valuationDateOverride || trade.valuationDate || '2026-08-20';
   const details = trade.capFloorDetails;
   const ccy = details?.currency || trade.fixedLeg?.currency || 'USD';
   const notional = details?.notional || trade.notionalUsd || 10000000;
@@ -742,6 +743,9 @@ export function generateCapFloorCashflowSchedule(trade: IRSwapTrade): CashflowSc
   const premium = details?.premiumAmount || 185000;
   const convention = details?.dayCount || 'ACT/360';
   const frequency = details?.paymentFrequency || '3M';
+  const indexSym = details?.floatingIndex || trade.floatingLeg?.index || (ccy === 'EUR' ? 'EURIBOR' : 'SOFR');
+  const indexTenor = details?.indexTenor || trade.floatingLeg?.indexTenor || '3M';
+  const baseRate = getBenchmarkFixingRate(indexSym, indexTenor);
 
   const freqMonthsMap: Record<string, number> = { '1M': 1, '3M': 3, '6M': 6, '1Y': 12 };
   const stepMonths = freqMonthsMap[frequency] || 3;
@@ -793,7 +797,6 @@ export function generateCapFloorCashflowSchedule(trade: IRSwapTrade): CashflowSc
   });
 
   let periodNum = 1;
-  const discountRate = 0.0385;
 
   while (currStart < maturity && periodNum <= 60) {
     let currEnd = addMonths(currStart, stepMonths);
@@ -802,8 +805,19 @@ export function generateCapFloorCashflowSchedule(trade: IRSwapTrade): CashflowSc
     const numDays = getNumberOfDays(currStart, currEnd);
     const dcf = getDayCountFraction(currStart, currEnd, convention);
 
-    // Simulated index fixing rate
-    const fixingRate = parseFloat((couponRate + (periodNum % 2 === 0 ? 0.35 : -0.20)).toFixed(4));
+    const accrualCal = details?.accrualCalendar || 'USNY';
+    const paymentCal = details?.paymentCalendar || 'USNY';
+    const accrualRoll = details?.accrualRollConvention || 'MODFOLLOWING';
+    const paymentRoll = details?.paymentRollConvention || 'MODFOLLOWING';
+    const resetType: ResetType = details?.resetType || 'ADVANCE';
+
+    const resetStartDate = adjustBusinessDay(currStart, accrualCal, accrualRoll);
+    const resetEndDate = adjustBusinessDay(currEnd, accrualCal, accrualRoll);
+    const payResetDate = adjustBusinessDay(currEnd, paymentCal, paymentRoll);
+    const fixingDate = adjustBusinessDay(resetType === 'ARREARS' ? addDays(currEnd, -2) : addDays(currStart, -2), accrualCal, 'PRECEDING');
+
+    // Dynamic index fixing rate with active in-period rate blending & continuous zero-curve discounting
+    const fixingRate = getPeriodFixingRate(indexSym, fixingDate, periodNum, baseRate, indexTenor, valDateStr, currStart, currEnd, convention);
 
     // Payoff calculation
     let payoffPercent = 0;
@@ -819,23 +833,12 @@ export function generateCapFloorCashflowSchedule(trade: IRSwapTrade): CashflowSc
     cumCashflow += netCashflow;
     totalNet += netCashflow;
 
-    const discountFactor = parseFloat((1 / Math.pow(1 + discountRate / (12 / stepMonths), periodNum)).toFixed(5));
+    const discountFactor = getDiscountFactorFromValuationDate(ccy as Currency, valDateStr, payResetDate);
     const discountedCashflow = Math.round(netCashflow * discountFactor);
     totalPV += discountedCashflow;
 
     const irDelta = Math.round(notional * dcf * 0.0001 * discountFactor);
     totalIrDelta += irDelta;
-
-    const accrualCal = details?.accrualCalendar || 'USNY';
-    const paymentCal = details?.paymentCalendar || 'USNY';
-    const accrualRoll = details?.accrualRollConvention || 'MODFOLLOWING';
-    const paymentRoll = details?.paymentRollConvention || 'MODFOLLOWING';
-    const resetType: ResetType = details?.resetType || 'ADVANCE';
-
-    const resetStartDate = adjustBusinessDay(currStart, accrualCal, accrualRoll);
-    const resetEndDate = adjustBusinessDay(currEnd, accrualCal, accrualRoll);
-    const payResetDate = adjustBusinessDay(currEnd, paymentCal, paymentRoll);
-    const fixingDate = adjustBusinessDay(resetType === 'ARREARS' ? addDays(currEnd, -2) : addDays(currStart, -2), accrualCal, 'PRECEDING');
 
     periods.push({
       periodNumber: periodNum,
@@ -897,7 +900,8 @@ export function generateCapFloorCashflowSchedule(trade: IRSwapTrade): CashflowSc
 /**
  * Generates Cashflow Schedule for Swaptions (Option + Underlying Swap)
  */
-export function generateSwaptionCashflowSchedule(trade: IRSwapTrade): CashflowScheduleSummary {
+export function generateSwaptionCashflowSchedule(trade: IRSwapTrade, valuationDateOverride?: string): CashflowScheduleSummary {
+  const valDateStr = valuationDateOverride || trade.valuationDate || '2026-08-20';
   const details = trade.swaptionDetails;
   const ccy = details?.currency || trade.fixedLeg?.currency || 'EUR';
   const notional = details?.notional || trade.notionalUsd || 20000000;
@@ -911,6 +915,9 @@ export function generateSwaptionCashflowSchedule(trade: IRSwapTrade): CashflowSc
   const floatConvention = trade.floatingLeg?.dayCount || 'ACT/360';
   const fixedFreq = trade.fixedLeg?.frequency || '6M';
   const floatFreq = trade.floatingLeg?.frequency || '3M';
+  const floatIndex = trade.floatingLeg?.index || (ccy === 'EUR' ? 'EURIBOR' : 'SOFR');
+  const floatIndexTenor = trade.floatingLeg?.indexTenor || '3M';
+  const baseRate = getBenchmarkFixingRate(floatIndex, floatIndexTenor);
 
   const periods: CashflowPeriod[] = [];
   let cumCashflow = 0;
@@ -1005,7 +1012,12 @@ export function generateSwaptionCashflowSchedule(trade: IRSwapTrade): CashflowSc
     const fixedAmountRaw = notional * (couponRate / 100) * dcf;
     const fixedCashflow = isPayFixed ? -fixedAmountRaw : fixedAmountRaw;
 
-    const fixingRate = parseFloat((couponRate + 0.15).toFixed(4));
+    const resetStartDate = currStart;
+    const resetEndDate = currEnd;
+    const payResetDate = addDays(currEnd, 2);
+    const fixingDate = addDays(currStart, -2);
+
+    const fixingRate = getPeriodFixingRate(floatIndex, fixingDate, periodNum, baseRate, floatIndexTenor, valDateStr, currStart, currEnd, floatConvention);
     const floatAmountRaw = notional * (fixingRate / 100) * dcf;
     const floatingCashflow = isPayFixed ? floatAmountRaw : -floatAmountRaw;
 
@@ -1013,17 +1025,12 @@ export function generateSwaptionCashflowSchedule(trade: IRSwapTrade): CashflowSc
     cumCashflow += netCashflow;
     totalNet += netCashflow;
 
-    const discountFactor = parseFloat((1 / Math.pow(1 + discountRate / 2, periodNum - 1)).toFixed(5));
+    const discountFactor = getDiscountFactorFromValuationDate(ccy as Currency, valDateStr, payResetDate);
     const discountedCashflow = Math.round(netCashflow * discountFactor);
     totalPV += discountedCashflow;
 
     const irDelta = Math.round(notional * dcf * 0.0001 * discountFactor);
     totalIrDelta += irDelta;
-
-    const resetStartDate = currStart;
-    const resetEndDate = currEnd;
-    const payResetDate = addDays(currEnd, 2);
-    const fixingDate = addDays(currStart, -2);
 
     periods.push({
       periodNumber: periodNum,
@@ -1088,7 +1095,8 @@ export function generateSwaptionCashflowSchedule(trade: IRSwapTrade): CashflowSc
 /**
  * Generates Cashflow Schedule for FX Forward / FX Option
  */
-export function generateFxCashflowSchedule(trade: IRSwapTrade): CashflowScheduleSummary {
+export function generateFxCashflowSchedule(trade: IRSwapTrade, valuationDateOverride?: string): CashflowScheduleSummary {
+  const valDateStr = valuationDateOverride || trade.valuationDate || '2026-08-20';
   const isOption = trade.productType === 'FX_OPTION';
   const fwdDetails = trade.fxForwardDetails;
   const optDetails = trade.fxOptionDetails;
@@ -1230,7 +1238,8 @@ export function generateFxCashflowSchedule(trade: IRSwapTrade): CashflowSchedule
 /**
  * Generates Cashflow Schedule for Interest Rate Range Accrual
  */
-export function generateRangeAccrualCashflowSchedule(trade: IRSwapTrade): CashflowScheduleSummary {
+export function generateRangeAccrualCashflowSchedule(trade: IRSwapTrade, valuationDateOverride?: string): CashflowScheduleSummary {
+  const valDateStr = valuationDateOverride || trade.valuationDate || '2026-08-20';
   const ra = trade.rangeAccrualDetails;
   const ccy = ra?.currency || trade.fixedLeg?.currency || 'USD';
   const notional = ra?.notional || trade.notionalUsd || 10000000;
@@ -1243,10 +1252,12 @@ export function generateRangeAccrualCashflowSchedule(trade: IRSwapTrade): Cashfl
 
   // Leg 2 Funding parameters
   const fundingLegType = ra?.fundingLegType || 'FLOATING';
-  const fundingIndex = ra?.fundingIndex || 'SOFR';
+  const fundingIndex = ra?.fundingIndex || (ccy === 'EUR' ? 'EURIBOR' : 'SOFR');
+  const fundingTenor = ra?.fundingIndexTenor || '3M';
   const fundingSpreadBps = ra?.fundingSpreadBps || 0;
   const fundingFixedRate = ra?.fundingFixedRate || 3.85;
   const fundingDayCount = ra?.fundingDayCount || 'ACT/360';
+  const baseFundingRate = getBenchmarkFixingRate(fundingIndex, fundingTenor);
 
   const freqMonthsMap: Record<string, number> = { '1M': 1, '3M': 3, '6M': 6, '1Y': 12 };
   const stepMonths = freqMonthsMap[freq] || 3;
@@ -1262,7 +1273,6 @@ export function generateRangeAccrualCashflowSchedule(trade: IRSwapTrade): Cashfl
   let totalNet = 0;
   let totalPV = 0;
   let totalIrDelta = 0;
-  const discountRate = (trade.parRate || 3.85) / 100;
 
   while (currStart < maturity && periodNum <= 120) {
     let currEnd = addMonths(currStart, stepMonths);
@@ -1272,8 +1282,19 @@ export function generateRangeAccrualCashflowSchedule(trade: IRSwapTrade): Cashfl
     const dcfLeg1 = getDayCountFraction(currStart, currEnd, convention);
     const dcfLeg2 = getDayCountFraction(currStart, currEnd, fundingDayCount);
 
-    // Simulate Leg 1 range accrual ratio (percentage of days where reference index stays in barrier range)
-    const accrualRatioPercent = parseFloat((90 - (periodNum % 4) * 3.5).toFixed(2));
+    const resetStartDate = currStart;
+    const resetEndDate = currEnd;
+    const payResetDate = addDays(currEnd, 2);
+    const fixingDate = addDays(currStart, -2);
+
+    // Reference Index Fixing Rate with active in-period rate blending & continuous zero-curve discounting
+    const refFixingRate = getPeriodFixingRate(fundingIndex, fixingDate, periodNum, baseFundingRate, fundingTenor, valDateStr, currStart, currEnd, convention);
+
+    // Range Accrual Ratio Calculation (percentage of days index is within [lowerBarrier, upperBarrier])
+    let accrualRatioPercent = 100;
+    if (refFixingRate < lowerBarrier || refFixingRate > upperBarrier) {
+      accrualRatioPercent = Math.max(0, Math.min(100, 100 - Math.abs(refFixingRate - (lowerBarrier + upperBarrier) / 2) * 20));
+    }
     const inRangeDays = Math.round(numDays * (accrualRatioPercent / 100));
 
     // Leg 1 Range Accrual Flow = Notional * Coupon * DCF * AccrualRatio
@@ -1281,7 +1302,9 @@ export function generateRangeAccrualCashflowSchedule(trade: IRSwapTrade): Cashfl
     const signedLeg1Flow = Math.round(isRecLeg1 ? leg1Flow : -leg1Flow);
 
     // Leg 2 Funding Flow (SOFR Floating or Fixed)
-    const fundingFixingRate = 3.85; // Simulated SOFR rate
+    const fundingFixingRate = fundingLegType === 'FLOATING'
+      ? getPeriodFixingRate(fundingIndex, fixingDate, periodNum, baseFundingRate, fundingTenor, valDateStr, currStart, currEnd, fundingDayCount)
+      : fundingFixedRate;
     const leg2RatePct = fundingLegType === 'FLOATING' ? (fundingFixingRate + fundingSpreadBps / 100) : fundingFixedRate;
     const leg2Flow = notional * (leg2RatePct / 100) * dcfLeg2;
     const signedLeg2Flow = Math.round(isRecLeg1 ? -leg2Flow : leg2Flow);
@@ -1299,17 +1322,12 @@ export function generateRangeAccrualCashflowSchedule(trade: IRSwapTrade): Cashfl
     cumCashflow += netCashflow;
     totalNet += netCashflow;
 
-    const discountFactor = parseFloat((1 / Math.pow(1 + discountRate / (12 / stepMonths), periodNum)).toFixed(5));
+    const discountFactor = getDiscountFactorFromValuationDate(ccy as Currency, valDateStr, payResetDate);
     const discountedCashflow = Math.round(netCashflow * discountFactor);
     totalPV += discountedCashflow;
 
     const irDelta = Math.round(notional * dcfLeg1 * 0.0001 * discountFactor);
     totalIrDelta += irDelta;
-
-    const resetStartDate = currStart;
-    const resetEndDate = currEnd;
-    const payResetDate = addDays(currEnd, 2);
-    const fixingDate = addDays(currStart, -2);
 
     periods.push({
       periodNumber: periodNum,
@@ -1362,7 +1380,8 @@ export function generateRangeAccrualCashflowSchedule(trade: IRSwapTrade): Cashfl
   };
 }
 
-export function generateSnowRangeCashflowSchedule(trade: IRSwapTrade): CashflowScheduleSummary {
+export function generateSnowRangeCashflowSchedule(trade: IRSwapTrade, valuationDateOverride?: string): CashflowScheduleSummary {
+  const valDateStr = valuationDateOverride || trade.valuationDate || '2026-08-20';
   const details = trade.snowRangeDetails || {
     direction: 'RECEIVE',
     lowerBarrierRate: 2.00,
@@ -1394,8 +1413,10 @@ export function generateSnowRangeCashflowSchedule(trade: IRSwapTrade): CashflowS
   const memoryMult = details.memoryEnabled ? (details.memoryMultiplier ?? 1.0) : 0;
 
   const fundingLegType = details.fundingLegType || 'FLOATING';
+  const fundingIndex = details.fundingIndex || (ccy === 'EUR' ? 'EURIBOR' : 'SOFR');
   const fundingSpreadBps = details.fundingSpreadBps || 0;
   const fundingFixedRate = details.fundingFixedRate || 3.85;
+  const baseFundingRate = getBenchmarkFixingRate(fundingIndex, '3M');
 
   let currStart = trade.effectiveDate || '2026-08-01';
   const maturity = trade.maturityDate || addMonths(currStart, Math.round((trade.tenorYears || 5) * 12));
@@ -1407,7 +1428,6 @@ export function generateSnowRangeCashflowSchedule(trade: IRSwapTrade): CashflowS
   let totalIrDelta = 0;
   let totalNet = 0;
 
-  const discountRate = 0.0385;
   const freqMonthsMap: Record<string, number> = { '1M': 1, '3M': 3, '6M': 6, '1Y': 12 };
   const stepMonths = freqMonthsMap[freq] || 3;
   let previousCoupon = baseCouponRate;
@@ -1420,7 +1440,12 @@ export function generateSnowRangeCashflowSchedule(trade: IRSwapTrade): CashflowS
     const dcfLeg1 = getDayCountFraction(currStart, currEnd, convention);
     const dcfLeg2 = getDayCountFraction(currStart, currEnd, details.fundingDayCount || 'ACT/360');
 
-    const refIndexFixing = parseFloat((3.80 + (periodNum % 3) * 0.05).toFixed(4));
+    const resetStartDate = currStart;
+    const resetEndDate = currEnd;
+    const payResetDate = addDays(currEnd, 2);
+    const fixingDate = addDays(currStart, -2);
+
+    const refIndexFixing = getPeriodFixingRate(fundingIndex, fixingDate, periodNum, baseFundingRate, '3M', valDateStr, currStart, currEnd, convention);
     const isInsideRange = refIndexFixing >= lowerBarrier && refIndexFixing <= upperBarrier;
     const inRangeDays = isInsideRange ? numDays : Math.round(numDays * 0.8);
     const rangeFraction = inRangeDays / numDays;
@@ -1437,7 +1462,7 @@ export function generateSnowRangeCashflowSchedule(trade: IRSwapTrade): CashflowS
     const isLeg1Pay = details.direction === 'PAY';
     const signedLeg1Flow = Math.round(isLeg1Pay ? -leg1Raw : leg1Raw);
 
-    let fundingFixingRate = 3.80;
+    let fundingFixingRate = fundingLegType === 'FIXED' ? fundingFixedRate : getPeriodFixingRate(fundingIndex, fixingDate, periodNum, baseFundingRate, '3M', valDateStr, currStart, currEnd, details.fundingDayCount || 'ACT/360');
     let leg2RatePct = fundingLegType === 'FIXED' ? fundingFixedRate : (fundingFixingRate + fundingSpreadBps / 100);
     const leg2Raw = (details.fundingNotional || notional) * (leg2RatePct / 100) * dcfLeg2;
     const isLeg2Pay = details.fundingDirection === 'PAY' || !isLeg1Pay;
@@ -1447,7 +1472,7 @@ export function generateSnowRangeCashflowSchedule(trade: IRSwapTrade): CashflowS
     cumCashflow += netCashflow;
     totalNet += netCashflow;
 
-    const discountFactor = parseFloat((1 / Math.pow(1 + discountRate / (12 / stepMonths), periodNum)).toFixed(5));
+    const discountFactor = getDiscountFactorFromValuationDate(ccy as Currency, valDateStr, payResetDate);
     const discountedCashflow = Math.round(netCashflow * discountFactor);
     totalPV += discountedCashflow;
 
@@ -1505,7 +1530,8 @@ export function generateSnowRangeCashflowSchedule(trade: IRSwapTrade): CashflowS
   };
 }
 
-export function generateTarnCashflowSchedule(trade: IRSwapTrade): CashflowScheduleSummary {
+export function generateTarnCashflowSchedule(trade: IRSwapTrade, valuationDateOverride?: string): CashflowScheduleSummary {
+  const valDateStr = valuationDateOverride || trade.valuationDate || '2026-08-20';
   const details = trade.tarnDetails || {
     direction: 'RECEIVE',
     targetCapPct: 10.00,
@@ -1538,8 +1564,10 @@ export function generateTarnCashflowSchedule(trade: IRSwapTrade): CashflowSchedu
   const capRate = details.capRate ?? 10.00;
 
   const fundingLegType = details.fundingLegType || 'FLOATING';
+  const fundingIndex = details.fundingIndex || (ccy === 'EUR' ? 'EURIBOR' : 'SOFR');
   const fundingSpreadBps = details.fundingSpreadBps || 0;
   const fundingFixedRate = details.fundingFixedRate || 3.85;
+  const baseFundingRate = getBenchmarkFixingRate(fundingIndex, '3M');
 
   let currStart = trade.effectiveDate || '2026-08-01';
   const maturity = trade.maturityDate || addMonths(currStart, Math.round((trade.tenorYears || 5) * 12));
@@ -1553,7 +1581,6 @@ export function generateTarnCashflowSchedule(trade: IRSwapTrade): CashflowSchedu
   let totalNet = 0;
   let knockOutTriggered = false;
 
-  const discountRate = 0.0385;
   const freqMonthsMap: Record<string, number> = { '1M': 1, '3M': 3, '6M': 6, '1Y': 12 };
   const stepMonths = freqMonthsMap[freq] || 3;
 
@@ -1565,7 +1592,12 @@ export function generateTarnCashflowSchedule(trade: IRSwapTrade): CashflowSchedu
     const dcfLeg1 = getDayCountFraction(currStart, currEnd, convention);
     const dcfLeg2 = getDayCountFraction(currStart, currEnd, details.fundingDayCount || 'ACT/360');
 
-    const refIndexFixing = parseFloat((3.75 + (periodNum % 4) * 0.10).toFixed(4));
+    const resetStartDate = currStart;
+    const resetEndDate = currEnd;
+    const payResetDate = addDays(currEnd, 2);
+    const fixingDate = addDays(currStart, -2);
+
+    const refIndexFixing = getPeriodFixingRate(fundingIndex, fixingDate, periodNum, baseFundingRate, '3M', valDateStr, currStart, currEnd, convention);
     let rawCouponRate = strikeRate - leverage * refIndexFixing;
     if (rawCouponRate < floorRate) rawCouponRate = floorRate;
     if (rawCouponRate > capRate) rawCouponRate = capRate;
@@ -1581,7 +1613,7 @@ export function generateTarnCashflowSchedule(trade: IRSwapTrade): CashflowSchedu
     const isLeg1Pay = details.direction === 'PAY';
     const signedLeg1Flow = Math.round(isLeg1Pay ? -leg1Raw : leg1Raw);
 
-    let fundingFixingRate = 3.80;
+    let fundingFixingRate = fundingLegType === 'FIXED' ? fundingFixedRate : getPeriodFixingRate(fundingIndex, fixingDate, periodNum, baseFundingRate, '3M', valDateStr, currStart, currEnd, details.fundingDayCount || 'ACT/360');
     let leg2RatePct = fundingLegType === 'FIXED' ? fundingFixedRate : (fundingFixingRate + fundingSpreadBps / 100);
     const leg2Raw = (details.fundingNotional || notional) * (leg2RatePct / 100) * dcfLeg2;
     const isLeg2Pay = details.fundingDirection === 'PAY' || !isLeg1Pay;
@@ -1591,7 +1623,7 @@ export function generateTarnCashflowSchedule(trade: IRSwapTrade): CashflowSchedu
     cumCashflow += netCashflow;
     totalNet += netCashflow;
 
-    const discountFactor = parseFloat((1 / Math.pow(1 + discountRate / (12 / stepMonths), periodNum)).toFixed(5));
+    const discountFactor = getDiscountFactorFromValuationDate(ccy as Currency, valDateStr, payResetDate);
     const discountedCashflow = Math.round(netCashflow * discountFactor);
     totalPV += discountedCashflow;
 
@@ -1653,7 +1685,8 @@ export function generateTarnCashflowSchedule(trade: IRSwapTrade): CashflowSchedu
   };
 }
 
-export function generateSnowballCashflowSchedule(trade: IRSwapTrade): CashflowScheduleSummary {
+export function generateSnowballCashflowSchedule(trade: IRSwapTrade, valuationDateOverride?: string): CashflowScheduleSummary {
+  const valDateStr = valuationDateOverride || trade.valuationDate || '2026-08-20';
   const details = trade.snowballDetails || {
     direction: 'RECEIVE',
     initialCouponRate: 6.00,
@@ -1685,8 +1718,10 @@ export function generateSnowballCashflowSchedule(trade: IRSwapTrade): CashflowSc
   const capRate = details.capRate ?? 12.00;
 
   const fundingLegType = details.fundingLegType || 'FLOATING';
+  const fundingIndex = details.fundingIndex || (ccy === 'EUR' ? 'EURIBOR' : 'SOFR');
   const fundingSpreadBps = details.fundingSpreadBps || 0;
   const fundingFixedRate = details.fundingFixedRate || 3.85;
+  const baseFundingRate = getBenchmarkFixingRate(fundingIndex, '3M');
 
   let currStart = trade.effectiveDate || '2026-08-01';
   const maturity = trade.maturityDate || addMonths(currStart, Math.round((trade.tenorYears || 5) * 12));
@@ -1698,7 +1733,6 @@ export function generateSnowballCashflowSchedule(trade: IRSwapTrade): CashflowSc
   let totalIrDelta = 0;
   let totalNet = 0;
 
-  const discountRate = 0.0385;
   const freqMonthsMap: Record<string, number> = { '1M': 1, '3M': 3, '6M': 6, '1Y': 12 };
   const stepMonths = freqMonthsMap[freq] || 3;
   let previousCoupon = initialCoupon;
@@ -1711,7 +1745,12 @@ export function generateSnowballCashflowSchedule(trade: IRSwapTrade): CashflowSc
     const dcfLeg1 = getDayCountFraction(currStart, currEnd, convention);
     const dcfLeg2 = getDayCountFraction(currStart, currEnd, details.fundingDayCount || 'ACT/360');
 
-    const refIndexFixing = parseFloat((3.80 + (periodNum % 3) * 0.05).toFixed(4));
+    const resetStartDate = currStart;
+    const resetEndDate = currEnd;
+    const payResetDate = addDays(currEnd, 2);
+    const fixingDate = addDays(currStart, -2);
+
+    const refIndexFixing = getPeriodFixingRate(fundingIndex, fixingDate, periodNum, baseFundingRate, '3M', valDateStr, currStart, currEnd, convention);
     let couponRate = initialCoupon;
     if (periodNum > 1) {
       const rawCoupon = previousCoupon + bonusStep - leverage * refIndexFixing;
@@ -1723,7 +1762,7 @@ export function generateSnowballCashflowSchedule(trade: IRSwapTrade): CashflowSc
     const isLeg1Pay = details.direction === 'PAY';
     const signedLeg1Flow = Math.round(isLeg1Pay ? -leg1Raw : leg1Raw);
 
-    let fundingFixingRate = 3.80;
+    let fundingFixingRate = fundingLegType === 'FIXED' ? fundingFixedRate : getPeriodFixingRate(fundingIndex, fixingDate, periodNum, baseFundingRate, '3M', valDateStr, currStart, currEnd, details.fundingDayCount || 'ACT/360');
     let leg2RatePct = fundingLegType === 'FIXED' ? fundingFixedRate : (fundingFixingRate + fundingSpreadBps / 100);
     const leg2Raw = (details.fundingNotional || notional) * (leg2RatePct / 100) * dcfLeg2;
     const isLeg2Pay = details.fundingDirection === 'PAY' || !isLeg1Pay;
@@ -1733,7 +1772,7 @@ export function generateSnowballCashflowSchedule(trade: IRSwapTrade): CashflowSc
     cumCashflow += netCashflow;
     totalNet += netCashflow;
 
-    const discountFactor = parseFloat((1 / Math.pow(1 + discountRate / (12 / stepMonths), periodNum)).toFixed(5));
+    const discountFactor = getDiscountFactorFromValuationDate(ccy as Currency, valDateStr, payResetDate);
     const discountedCashflow = Math.round(netCashflow * discountFactor);
     totalPV += discountedCashflow;
 
@@ -2039,44 +2078,44 @@ export function generateCashflowSchedule(
       summary = generateIRSwapCashflowSchedule(trade, effectiveOverrides, valDate);
       break;
     case 'CAP_FLOOR':
-      summary = generateCapFloorCashflowSchedule(trade);
+      summary = generateCapFloorCashflowSchedule(trade, valDate);
       break;
     case 'SWAPTION':
-      summary = generateSwaptionCashflowSchedule(trade);
+      summary = generateSwaptionCashflowSchedule(trade, valDate);
       break;
     case 'RANGE_ACCRUAL':
-      summary = generateRangeAccrualCashflowSchedule(trade);
+      summary = generateRangeAccrualCashflowSchedule(trade, valDate);
       break;
     case 'SNOW_RANGE':
-      summary = generateSnowRangeCashflowSchedule(trade);
+      summary = generateSnowRangeCashflowSchedule(trade, valDate);
       break;
     case 'TARN':
-      summary = generateTarnCashflowSchedule(trade);
+      summary = generateTarnCashflowSchedule(trade, valDate);
       break;
     case 'SNOWBALL':
-      summary = generateSnowballCashflowSchedule(trade);
+      summary = generateSnowballCashflowSchedule(trade, valDate);
       break;
     case 'FX_FORWARD':
     case 'FX_OPTION':
-      summary = generateFxCashflowSchedule(trade);
+      summary = generateFxCashflowSchedule(trade, valDate);
       break;
     case 'BOND':
-      summary = generateBondCashflowSchedule(trade);
+      summary = generateBondCashflowSchedule(trade, valDate);
       break;
     case 'FRA':
-      summary = generateFraCashflowSchedule(trade);
+      summary = generateFraCashflowSchedule(trade, valDate);
       break;
     case 'DEPOSIT':
-      summary = generateDepositCashflowSchedule(trade);
+      summary = generateDepositCashflowSchedule(trade, valDate);
       break;
     case 'REPO':
-      summary = generateRepoCashflowSchedule(trade);
+      summary = generateRepoCashflowSchedule(trade, valDate);
       break;
     case 'DUAL_DIGITAL':
-      summary = generateDualDigitalCashflowSchedule(trade);
+      summary = generateDualDigitalCashflowSchedule(trade, valDate);
       break;
     default:
-      summary = generateIRSwapCashflowSchedule(trade);
+      summary = generateIRSwapCashflowSchedule(trade, effectiveOverrides, valDate);
       break;
   }
 
@@ -2115,7 +2154,8 @@ export function generateCashflowSchedule(
 /**
  * Cashflow Schedule Generator for Fixed Income Bonds
  */
-export function generateBondCashflowSchedule(trade: IRSwapTrade): CashflowScheduleSummary {
+export function generateBondCashflowSchedule(trade: IRSwapTrade, valuationDateOverride?: string): CashflowScheduleSummary {
+  const valDateStr = valuationDateOverride || trade.valuationDate || '2026-08-20';
   const details = trade.bondDetails;
   const ccy = details?.currency || trade.fixedLeg?.currency || 'USD';
   const notional = details?.notional || trade.notionalUsd || 10000000;
@@ -2151,6 +2191,9 @@ export function generateBondCashflowSchedule(trade: IRSwapTrade): CashflowSchedu
     const resetEndDate = adjustBusinessDay(currEnd, accrualCal, accrualRoll);
     const paymentDate = adjustBusinessDay(currEnd, paymentCal, paymentRoll);
 
+    const discountFactor = getDiscountFactorFromValuationDate(ccy as Currency, valDateStr, paymentDate);
+    const discountedCashflow = Math.round(netFlow * discountFactor);
+
     periods.push({
       periodNumber: periodNum,
       startDate: currStart,
@@ -2167,8 +2210,8 @@ export function generateBondCashflowSchedule(trade: IRSwapTrade): CashflowSchedu
       fixedCashflow: netFlow,
       netCashflow: netFlow,
       irDelta: Math.round(notional * dcf * 0.0001),
-      discountFactor: Math.exp(-0.035 * (periodNum * 0.5)),
-      discountedCashflow: Math.round(netFlow * Math.exp(-0.035 * (periodNum * 0.5))),
+      discountFactor,
+      discountedCashflow,
       cumulativeCashflow: totalFixed,
       type: isMaturity ? 'EXCHANGE' : 'INTEREST',
       description: isMaturity ? `Bond Maturity Principal Redemption + Coupon #${periodNum}` : `Bond Coupon Period #${periodNum}`,
@@ -2197,7 +2240,8 @@ export function generateBondCashflowSchedule(trade: IRSwapTrade): CashflowSchedu
 /**
  * Cashflow Schedule Generator for FRA (Forward Rate Agreement)
  */
-export function generateFraCashflowSchedule(trade: IRSwapTrade): CashflowScheduleSummary {
+export function generateFraCashflowSchedule(trade: IRSwapTrade, valuationDateOverride?: string): CashflowScheduleSummary {
+  const valDateStr = valuationDateOverride || trade.valuationDate || '2026-08-20';
   const details = trade.fraDetails;
   const ccy = details?.currency || 'USD';
   const notional = details?.notional || trade.notionalUsd || 10000000;
@@ -2205,10 +2249,15 @@ export function generateFraCashflowSchedule(trade: IRSwapTrade): CashflowSchedul
   const dayCount = details?.dayCount || 'ACT/360';
   const effective = trade.effectiveDate || '2026-08-01';
   const maturity = trade.maturityDate || '2026-11-01';
+  const indexSym = details?.floatingIndex || (ccy === 'EUR' ? 'EURIBOR' : 'SOFR');
+  const indexTenor = details?.indexTenor || '3M';
+  const baseRate = getBenchmarkFixingRate(indexSym, indexTenor);
 
   const dcf = getDayCountFraction(effective, maturity, dayCount);
-  const fixingRate = 3.90; // Current market fixing benchmark
+  const fixingRate = getPeriodFixingRate(indexSym, effective, 1, baseRate, indexTenor, valDateStr, effective, maturity, dayCount);
   const settlementFlow = Math.round(notional * ((fixingRate - fraRate) / 100) * dcf);
+  const discountFactor = getDiscountFactorFromValuationDate(ccy as Currency, valDateStr, effective);
+  const discountedCashflow = Math.round(settlementFlow * discountFactor);
 
   const periods: CashflowPeriod[] = [
     {
@@ -2227,8 +2276,8 @@ export function generateFraCashflowSchedule(trade: IRSwapTrade): CashflowSchedul
       floatingFixingRate: fixingRate,
       netCashflow: settlementFlow,
       irDelta: Math.round(notional * dcf * 0.0001),
-      discountFactor: 0.995,
-      discountedCashflow: Math.round(settlementFlow * 0.995),
+      discountFactor,
+      discountedCashflow,
       cumulativeCashflow: settlementFlow,
       type: 'SETTLEMENT',
       description: `FRA Net Discounted Cash Settlement on Fixing Date (${effective})`,
@@ -2245,7 +2294,7 @@ export function generateFraCashflowSchedule(trade: IRSwapTrade): CashflowSchedul
     totalFixedCashflow: Math.round(notional * (fraRate / 100) * dcf),
     totalFloatingCashflow: Math.round(notional * (fixingRate / 100) * dcf),
     totalNetCashflow: settlementFlow,
-    totalPV: Math.round(settlementFlow * 0.995),
+    totalPV: discountedCashflow,
     totalIrDelta: Math.round(notional * dcf * 0.0001),
     periods,
   };
@@ -2254,7 +2303,8 @@ export function generateFraCashflowSchedule(trade: IRSwapTrade): CashflowSchedul
 /**
  * Cashflow Schedule Generator for Cash Term Deposit
  */
-export function generateDepositCashflowSchedule(trade: IRSwapTrade): CashflowScheduleSummary {
+export function generateDepositCashflowSchedule(trade: IRSwapTrade, valuationDateOverride?: string): CashflowScheduleSummary {
+  const valDateStr = valuationDateOverride || trade.valuationDate || '2026-08-20';
   const details = trade.depositDetails;
   const ccy = details?.currency || 'USD';
   const notional = details?.notional || trade.notionalUsd || 10000000;
@@ -2268,6 +2318,8 @@ export function generateDepositCashflowSchedule(trade: IRSwapTrade): CashflowSch
   const dcf = getDayCountFraction(effective, maturity, dayCount);
   const interestFlow = Math.round(notional * (depositRate / 100) * dcf);
   const netMaturityFlow = (notional + interestFlow) * sign;
+  const discountFactor = getDiscountFactorFromValuationDate(ccy as Currency, valDateStr, maturity);
+  const discountedMaturityFlow = Math.round(netMaturityFlow * discountFactor);
 
   const periods: CashflowPeriod[] = [
     {
@@ -2305,8 +2357,8 @@ export function generateDepositCashflowSchedule(trade: IRSwapTrade): CashflowSch
       fixedCouponRate: depositRate,
       netCashflow: netMaturityFlow,
       irDelta: Math.round(notional * dcf * 0.0001),
-      discountFactor: 0.99,
-      discountedCashflow: Math.round(netMaturityFlow * 0.99),
+      discountFactor,
+      discountedCashflow: discountedMaturityFlow,
       cumulativeCashflow: interestFlow * sign,
       type: 'EXCHANGE',
       description: `Deposit Maturity Principal Repayment + Accrued Interest (${maturity})`,
@@ -2323,7 +2375,7 @@ export function generateDepositCashflowSchedule(trade: IRSwapTrade): CashflowSch
     totalFixedCashflow: interestFlow,
     totalFloatingCashflow: 0,
     totalNetCashflow: interestFlow * sign,
-    totalPV: Math.round(interestFlow * sign * 0.99),
+    totalPV: Math.round(interestFlow * sign * discountFactor),
     totalIrDelta: Math.round(notional * dcf * 0.0001),
     periods,
   };
@@ -2332,7 +2384,8 @@ export function generateDepositCashflowSchedule(trade: IRSwapTrade): CashflowSch
 /**
  * Cashflow Schedule Generator for Repo / Reverse Repo
  */
-export function generateRepoCashflowSchedule(trade: IRSwapTrade): CashflowScheduleSummary {
+export function generateRepoCashflowSchedule(trade: IRSwapTrade, valuationDateOverride?: string): CashflowScheduleSummary {
+  const valDateStr = valuationDateOverride || trade.valuationDate || '2026-08-20';
   const details = trade.repoDetails;
   const ccy = details?.currency || 'USD';
   const purchasePrice = details?.purchasePrice || trade.notionalUsd || 10000000;
@@ -2346,6 +2399,7 @@ export function generateRepoCashflowSchedule(trade: IRSwapTrade): CashflowSchedu
   const dcf = getDayCountFraction(effective, maturity, dayCount);
   const repoInterest = Math.round(purchasePrice * (repoRate / 100) * dcf);
   const repurchasePrice = purchasePrice + repoInterest;
+  const discountFactor = getDiscountFactorFromValuationDate(ccy as Currency, valDateStr, maturity);
 
   const periods: CashflowPeriod[] = [
     {
@@ -2383,8 +2437,8 @@ export function generateRepoCashflowSchedule(trade: IRSwapTrade): CashflowSchedu
       fixedCouponRate: repoRate,
       netCashflow: -repurchasePrice * sign,
       irDelta: Math.round(purchasePrice * dcf * 0.0001),
-      discountFactor: 0.999,
-      discountedCashflow: Math.round(-repurchasePrice * sign * 0.999),
+      discountFactor,
+      discountedCashflow: Math.round(-repurchasePrice * sign * discountFactor),
       cumulativeCashflow: -repoInterest * sign,
       type: 'EXCHANGE',
       description: `Repo Term Repurchase Cash Settlement Leg (${maturity})`,
@@ -2401,7 +2455,7 @@ export function generateRepoCashflowSchedule(trade: IRSwapTrade): CashflowSchedu
     totalFixedCashflow: repoInterest,
     totalFloatingCashflow: 0,
     totalNetCashflow: -repoInterest * sign,
-    totalPV: Math.round(-repoInterest * sign * 0.999),
+    totalPV: Math.round(-repoInterest * sign * discountFactor),
     totalIrDelta: Math.round(purchasePrice * dcf * 0.0001),
     periods,
   };
@@ -2410,7 +2464,8 @@ export function generateRepoCashflowSchedule(trade: IRSwapTrade): CashflowSchedu
 /**
  * Cashflow Schedule Generator for Dual Digital Interest Rate Swap / Option
  */
-export function generateDualDigitalCashflowSchedule(trade: IRSwapTrade): CashflowScheduleSummary {
+export function generateDualDigitalCashflowSchedule(trade: IRSwapTrade, valuationDateOverride?: string): CashflowScheduleSummary {
+  const valDateStr = valuationDateOverride || trade.valuationDate || '2026-08-20';
   const details = trade.dualDigitalDetails;
   const ccy = details?.currency || 'USD';
   const notional = details?.notional || trade.notionalUsd || 10000000;
