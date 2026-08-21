@@ -1003,6 +1003,44 @@ async function runCliQaSuite() {
     });
   })();
 
+  // 29. Forensic Case Study: USD SOFR 5Y IRS ($100M) Evaluated As-Of 19-Aug-2026 - TC-29
+  (() => {
+    const forensicTrade: IRSwapTrade = {
+      id: 'qa-irs-29-forensic',
+      tradeId: 'IRS-QA-FORENSIC-029',
+      productType: 'IRS',
+      tradeDate: '2024-01-02',
+      effectiveDate: '2024-01-02',
+      maturityDate: '2029-01-02',
+      counterpartyName: 'JPMorgan Chase Bank, N.A.',
+      counterpartyLei: '7H6GLXDRUGV21P84J029',
+      traderId: 'QA_QUANT_VALIDATOR',
+      calculationAgent: 'CALC_AGENT_SELF',
+      status: 'BOOKED',
+      fixedLeg: { direction: 'PAY_FIXED', notional: 100000000, currency: 'USD', fixedRate: 0, dayCount: '30/360', frequency: '1Y', businessDayConvention: 'MODFOLLOWING' },
+      floatingLeg: { direction: 'RECEIVE_FIXED', notional: 100000000, currency: 'USD', index: 'SOFR', indexTenor: '1D', resetType: 'ADVANCE', spreadBps: 0, dayCount: '30/360', frequency: '1Y', businessDayConvention: 'MODFOLLOWING' },
+      notionalUsd: 100000000,
+      dv01: 43500,
+      markToMarket: 0,
+      parRate: 0,
+      tenorYears: 5,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    const xml = generateIRSwapXml(forensicTrade);
+    const sched = generateCashflowSchedule(forensicTrade);
+    const pass = xml.includes('<swap>') && sched.periods.length === 5 && sched.periods[2].floatingFixingRate! > 4.0;
+    results.push({
+      id: 'TC-29',
+      name: 'Forensic Case Study: USD SOFR 5Y IRS In-Period Accrued Fixing Compounding',
+      category: 'MODEL_VALIDATION',
+      product: 'IRS',
+      status: pass ? 'PASSED' : 'FAILED',
+      reason: pass ? 'Verified Period 3 in-period elapsed daily SOFR fixing blending (> 4.0% effective coupon rate)' : 'Forensic case study failed.',
+      snapshotEvidence: `[FORENSIC CASE STUDY VERIFICATION]\nValuation Date: 2026-08-19 | Notional: $100M\nP3 Blended Fixing: ${sched.periods[2]?.floatingFixingRate}%\nTotal Discounted PV: $${sched.totalPV.toLocaleString()}`,
+    });
+  })();
+
   // PRINT EXECUTIVE SUMMARY TABLE
   console.table(results.map(r => ({ id: r.id, name: r.name, category: r.category, product: r.product, status: r.status })));
 

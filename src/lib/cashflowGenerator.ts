@@ -302,20 +302,43 @@ export function getPeriodFixingRate(
   periodNum: number,
   baseRate: number,
   indexTenor?: IndexTenor | string,
-  valuationDateISO: string = '2026-08-15',
+  valuationDateISO: string = '2026-08-20',
   periodStartDateISO?: string,
   periodEndDateISO?: string,
   dayCountConvention: DayCountConvention = 'ACT/360'
 ): number {
+  // 1. Check if fixing date is strictly in the past (T_fixing <= T_asof) and period ended on or before valuation date
+  if (periodEndDateISO && periodEndDateISO <= valuationDateISO) {
+    const officialRes = getOfficialHistoricalFixingRate(indexSymbol, dateStr, indexTenor, valuationDateISO);
+    if (officialRes !== null) {
+      return officialRes.ratePct;
+    }
+  }
+
+  // 2. Active floating period spanning across valuation date (T_start < T_asof < T_end) -> Blend elapsed historical + remaining forward
+  if (periodStartDateISO && periodEndDateISO && periodStartDateISO < valuationDateISO && periodEndDateISO > valuationDateISO) {
+    const totalDays = Math.max(1, getNumberOfDays(periodStartDateISO, periodEndDateISO));
+    const elapsedDays = Math.min(totalDays, Math.max(0, getNumberOfDays(periodStartDateISO, valuationDateISO)));
+    const remainingDays = Math.max(0, totalDays - elapsedDays);
+
+    const histRes = getOfficialHistoricalFixingRate(indexSymbol, periodStartDateISO, indexTenor, valuationDateISO);
+    const pastRate = histRes ? histRes.ratePct : baseRate;
+    const ccy = (OFFICIAL_INDEX_REGISTRY[indexSymbol]?.currency || 'USD') as Currency;
+    const fwdRate = calculateForwardRate(ccy, valuationDateISO, periodEndDateISO, dayCountConvention, valuationDateISO, baseRate);
+
+    const blended = (elapsedDays * pastRate + remainingDays * fwdRate) / totalDays;
+    return parseFloat(blended.toFixed(4));
+  }
+
+  // 3. Strictly future date (T_start >= T_asof) -> Forward curve forecast F(T1, T2) = (1/tau) * [ DF(T1)/DF(T2) - 1 ]
+  if (periodStartDateISO && periodEndDateISO && periodStartDateISO >= valuationDateISO) {
+    const ccy = (OFFICIAL_INDEX_REGISTRY[indexSymbol]?.currency || 'USD') as Currency;
+    return calculateForwardRate(ccy, periodStartDateISO, periodEndDateISO, dayCountConvention, valuationDateISO, baseRate);
+  }
+
   const officialRes = getOfficialHistoricalFixingRate(indexSymbol, dateStr, indexTenor, valuationDateISO);
   if (officialRes !== null) {
     return officialRes.ratePct;
-  }
-
-  // Future date -> Derive forward rate via yield curve equation F(T1, T2) = (1/tau) * [ DF(T1)/DF(T2) - 1 ]
-  if (periodStartDateISO && periodEndDateISO) {
-    const ccy = (OFFICIAL_INDEX_REGISTRY[indexSymbol]?.currency || 'USD') as Currency;
-    return calculateForwardRate(ccy, periodStartDateISO, periodEndDateISO, dayCountConvention, valuationDateISO, baseRate);
   }
 
   return derivePeriodFixingRate(baseRate, periodNum, 0.035);
