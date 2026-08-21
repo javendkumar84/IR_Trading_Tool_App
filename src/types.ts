@@ -447,6 +447,7 @@ export interface IRSwapTrade {
   // Market Data Configuration Used
   marketData?: MarketDataConfig;
   valuationModel?: string;
+  valuationDate?: string; // YYYY-MM-DD valuation date override
   scheduleDateOverrides?: Record<string, { startDate?: string; endDate?: string; resetStartDate?: string; resetEndDate?: string; payResetDate?: string }>;
 
   // Market & Risk Analytics

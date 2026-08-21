@@ -324,7 +324,7 @@ export function getPeriodFixingRate(
     const histRes = getOfficialHistoricalFixingRate(indexSymbol, periodStartDateISO, indexTenor, valuationDateISO);
     const pastRate = histRes ? histRes.ratePct : baseRate;
     const ccy = (OFFICIAL_INDEX_REGISTRY[indexSymbol]?.currency || 'USD') as Currency;
-    const fwdRate = calculateForwardRate(ccy, valuationDateISO, periodEndDateISO, dayCountConvention, valuationDateISO, baseRate);
+    const fwdRate = calculateForwardRate(ccy, valuationDateISO, periodEndDateISO, dayCountConvention, valuationDateISO);
 
     const blended = (elapsedDays * pastRate + remainingDays * fwdRate) / totalDays;
     return parseFloat(blended.toFixed(4));
@@ -333,7 +333,7 @@ export function getPeriodFixingRate(
   // 3. Strictly future date (T_start >= T_asof) -> Forward curve forecast F(T1, T2) = (1/tau) * [ DF(T1)/DF(T2) - 1 ]
   if (periodStartDateISO && periodEndDateISO && periodStartDateISO >= valuationDateISO) {
     const ccy = (OFFICIAL_INDEX_REGISTRY[indexSymbol]?.currency || 'USD') as Currency;
-    return calculateForwardRate(ccy, periodStartDateISO, periodEndDateISO, dayCountConvention, valuationDateISO, baseRate);
+    return calculateForwardRate(ccy, periodStartDateISO, periodEndDateISO, dayCountConvention, valuationDateISO);
   }
 
   const officialRes = getOfficialHistoricalFixingRate(indexSymbol, dateStr, indexTenor, valuationDateISO);
@@ -358,7 +358,8 @@ export function derivePeriodFixingRate(baseRate: number, periodNum: number, teno
  */
 export function generateIRSwapCashflowSchedule(
   trade: IRSwapTrade,
-  dateOverrides?: Record<string, { startDate?: string; endDate?: string; resetStartDate?: string; resetEndDate?: string; payResetDate?: string }>
+  dateOverrides?: Record<string, { startDate?: string; endDate?: string; resetStartDate?: string; resetEndDate?: string; payResetDate?: string }>,
+  valuationDateOverride?: string
 ): CashflowScheduleSummary {
   const overrides = dateOverrides || trade.scheduleDateOverrides || {};
 
@@ -425,7 +426,7 @@ export function generateIRSwapCashflowSchedule(
       const leg2FixingDate = adjustBusinessDay(resetType === 'ARREARS' ? addDays(effEnd, -fixingLag2) : addDays(effStart, -fixingLag2), accrualCal, 'PRECEDING');
       const fixingDate = adjustBusinessDay(resetType === 'ARREARS' ? addDays(effEnd, -effectiveFixingLag) : addDays(effStart, -effectiveFixingLag), accrualCal, 'PRECEDING');
 
-      const valDateStr = '2026-08-15'; // Active Valuation Date (EOD As-Of Date)
+      const valDateStr = valuationDateOverride || trade.valuationDate || '2026-08-20'; // Active Valuation Date (EOD As-Of Date)
 
       // LEG 1 RATE & CASHFLOW
       let leg1Rate = 0;
@@ -2026,14 +2027,16 @@ export function generateIndependentLeg2Schedule(
  */
 export function generateCashflowSchedule(
   trade: IRSwapTrade,
-  dateOverrides?: Record<string, { startDate?: string; endDate?: string; resetStartDate?: string; resetEndDate?: string; payResetDate?: string }>
+  dateOverrides?: Record<string, { startDate?: string; endDate?: string; resetStartDate?: string; resetEndDate?: string; payResetDate?: string }>,
+  valuationDateOverride?: string
 ): CashflowScheduleSummary {
   const effectiveOverrides = dateOverrides || trade.scheduleDateOverrides;
+  const valDate = valuationDateOverride || trade.valuationDate;
   let summary: CashflowScheduleSummary;
 
   switch (trade.productType) {
     case 'IRS':
-      summary = generateIRSwapCashflowSchedule(trade, effectiveOverrides);
+      summary = generateIRSwapCashflowSchedule(trade, effectiveOverrides, valDate);
       break;
     case 'CAP_FLOOR':
       summary = generateCapFloorCashflowSchedule(trade);
@@ -2078,7 +2081,7 @@ export function generateCashflowSchedule(
   }
 
   // Calculate Cash on the Day (T+0 upfront settlement, premium, or fee cashflows on trade/effective date)
-  const valDate = trade.tradeDate || new Date().toISOString().split('T')[0];
+  const asOfTradeDate = trade.tradeDate || new Date().toISOString().split('T')[0];
   let cashOnTheDay = 0;
 
   if (trade.productType === 'CAP_FLOOR' && trade.capFloorDetails) {
