@@ -13,7 +13,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { IRSwapTrade, Currency } from '../types';
-import { generateCashflowSchedule, generateIndependentLeg1Schedule, generateIndependentLeg2Schedule, getBenchmarkFixingRate, derivePeriodFixingRate, getPeriodFixingRate } from '../lib/cashflowGenerator';
+import { generateCashflowSchedule, generateCapFloorCashflowSchedule, generateIndependentLeg1Schedule, generateIndependentLeg2Schedule, getBenchmarkFixingRate, derivePeriodFixingRate, getPeriodFixingRate } from '../lib/cashflowGenerator';
 import { calculateBenchmarkDiscountFactor } from '../lib/benchmarkValuation';
 
 interface CashExplainTabProps {
@@ -65,6 +65,60 @@ export const CashExplainTab: React.FC<CashExplainTabProps> = ({ trades }) => {
 
     const today = valuationDate;
     const rows: CashExplainRow[] = [];
+
+    // Single-Leg CAP_FLOOR Product Handling
+    if (currentTrade.productType === 'CAP_FLOOR') {
+      const capFloorSched = generateCapFloorCashflowSchedule(currentTrade, today);
+      (capFloorSched.periods || []).forEach((p) => {
+        let state: CashState = 'Expected';
+        const payD = p.paymentDate || p.payResetDate || p.endDate;
+        if (payD < today) {
+          state = 'Paid';
+        } else if (payD === today) {
+          state = 'Expected';
+        }
+
+        const notional = p.notional || capFloorSched.notional || currentTrade.notionalUsd || 10000000;
+        const ccy = capFloorSched.currency || 'USD';
+        const dcf = p.dayCountFraction || 0.25;
+        const strike = p.strikeRate ?? p.couponRate ?? currentTrade.capFloorDetails?.strikeRate ?? 4.0;
+        const fixRate = p.floatingFixingRate ?? p.fixingRate ?? 3.80;
+        const rawCash = p.netCashflow ?? p.discountedCashflow ?? 0;
+        const df = p.discountFactor || calculateBenchmarkDiscountFactor(today, payD, ccy, getBenchmarkFixingRate(ccy));
+        const pvVal = p.discountedCashflow ?? Math.round(rawCash * df);
+        const optType = currentTrade.capFloorDetails?.capFloorType || 'CAP';
+        const payoffPct = p.capFloorPayoffPercent ?? (optType === 'CAP' ? Math.max(0, fixRate - strike) : Math.max(0, strike - fixRate));
+
+        const formulaStr = p.type === 'PREMIUM'
+          ? `Option Upfront Premium:\nAmount = ${ccy} ${rawCash.toLocaleString()}`
+          : `Single-Leg ${optType}let #${p.periodNumber}:\nNotional × Payoff % (${optType === 'CAP' ? 'Fixing - Strike' : 'Strike - Fixing'}) × DCF (alpha)\n= $${notional.toLocaleString()} × ${payoffPct.toFixed(4)}% × ${dcf.toFixed(4)}\n= ${ccy} ${rawCash.toLocaleString()}\nDiscounted PV: ${rawCash.toLocaleString()} × DF(${df.toFixed(4)}) = ${ccy} ${pvVal.toLocaleString()}`;
+
+        rows.push({
+          tradeId: currentTrade.tradeId,
+          legId: 'LEG_1',
+          legName: `Single-Leg Cap/Floor Option (${optType})`,
+          periodNumber: p.periodNumber,
+          startDate: p.startDate,
+          endDate: p.endDate,
+          payDate: payD,
+          paymentBasis: p.type === 'PREMIUM' ? 'UPFRONT_PREMIUM' : `${optType}_PAYOFF`,
+          dcf,
+          numberOfDays: p.numberOfDays || 90,
+          notional,
+          currency: ccy,
+          resetDate: p.resetStartDate || p.startDate,
+          fixingRate: parseFloat(fixRate.toFixed(4)),
+          couponRate: parseFloat(strike.toFixed(4)),
+          spreadBps: 0,
+          cashAmount: rawCash,
+          discountFactor: df,
+          discountedPV: pvVal,
+          state,
+          calculationFormula: formulaStr
+        });
+      });
+      return rows;
+    }
 
     // Extract independent schedules for Leg 1 and Leg 2
     const leg1Sched = generateIndependentLeg1Schedule(currentTrade);

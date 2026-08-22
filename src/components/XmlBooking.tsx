@@ -2478,49 +2478,63 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                 <Layers className="w-3 h-3 text-amber-400" />
                 Pay / Receive Structure
               </label>
-              <select
-                value={
-                  leg1Type === 'FLOATING' && leg2Type === 'FLOATING'
-                    ? (leg1Direction === 'PAY' ? 'PAY_FLOAT_REC_FLOAT' : 'REC_FLOAT_PAY_FLOAT')
-                    : (leg1Direction === 'PAY' && leg1Type === 'FIXED' ? 'PAY_FIXED' : leg1Direction === 'PAY' && leg1Type === 'FLOATING' ? 'PAY_FLOAT_REC_FIXED' : 'RECEIVE_FIXED')
-                }
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === 'PAY_FIXED') {
-                    setLeg1Type('FIXED');
-                    setLeg1Direction('PAY');
-                    setLeg2Type('FLOATING');
-                    setLeg2Direction('RECEIVE');
-                  } else if (val === 'RECEIVE_FIXED') {
-                    setLeg1Type('FIXED');
-                    setLeg1Direction('RECEIVE');
-                    setLeg2Type('FLOATING');
-                    setLeg2Direction('PAY');
-                  } else if (val === 'PAY_FLOAT_REC_FLOAT') {
-                    setLeg1Type('FLOATING');
-                    setLeg1Direction('PAY');
-                    setLeg2Type('FLOATING');
-                    setLeg2Direction('RECEIVE');
-                  } else if (val === 'REC_FLOAT_PAY_FLOAT') {
-                    setLeg1Type('FLOATING');
-                    setLeg1Direction('RECEIVE');
-                    setLeg2Type('FLOATING');
-                    setLeg2Direction('PAY');
-                  } else if (val === 'PAY_FLOAT_REC_FIXED') {
-                    setLeg1Type('FLOATING');
-                    setLeg1Direction('PAY');
-                    setLeg2Type('FIXED');
-                    setLeg2Direction('RECEIVE');
+              {selectedProduct === 'CAP_FLOOR' ? (
+                <select
+                  value={capFloorDirection === 'BUY' ? 'PAY' : 'RECEIVE'}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setCapFloorDirection(val === 'PAY' ? 'BUY' : 'SELL');
+                  }}
+                  className="w-full bg-[#16181d] border border-amber-500/80 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-amber-400 cursor-pointer"
+                >
+                  <option value="PAY">PAY (Pay Premium / Long Cap-Floor Option)</option>
+                  <option value="RECEIVE">RECEIVE (Receive Premium / Short Cap-Floor Option)</option>
+                </select>
+              ) : (
+                <select
+                  value={
+                    leg1Type === 'FLOATING' && leg2Type === 'FLOATING'
+                      ? (leg1Direction === 'PAY' ? 'PAY_FLOAT_REC_FLOAT' : 'REC_FLOAT_PAY_FLOAT')
+                      : (leg1Direction === 'PAY' && leg1Type === 'FIXED' ? 'PAY_FIXED' : leg1Direction === 'PAY' && leg1Type === 'FLOATING' ? 'PAY_FLOAT_REC_FIXED' : 'RECEIVE_FIXED')
                   }
-                }}
-                className="w-full bg-[#16181d] border border-amber-500/80 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-amber-400 cursor-pointer"
-              >
-                <option value="PAY_FIXED">PAY FIXED / RECEIVE FLOAT (Pay Fixed Leg 1 / Rec Float Leg 2)</option>
-                <option value="RECEIVE_FIXED">RECEIVE FIXED / PAY FLOAT (Rec Fixed Leg 1 / Pay Float Leg 2)</option>
-                <option value="PAY_FLOAT_REC_FLOAT">⚡ PAY FLOAT / RECEIVE FLOAT (Pay SOFR/EURIBOR L1 / Rec SOFR L2 Basis Swap)</option>
-                <option value="REC_FLOAT_PAY_FLOAT">⚡ RECEIVE FLOAT / PAY FLOAT (Rec SOFR/EURIBOR L1 / Pay SOFR L2 Basis Swap)</option>
-                <option value="PAY_FLOAT_REC_FIXED">PAY FLOAT / RECEIVE FIXED (Pay Float Leg 1 / Rec Fixed Leg 2)</option>
-              </select>
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === 'PAY_FIXED') {
+                      setLeg1Type('FIXED');
+                      setLeg1Direction('PAY');
+                      setLeg2Type('FLOATING');
+                      setLeg2Direction('RECEIVE');
+                    } else if (val === 'RECEIVE_FIXED') {
+                      setLeg1Type('FIXED');
+                      setLeg1Direction('RECEIVE');
+                      setLeg2Type('FLOATING');
+                      setLeg2Direction('PAY');
+                    } else if (val === 'PAY_FLOAT_REC_FLOAT') {
+                      setLeg1Type('FLOATING');
+                      setLeg1Direction('PAY');
+                      setLeg2Type('FLOATING');
+                      setLeg2Direction('RECEIVE');
+                    } else if (val === 'REC_FLOAT_PAY_FLOAT') {
+                      setLeg1Type('FLOATING');
+                      setLeg1Direction('RECEIVE');
+                      setLeg2Type('FLOATING');
+                      setLeg2Direction('PAY');
+                    } else if (val === 'PAY_FLOAT_REC_FIXED') {
+                      setLeg1Type('FLOATING');
+                      setLeg1Direction('PAY');
+                      setLeg2Type('FIXED');
+                      setLeg2Direction('RECEIVE');
+                    }
+                  }}
+                  className="w-full bg-[#16181d] border border-amber-500/80 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-amber-400 cursor-pointer"
+                >
+                  <option value="PAY_FIXED">PAY FIXED / RECEIVE FLOAT (Pay Fixed Leg 1 / Rec Float Leg 2)</option>
+                  <option value="RECEIVE_FIXED">RECEIVE FIXED / PAY FLOAT (Rec Fixed Leg 1 / Pay Float Leg 2)</option>
+                  <option value="PAY_FLOAT_REC_FLOAT">⚡ PAY FLOAT / RECEIVE FLOAT (Pay SOFR/EURIBOR L1 / Rec SOFR L2 Basis Swap)</option>
+                  <option value="REC_FLOAT_PAY_FLOAT">⚡ RECEIVE FLOAT / PAY FLOAT (Rec SOFR/EURIBOR L1 / Pay SOFR L2 Basis Swap)</option>
+                  <option value="PAY_FLOAT_REC_FIXED">PAY FLOAT / RECEIVE FIXED (Pay Float Leg 1 / Rec Fixed Leg 2)</option>
+                </select>
+              )}
             </div>
 
             {/* Valuation Date Field */}
@@ -3337,14 +3351,14 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                 </div>
 
                 <div>
-                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Option Position Direction</label>
+                  <label className="block text-[10px] uppercase font-bold text-gray-500 mb-1">Pay / Receive Direction</label>
                   <select
-                    value={capFloorDirection}
-                    onChange={(e) => setCapFloorDirection(e.target.value as 'BUY' | 'SELL')}
+                    value={capFloorDirection === 'BUY' ? 'PAY' : 'RECEIVE'}
+                    onChange={(e) => setCapFloorDirection(e.target.value === 'PAY' ? 'BUY' : 'SELL')}
                     className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-bold"
                   >
-                    <option value="BUY">BUY (Long Option - Pay Premium)</option>
-                    <option value="SELL">SELL (Short Option - Receive Premium)</option>
+                    <option value="PAY">PAY (Pay Premium / Long Option)</option>
+                    <option value="RECEIVE">RECEIVE (Receive Premium / Short Option)</option>
                   </select>
                 </div>
 
@@ -6386,10 +6400,16 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                       <th className="py-2.5 px-3">Pay/Reset Date</th>
                       <th className="py-2.5 px-3 text-center">Days</th>
                       <th className="py-2.5 px-3 text-center">Fraction (α) & Conv</th>
-                      <th className="py-2.5 px-3 text-right text-blue-400">Fixed Coupon Rate (%)</th>
+                      <th className="py-2.5 px-3 text-right text-blue-400">
+                        {selectedProduct === 'CAP_FLOOR' ? 'Strike Rate (%)' : 'Fixed Coupon Rate (%)'}
+                      </th>
                       <th className="py-2.5 px-3 text-right text-amber-400">Fixing Rate (%)</th>
-                      <th className="py-2.5 px-3 text-right text-emerald-400">Float Coupon Rate (%)</th>
-                      <th className="py-2.5 px-3 text-right">Net Flow ({liveScheduleSummary.currency})</th>
+                      <th className="py-2.5 px-3 text-right text-emerald-400">
+                        {selectedProduct === 'CAP_FLOOR' ? 'Payoff Rate (%)' : 'Float Coupon Rate (%)'}
+                      </th>
+                      <th className="py-2.5 px-3 text-right">
+                        {selectedProduct === 'CAP_FLOOR' ? `Option Cashflow (${liveScheduleSummary.currency})` : `Net Flow (${liveScheduleSummary.currency})`}
+                      </th>
                       <th className="py-2.5 px-3 text-right text-emerald-300">IRDelta ($/1bp)</th>
                     </tr>
                   </thead>
