@@ -1,0 +1,23 @@
+# Vercel Ignore File - Keeps Serverless Function Bundle < 10 MB
+venv/
+venv*/
+.venv/
+node_modules/
+.git/
+.system_generated/
+.gemini/
+dist/
+build/
+*.db
+*.sqlite
+*.sqlite3
+*.log
+*.tar.gz
+*.zip
+coverage/
+__pycache__/
+*.pyc
+e2e/
+test-results/
+screenshots/
+videos/
