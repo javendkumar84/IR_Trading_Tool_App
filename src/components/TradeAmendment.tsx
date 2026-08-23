@@ -565,12 +565,9 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
         onAmendmentComplete(amendedTrade);
       }
 
-      // Reload version history
-      const versionsResponse = await fetch(`/api/trades/${loadedTrade.tradeId}/versions`);
-      if (versionsResponse.ok) {
-        const versionsData = await versionsResponse.json();
-        setVersions(versionsData);
-      }
+      // Reload version history safely
+      const versionsData = await safeFetchJson<TradeVersion[]>(`/api/trades/${loadedTrade.tradeId}/versions`, undefined, []);
+      setVersions(versionsData);
     } catch (err: any) {
       setError(err.message || 'Failed to amend trade');
     } finally {

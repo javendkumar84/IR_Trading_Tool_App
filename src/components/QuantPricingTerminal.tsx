@@ -73,8 +73,11 @@ export const QuantPricingTerminal: React.FC = () => {
         })
       });
       if (res.ok) {
-        const json = await res.json();
-        setPricingResult(json.data);
+        const text = await res.text();
+        if (text && !text.trim().startsWith('<')) {
+          const json = JSON.parse(text);
+          setPricingResult(json.data);
+        }
       }
     } catch (err) {
       console.error("Pricing error:", err);

@@ -46,8 +46,11 @@ export const QuantPnlTerminal: React.FC = () => {
         body: JSON.stringify({ tolerance })
       });
       if (res.ok) {
-        const json = await res.json();
-        setPnlData(json.data);
+        const text = await res.text();
+        if (text && !text.trim().startsWith('<')) {
+          const json = JSON.parse(text);
+          setPnlData(json.data);
+        }
       }
     } catch (err) {
       console.error("Error fetching PnL data:", err);

@@ -42,16 +42,28 @@ export default function App() {
   // Initial REST Fetch fallback
   const fetchInitialData = async () => {
     try {
+      const safeParse = async (url: string) => {
+        try {
+          const r = await fetch(url);
+          if (!r.ok) return null;
+          const text = await r.text();
+          if (!text || text.trim().startsWith('<')) return null;
+          return JSON.parse(text);
+        } catch (_e) {
+          return null;
+        }
+      };
+
       const [tradesResp, logsResp, posResp] = await Promise.all([
-        fetch('/api/trades').then((r) => r.json()),
-        fetch('/api/audit-logs').then((r) => r.json()),
-        fetch('/api/positions').then((r) => r.json()),
+        safeParse('/api/trades'),
+        safeParse('/api/audit-logs'),
+        safeParse('/api/positions'),
       ]);
 
       if (Array.isArray(tradesResp)) setTrades(tradesResp);
       if (Array.isArray(logsResp)) setAuditLogs(logsResp);
-      if (posResp.positions) setPositions(posResp.positions);
-      if (posResp.tenorRisk) setTenorRisk(posResp.tenorRisk);
+      if (posResp && posResp.positions) setPositions(posResp.positions);
+      if (posResp && posResp.tenorRisk) setTenorRisk(posResp.tenorRisk);
     } catch (err) {
       console.error('REST initial fetch error:', err);
     }

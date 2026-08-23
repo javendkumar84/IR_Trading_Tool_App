@@ -26,8 +26,11 @@ export const QuantRiskTerminal: React.FC = () => {
         })
       });
       if (res.ok) {
-        const json = await res.json();
-        setRiskData(json.data);
+        const text = await res.text();
+        if (text && !text.trim().startsWith('<')) {
+          const json = JSON.parse(text);
+          setRiskData(json.data);
+        }
       }
     } catch (err) {
       console.error("Error fetching risk data:", err);

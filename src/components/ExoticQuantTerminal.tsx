@@ -61,44 +61,46 @@ export const ExoticQuantTerminal: React.FC = () => {
   const calculateAllExotics = async () => {
     setLoading(true);
     try {
+      const safePost = async (url: string, body: any) => {
+        try {
+          const r = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+          });
+          if (!r.ok) return null;
+          const txt = await r.text();
+          if (!txt || txt.trim().startsWith('<')) return null;
+          return JSON.parse(txt);
+        } catch (_e) {
+          return null;
+        }
+      };
+
       const [bermRes, cRes, vRes] = await Promise.all([
-        fetch('/api/quant/exotics/bermudan', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            notional: bermudanNotional,
-            strike_rate: bermudanStrike / 100.0,
-            expiry_years: bermudanExpiry,
-            tenor_years: bermudanTenor,
-            volatility: bermudanVol / 100.0
-          })
-        }).then(r => r.json()),
-
-        fetch('/api/quant/exotics/cms', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            notional: cmsNotional,
-            cms_tenor: cmsTenor,
-            forward_swap_rate: cmsForwardRate / 100.0,
-            time_to_expiry: 1.0
-          })
-        }).then(r => r.json()),
-
-        fetch('/api/quant/exotics/historical-var', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            portfolio_pv: 125000.0,
-            portfolio_dv01: varDv01,
-            historical_days: 500
-          })
-        }).then(r => r.json())
+        safePost('/api/quant/exotics/bermudan-swaption', {
+          notional: bermudanNotional,
+          strike_rate: bermudanStrike / 100.0,
+          expiry_years: bermudanExpiry,
+          tenor_years: bermudanTenor,
+          volatility: bermudanVol / 100.0
+        }),
+        safePost('/api/quant/exotics/cms', {
+          notional: cmsNotional,
+          cms_tenor: cmsTenor,
+          forward_swap_rate: cmsForwardRate / 100.0,
+          time_to_expiry: 1.0
+        }),
+        safePost('/api/quant/exotics/historical-var', {
+          portfolio_pv: 125000.0,
+          portfolio_dv01: varDv01,
+          historical_days: 500
+        })
       ]);
 
-      if (bermRes.data) setBermudanRes(bermRes.data);
-      if (cRes.data) setCmsRes(cRes.data);
-      if (vRes.data) setVarRes(vRes.data);
+      if (bermRes && bermRes.data) setBermudanRes(bermRes.data);
+      if (cRes && cRes.data) setCmsRes(cRes.data);
+      if (vRes && vRes.data) setVarRes(vRes.data);
     } catch (err) {
       console.error("Error evaluating exotic quant models:", err);
     } finally {

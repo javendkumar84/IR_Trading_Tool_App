@@ -41,13 +41,25 @@ export const QuantReportsTerminal: React.FC = () => {
   const fetchReports = async () => {
     setLoading(true);
     try {
+      const safeFetch = async (url: string) => {
+        try {
+          const r = await fetch(url);
+          if (!r.ok) return null;
+          const txt = await r.text();
+          if (!txt || txt.trim().startsWith('<')) return null;
+          return JSON.parse(txt);
+        } catch (_e) {
+          return null;
+        }
+      };
+
       const [repRes, auditRes] = await Promise.all([
-        fetch('/api/quant/reports/summary').then(r => r.json()),
-        fetch('/api/quant/reports/audit').then(r => r.json())
+        safeFetch('/api/quant/reports/summary'),
+        safeFetch('/api/quant/reports/audit')
       ]);
 
-      if (repRes.data) setReportsData(repRes.data);
-      if (auditRes.data) setAuditLogs(auditRes.data);
+      if (repRes && repRes.data) setReportsData(repRes.data);
+      if (auditRes && auditRes.data) setAuditLogs(auditRes.data);
     } catch (err) {
       console.error("Error fetching report data:", err);
     } finally {
