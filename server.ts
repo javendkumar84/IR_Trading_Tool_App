@@ -119,6 +119,28 @@ async function startServer() {
     }
   });
 
+  // Quant Engine Python Microservice Proxy
+  app.all('/api/quant/*', async (req, res) => {
+    try {
+      const targetPath = (req.params as any)[0] || '';
+      const quantUrl = `http://127.0.0.1:8000/api/v1/${targetPath}`;
+      const response = await fetch(quantUrl, {
+        method: req.method,
+        headers: { 'Content-Type': 'application/json' },
+        body: ['GET', 'HEAD'].includes(req.method) ? undefined : JSON.stringify(req.body),
+      });
+      const data = await response.json();
+      res.status(response.status).json(data);
+    } catch (err: any) {
+      res.status(502).json({
+        success: false,
+        error: 'QUANT_ENGINE_UNAVAILABLE',
+        message: 'Python Quant Engine microservice is offline or unreachable.',
+        details: err.message,
+      });
+    }
+  });
+
   // Get all trades
   app.get('/api/trades', async (req, res) => {
     try {

@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  quant-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: quant-engine-service
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+      - ENVIRONMENT=production
+    restart: unless-stopped
+
+  trading-platform:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    container_name: trading-platform-app
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - QUANT_ENGINE_URL=http://quant-engine:8000/api/v1
+    depends_on:
+      - quant-engine
+    restart: unless-stopped

@@ -1,9 +1,24 @@
 services:
+  # 1. Python Quant Engine Microservice
   - type: web
-    name: ir-trading-tool
+    name: quant-engine-service
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: ENVIRONMENT
+        value: production
+
+  # 2. Node / React Trading Platform Server Gateway
+  - type: web
+    name: ir-trading-platform
     env: node
     buildCommand: npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
+      - key: QUANT_ENGINE_URL
+        value: https://quant-engine-service.onrender.com/api/v1

@@ -15,11 +15,18 @@ import { VarDashboard } from './components/VarDashboard';
 import { RiskCalculationGuide } from './components/RiskCalculationGuide';
 import { MarketDataTab } from './components/MarketDataTab';
 import { CashExplainTab } from './components/CashExplainTab';
+import { MarketDataTerminal } from './components/MarketDataTerminal';
+import { InteractiveCurveDashboard } from './components/InteractiveCurveDashboard';
+import { QuantPricingTerminal } from './components/QuantPricingTerminal';
+import { QuantRiskTerminal } from './components/QuantRiskTerminal';
+import { QuantPnlTerminal } from './components/QuantPnlTerminal';
+import { QuantReportsTerminal } from './components/QuantReportsTerminal';
+import { ExoticQuantTerminal } from './components/ExoticQuantTerminal';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuditLogEntry, IRSwapTrade, MarketRateQuote, PositionSummary, TenorDv01Risk, WebSocketMessage } from './types';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'xml' | 'blotter' | 'amend' | 'eod-risk' | 'pnl' | 'var' | 'risk-calc' | 'audit' | 'dotnet' | 'qa' | 'validation' | 'market-data' | 'cash-explain'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'xml' | 'blotter' | 'amend' | 'eod-risk' | 'pnl' | 'var' | 'risk-calc' | 'audit' | 'dotnet' | 'qa' | 'validation' | 'market-data' | 'cash-explain' | 'quant-pricing' | 'curves' | 'quant-risk' | 'quant-pnl' | 'quant-reports' | 'exotics'>('dashboard');
   const [traderUser, setTraderUser] = useState<string>('J. Doe (Head Rates Trader)');
 
   // Real-time State
@@ -224,7 +231,31 @@ export default function App() {
         )}
 
         {activeTab === 'market-data' && (
-          <MarketDataTab marketRates={marketRates} isWsConnected={isWsConnected} />
+          <MarketDataTerminal />
+        )}
+
+        {activeTab === 'curves' && (
+          <InteractiveCurveDashboard />
+        )}
+
+        {activeTab === 'quant-pricing' && (
+          <QuantPricingTerminal />
+        )}
+
+        {activeTab === 'quant-risk' && (
+          <QuantRiskTerminal />
+        )}
+
+        {activeTab === 'quant-pnl' && (
+          <QuantPnlTerminal />
+        )}
+
+        {activeTab === 'quant-reports' && (
+          <QuantReportsTerminal />
+        )}
+
+        {activeTab === 'exotics' && (
+          <ExoticQuantTerminal />
         )}
 
         {activeTab === 'cash-explain' && (

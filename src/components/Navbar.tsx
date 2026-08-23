@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import {
   Activity, Database, FileCode, BarChart3, ReceiptText, Server, Edit3,
-  TestTubes, CheckSquare, ShieldAlert, Calculator, ShieldCheck, TrendingUp, Menu, X, ChevronDown
+  TestTubes, CheckSquare, ShieldAlert, Calculator, ShieldCheck, TrendingUp, Flame, Menu, X, ChevronDown
 } from 'lucide-react';
 
 interface NavbarProps {
-  activeTab: 'dashboard' | 'xml' | 'blotter' | 'amend' | 'eod-risk' | 'pnl' | 'var' | 'risk-calc' | 'audit' | 'dotnet' | 'qa' | 'validation' | 'market-data' | 'cash-explain';
-  setActiveTab: (tab: 'dashboard' | 'xml' | 'blotter' | 'amend' | 'eod-risk' | 'pnl' | 'var' | 'risk-calc' | 'audit' | 'dotnet' | 'qa' | 'validation' | 'market-data' | 'cash-explain') => void;
+  activeTab: 'dashboard' | 'xml' | 'blotter' | 'amend' | 'eod-risk' | 'pnl' | 'var' | 'risk-calc' | 'audit' | 'dotnet' | 'qa' | 'validation' | 'market-data' | 'cash-explain' | 'quant-pricing' | 'curves' | 'quant-risk' | 'quant-pnl' | 'quant-reports' | 'exotics';
+  setActiveTab: (tab: 'dashboard' | 'xml' | 'blotter' | 'amend' | 'eod-risk' | 'pnl' | 'var' | 'risk-calc' | 'audit' | 'dotnet' | 'qa' | 'validation' | 'market-data' | 'cash-explain' | 'quant-pricing' | 'curves' | 'quant-risk' | 'quant-pnl' | 'quant-reports' | 'exotics') => void;
   isWsConnected: boolean;
   traderUser: string;
   setTraderUser: (user: string) => void;
@@ -26,6 +26,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
     { id: 'xml', label: 'Trade Capture', icon: FileCode },
+    { id: 'quant-pricing', label: 'Quant Pricing', icon: Calculator },
+    { id: 'quant-risk', label: 'Quant Risk', icon: ShieldAlert },
+    { id: 'quant-pnl', label: 'Quant PnL', icon: TrendingUp },
+    { id: 'exotics', label: 'Exotic Quant', icon: Flame },
+    { id: 'quant-reports', label: 'Quant Reports', icon: FileCode },
+    { id: 'curves', label: 'Curve Engine', icon: Activity },
     { id: 'market-data', label: 'Market Data', icon: Database },
     { id: 'cash-explain', label: 'Cash Explain', icon: ReceiptText },
     { id: 'blotter', label: 'Blotter', icon: ReceiptText },
