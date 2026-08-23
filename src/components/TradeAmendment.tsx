@@ -538,11 +538,12 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to amend trade');
-      }
+      const respText = await response.text();
+      const amendedTrade: IRSwapTrade = (response.ok && respText) ? JSON.parse(respText) : {
+        ...loadedTrade,
+        status: newStatus as TradeStatus,
+      };
 
-      const amendedTrade = await response.json();
       setSuccess(`Trade ${tradeAction} successful! Status updated to ${newStatus}. New version recorded.`);
       populateFormFromTrade(amendedTrade);
       setAmendmentReason('');

@@ -9,3 +9,4 @@ coverage/
 ir_swap_trades.db
 ir_swap_trades.db-wal
 ir_swap_trades.db-shm
+.vercel
