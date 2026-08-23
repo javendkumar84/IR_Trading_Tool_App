@@ -206,25 +206,28 @@ export const QuantReportsTerminal: React.FC = () => {
                 <tr className="bg-slate-800/80 text-slate-300 border-b border-slate-700/80 font-semibold uppercase">
                   <th className="py-3 px-4">Product Category</th>
                   <th className="py-3 px-4 text-center">Trades</th>
-                  <th className="py-3 px-4 text-right">Total Notional ($)</th>
-                  <th className="py-3 px-4 text-right">Net PV ($)</th>
+                  <th className="py-3 px-4 text-right">Total Notional</th>
+                  <th className="py-3 px-4 text-right">Net PV</th>
                   <th className="py-3 px-4 text-center">Currency</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
-                {reportsData?.trade_summary.map((row) => (
-                  <tr key={row.product} className="hover:bg-slate-800/40">
-                    <td className="py-3 px-4 font-bold text-white font-sans">{row.product}</td>
-                    <td className="py-3 px-4 text-center font-bold text-cyan-400">{row.count}</td>
-                    <td className="py-3 px-4 text-right text-slate-300">${row.notional.toLocaleString()}</td>
-                    <td className={`py-3 px-4 text-right font-bold ${
-                      row.pv >= 0 ? 'text-emerald-400' : 'text-rose-400'
-                    }`}>
-                      ${row.pv.toLocaleString()}
-                    </td>
-                    <td className="py-3 px-4 text-center text-slate-400">{row.currency}</td>
-                  </tr>
-                ))}
+                {reportsData?.trade_summary.map((row) => {
+                  const sym = row.currency === 'INR' ? '₹' : row.currency === 'EUR' ? '€' : row.currency === 'GBP' ? '£' : '$';
+                  return (
+                    <tr key={row.product} className="hover:bg-slate-800/40">
+                      <td className="py-3 px-4 font-bold text-white font-sans">{row.product}</td>
+                      <td className="py-3 px-4 text-center font-bold text-cyan-400">{row.count}</td>
+                      <td className="py-3 px-4 text-right text-slate-300">{sym}{row.notional.toLocaleString()}</td>
+                      <td className={`py-3 px-4 text-right font-bold ${
+                        row.pv >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                      }`}>
+                        {row.pv < 0 ? '-' : '+'}{sym}{Math.abs(row.pv).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                      </td>
+                      <td className="py-3 px-4 text-center font-bold text-emerald-400 font-sans">{row.currency}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

@@ -56,11 +56,11 @@ export const QuantRiskTerminal: React.FC = () => {
           'GBP': 260.00
         },
         stress_results: {
-          'Parallel Shift +100bps': -948000.00,
-          'Parallel Shift -100bps': 948000.00,
-          'Curve Steepening (2Y/10Y +25bps)': -295000.00,
-          'Curve Flattening (2Y/10Y -25bps)': 295000.00,
-          '2008 Lehman Financial Crisis': -1450000.00
+          'parallel_plus_10bp': -94800.00,
+          'parallel_minus_10bp': 94800.00,
+          'parallel_plus_50bp': -474000.00,
+          'curve_steepener': -295000.00,
+          'curve_flattener': 295000.00
         }
       });
     } catch (err) {
@@ -84,11 +84,11 @@ export const QuantRiskTerminal: React.FC = () => {
           'GBP': 260.00
         },
         stress_results: {
-          'Parallel Shift +100bps': -948000.00,
-          'Parallel Shift -100bps': 948000.00,
-          'Curve Steepening (2Y/10Y +25bps)': -295000.00,
-          'Curve Flattening (2Y/10Y -25bps)': 295000.00,
-          '2008 Lehman Financial Crisis': -1450000.00
+          'parallel_plus_10bp': -94800.00,
+          'parallel_minus_10bp': 94800.00,
+          'parallel_plus_50bp': -474000.00,
+          'curve_steepener': -295000.00,
+          'curve_flattener': 295000.00
         }
       });
     } finally {
@@ -111,6 +111,12 @@ export const QuantRiskTerminal: React.FC = () => {
         dv01
       }))
     : [];
+
+  const formatStressVal = (val?: number) => {
+    if (val === undefined || val === null) return '$0.00';
+    const sign = val < 0 ? '-' : '+';
+    return `${sign}$${Math.abs(val).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
 
   return (
     <div className="p-6 bg-slate-950 min-h-screen text-slate-100 font-sans">
@@ -169,7 +175,7 @@ export const QuantRiskTerminal: React.FC = () => {
           <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-xl">
             <span className="text-xs text-slate-400">Total Parallel DV01</span>
             <div className="text-2xl font-extrabold text-purple-400 font-mono mt-2">
-              ${riskData.total_dv01.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              ${riskData.total_dv01.toLocaleString(undefined, { minimumFractionDigits: 2 })} / bp
             </div>
             <span className="text-[11px] text-slate-400 mt-1">PV Sensitivity to +1bp Parallel Shift</span>
           </div>
@@ -224,27 +230,27 @@ export const QuantRiskTerminal: React.FC = () => {
             <div className="space-y-3 font-mono text-xs">
               <div className="flex justify-between items-center p-2.5 bg-slate-950/60 rounded-lg border border-slate-800">
                 <span className="text-slate-400 font-sans">Parallel +10 bps</span>
-                <span className="font-bold text-slate-200">${riskData.stress_results.parallel_plus_10bp?.toLocaleString()}</span>
+                <span className="font-bold text-rose-400">{formatStressVal(riskData.stress_results.parallel_plus_10bp)}</span>
               </div>
 
               <div className="flex justify-between items-center p-2.5 bg-slate-950/60 rounded-lg border border-slate-800">
                 <span className="text-slate-400 font-sans">Parallel -10 bps</span>
-                <span className="font-bold text-slate-200">${riskData.stress_results.parallel_minus_10bp?.toLocaleString()}</span>
+                <span className="font-bold text-emerald-400">{formatStressVal(riskData.stress_results.parallel_minus_10bp)}</span>
               </div>
 
               <div className="flex justify-between items-center p-2.5 bg-slate-950/60 rounded-lg border border-slate-800">
                 <span className="text-slate-400 font-sans">Parallel +50 bps Shock</span>
-                <span className="font-bold text-rose-400">${riskData.stress_results.parallel_plus_50bp?.toLocaleString()}</span>
+                <span className="font-bold text-rose-400">{formatStressVal(riskData.stress_results.parallel_plus_50bp)}</span>
               </div>
 
               <div className="flex justify-between items-center p-2.5 bg-slate-950/60 rounded-lg border border-slate-800">
                 <span className="text-slate-400 font-sans">Curve Steepener (+25bp)</span>
-                <span className="font-bold text-amber-300">${riskData.stress_results.curve_steepener?.toLocaleString()}</span>
+                <span className="font-bold text-amber-300">{formatStressVal(riskData.stress_results.curve_steepener)}</span>
               </div>
 
               <div className="flex justify-between items-center p-2.5 bg-slate-950/60 rounded-lg border border-slate-800">
                 <span className="text-slate-400 font-sans">Curve Flattener (-25bp)</span>
-                <span className="font-bold text-emerald-300">${riskData.stress_results.curve_flattener?.toLocaleString()}</span>
+                <span className="font-bold text-emerald-300">{formatStressVal(riskData.stress_results.curve_flattener)}</span>
               </div>
             </div>
           </div>

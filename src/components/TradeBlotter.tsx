@@ -328,7 +328,7 @@ export const TradeBlotter: React.FC<TradeBlotterProps> = ({
 
                       {/* Notional */}
                       <td className="py-3 px-4 text-white font-bold">
-                        {ccy} {notional.toLocaleString()}
+                        {String(ccy) === 'EUR' ? '€' : String(ccy) === 'GBP' ? '£' : String(ccy) === 'INR' ? '₹' : String(ccy) === 'JPY' ? '¥' : '$'}{notional.toLocaleString()}
                       </td>
 
                       {/* Fixed & Floating Details */}
@@ -343,11 +343,11 @@ export const TradeBlotter: React.FC<TradeBlotterProps> = ({
                             ) : t.leg1?.legType === 'FLOATING' && t.leg2?.legType === 'FIXED' ? (
                               <>
                                 <div>L1 Flt: <strong className="text-cyan-400">{t.leg1.index} ({t.leg1.indexTenor || '3M'})</strong></div>
-                                <div className="text-blue-400 text-[10px]">L2 Fix: {t.leg2.fixedRate || t.fixedLeg?.fixedRate}%</div>
+                                <div className="text-blue-400 text-[10px]">L2 Fix: {((t.leg2.fixedRate || t.fixedLeg?.fixedRate || 0) > 1 ? (t.leg2.fixedRate || t.fixedLeg?.fixedRate || 0) : (t.leg2.fixedRate || t.fixedLeg?.fixedRate || 0) * 100).toFixed(2)}%</div>
                               </>
                             ) : (
                               <>
-                                <div>Fix: <strong className="text-blue-400">{t.fixedLeg?.fixedRate || t.leg1?.fixedRate}%</strong></div>
+                                <div>Fix: <strong className="text-blue-400">{((t.fixedLeg?.fixedRate || t.leg1?.fixedRate || 0) > 1 ? (t.fixedLeg?.fixedRate || t.leg1?.fixedRate || 0) : (t.fixedLeg?.fixedRate || t.leg1?.fixedRate || 0) * 100).toFixed(2)}%</strong></div>
                                 <div className="text-gray-500 text-[10px]">Flt: {t.floatingLeg?.index || t.leg2?.index} ({t.floatingLeg?.indexTenor || t.leg2?.indexTenor})</div>
                               </>
                             )}

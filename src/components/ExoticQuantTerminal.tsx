@@ -210,40 +210,46 @@ export const ExoticQuantTerminal: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-3 mb-4 text-xs font-mono">
             <div>
-              <label className="text-slate-400 block mb-1">Notional ($)</label>
+              <label className="text-slate-400 block mb-1 font-semibold">Notional ($)</label>
               <input
                 type="number"
                 value={bermudanNotional}
-                onChange={e => setBermudanNotional(Number(e.target.value))}
-                className="w-full bg-slate-800 border border-slate-700 rounded p-1.5 text-white"
+                onChange={e => setBermudanNotional(Number(e.target.value) || 0)}
+                className="w-full bg-slate-800 border border-slate-700 rounded p-1.5 text-white font-bold"
               />
+              <span className="text-[10px] text-emerald-400 mt-0.5 block">
+                ${bermudanNotional.toLocaleString()}
+              </span>
             </div>
             <div>
-              <label className="text-slate-400 block mb-1">Strike Rate (%)</label>
-              <input
-                type="number"
-                step="0.05"
-                value={bermudanStrike}
-                onChange={e => setBermudanStrike(Number(e.target.value))}
-                className="w-full bg-slate-800 border border-slate-700 rounded p-1.5 text-white"
-              />
+              <label className="text-slate-400 block mb-1 font-semibold">Strike Rate (%)</label>
+              <div className="relative">
+                <input
+                  type="number"
+                  step="0.05"
+                  value={bermudanStrike}
+                  onChange={e => setBermudanStrike(Number(e.target.value) || 0)}
+                  className="w-full bg-slate-800 border border-slate-700 rounded pr-6 pl-1.5 py-1.5 text-white font-bold"
+                />
+                <span className="absolute right-2 top-1.5 text-slate-400 font-bold">%</span>
+              </div>
             </div>
             <div>
-              <label className="text-slate-400 block mb-1">Expiry (Yrs)</label>
+              <label className="text-slate-400 block mb-1 font-semibold">Expiry (Yrs)</label>
               <input
                 type="number"
                 value={bermudanExpiry}
-                onChange={e => setBermudanExpiry(Number(e.target.value))}
-                className="w-full bg-slate-800 border border-slate-700 rounded p-1.5 text-white"
+                onChange={e => setBermudanExpiry(Number(e.target.value) || 0)}
+                className="w-full bg-slate-800 border border-slate-700 rounded p-1.5 text-white font-bold"
               />
             </div>
             <div>
-              <label className="text-slate-400 block mb-1">Swap Tenor (Yrs)</label>
+              <label className="text-slate-400 block mb-1 font-semibold">Swap Tenor (Yrs)</label>
               <input
                 type="number"
                 value={bermudanTenor}
-                onChange={e => setBermudanTenor(Number(e.target.value))}
-                className="w-full bg-slate-800 border border-slate-700 rounded p-1.5 text-white"
+                onChange={e => setBermudanTenor(Number(e.target.value) || 0)}
+                className="w-full bg-slate-800 border border-slate-700 rounded p-1.5 text-white font-bold"
               />
             </div>
           </div>
@@ -252,15 +258,15 @@ export const ExoticQuantTerminal: React.FC = () => {
             <div className="bg-slate-950 border border-slate-800 rounded-lg p-4 font-mono">
               <div className="flex justify-between items-center mb-2">
                 <span className="text-slate-400 text-xs">Bermudan Swaption Price:</span>
-                <span className="text-lg font-bold text-amber-400">${bermudanRes.price.toLocaleString()}</span>
+                <span className="text-lg font-bold text-amber-400">${bermudanRes.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between items-center text-xs mb-1">
                 <span className="text-slate-400">European Price:</span>
-                <span className="text-slate-300">${bermudanRes.european_price.toLocaleString()}</span>
+                <span className="text-slate-300">${bermudanRes.european_price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between items-center text-xs text-emerald-400">
                 <span>Early Exercise Premium:</span>
-                <span>+${bermudanRes.bermudan_premium.toLocaleString()}</span>
+                <span>+${bermudanRes.bermudan_premium.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               </div>
             </div>
           )}

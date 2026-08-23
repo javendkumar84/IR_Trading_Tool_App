@@ -33,6 +33,16 @@ interface PricingResult {
   floating_cashflows: Cashflow[];
 }
 
+export const getCurrencySymbol = (ccy: string = 'USD'): string => {
+  switch (ccy?.toUpperCase()) {
+    case 'EUR': return '€';
+    case 'GBP': return '£';
+    case 'INR': return '₹';
+    case 'JPY': return '¥';
+    case 'USD': default: return '$';
+  }
+};
+
 export const QuantPricingTerminal: React.FC = () => {
   const [tradeId, setTradeId] = useState<string>('IRS-USD-101');
   const [valuationDate, setValuationDate] = useState<string>('2026-08-23');
@@ -40,6 +50,7 @@ export const QuantPricingTerminal: React.FC = () => {
   const [fixedRate, setFixedRate] = useState<number>(0.045);
   const [payReceive, setPayReceive] = useState<string>('PAYER');
   const [currency, setCurrency] = useState<string>('USD');
+  const [floatingIndex, setFloatingIndex] = useState<string>('SOFR');
   const [startDate, setStartDate] = useState<string>('2026-08-23');
   const [endDate, setEndDate] = useState<string>('2028-08-23');
   const [fixedFrequency, setFixedFrequency] = useState<string>('6M');
@@ -50,6 +61,31 @@ export const QuantPricingTerminal: React.FC = () => {
   const [activeLeg, setActiveLeg] = useState<'FIXED' | 'FLOATING'>('FIXED');
   const [pricingResult, setPricingResult] = useState<PricingResult | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+
+  // Bi-directional Index & Currency Auto-Sync
+  const handleIndexChange = (idx: string) => {
+    setFloatingIndex(idx);
+    if (idx === 'SOFR') setCurrency('USD');
+    else if (idx === 'EURIBOR' || idx === 'ESTR') setCurrency('EUR');
+    else if (idx === 'SONIA') setCurrency('GBP');
+    else if (idx === 'MIBOR') setCurrency('INR');
+    else if (idx === 'TONAR') setCurrency('JPY');
+  };
+
+  const handleCurrencyChange = (ccy: string) => {
+    setCurrency(ccy);
+    if (ccy === 'USD') setFloatingIndex('SOFR');
+    else if (ccy === 'EUR') setFloatingIndex('EURIBOR');
+    else if (ccy === 'GBP') setFloatingIndex('SONIA');
+    else if (ccy === 'INR') setFloatingIndex('MIBOR');
+    else if (ccy === 'JPY') setFloatingIndex('TONAR');
+  };
+
+  const formatMoney = (amount: number, ccy: string = currency) => {
+    const symbol = getCurrencySymbol(ccy);
+    const sign = amount < 0 ? '-' : '';
+    return `${sign}${symbol}${Math.abs(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
 
   const calculatePV = async () => {
     setLoading(true);
@@ -69,7 +105,8 @@ export const QuantPricingTerminal: React.FC = () => {
           floating_frequency: floatingFrequency,
           fixed_day_count: fixedDayCount,
           floating_day_count: floatingDayCount,
-          currency
+          currency,
+          index_name: floatingIndex
         })
       });
       if (res.ok) {
@@ -84,7 +121,7 @@ export const QuantPricingTerminal: React.FC = () => {
       }
 
       // Fallback DCF Dual-Curve Pricing Calculation Engine
-      const parRate = 0.0482;
+      const parRate = currency === 'USD' ? 0.0482 : currency === 'INR' ? 0.0665 : currency === 'EUR' ? 0.0360 : 0.0490;
       const annuity = 1.9025;
       const fixPv = Math.round(notional * fixedRate * annuity * (payReceive === 'PAYER' ? -1 : 1));
       const floatPv = Math.round(notional * parRate * annuity * (payReceive === 'PAYER' ? 1 : -1));
@@ -129,7 +166,7 @@ export const QuantPricingTerminal: React.FC = () => {
 
   useEffect(() => {
     calculatePV();
-  }, [valuationDate, notional, fixedRate, payReceive, currency]);
+  }, [valuationDate, notional, fixedRate, payReceive, currency, floatingIndex]);
 
   const exportCashflowsCSV = () => {
     if (!pricingResult) return;
@@ -184,7 +221,7 @@ export const QuantPricingTerminal: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <label className="text-slate-400">Trade ID</label>
+              <label className="text-slate-400 font-semibold">Trade ID</label>
               <input
                 type="text"
                 value={tradeId}
@@ -194,46 +231,72 @@ export const QuantPricingTerminal: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-slate-400">Currency</label>
+              <label className="text-slate-400 font-semibold">Currency</label>
               <select
                 value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                className="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-white"
+                onChange={(e) => handleCurrencyChange(e.target.value)}
+                className="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-white font-bold"
               >
-                <option value="USD">USD (SOFR)</option>
-                <option value="INR">INR (MIBOR)</option>
-                <option value="EUR">EUR (EURIBOR)</option>
-                <option value="GBP">GBP (SONIA)</option>
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+                <option value="INR">INR (₹)</option>
+                <option value="JPY">JPY (¥)</option>
               </select>
             </div>
 
-            <div>
-              <label className="text-slate-400">Notional</label>
-              <input
-                type="number"
-                value={notional}
-                onChange={(e) => setNotional(parseFloat(e.target.value))}
-                className="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-white font-mono"
-              />
+            <div className="col-span-2">
+              <label className="text-slate-400 font-semibold">Floating Benchmark Index</label>
+              <select
+                value={floatingIndex}
+                onChange={(e) => handleIndexChange(e.target.value)}
+                className="w-full mt-1 bg-slate-950 border border-emerald-500/80 rounded px-2.5 py-1.5 text-white font-bold font-mono"
+              >
+                <option value="SOFR">USD SOFR (Secured Overnight Financing Rate)</option>
+                <option value="EURIBOR">EUR EURIBOR (Euro Interbank Offered Rate)</option>
+                <option value="ESTR">EUR ESTR (Euro Short-Term Rate)</option>
+                <option value="SONIA">GBP SONIA (Sterling Overnight Index Average)</option>
+                <option value="MIBOR">INR MIBOR (Mumbai Interbank Offered Rate)</option>
+                <option value="TONAR">JPY TONAR (Tokyo Overnight Average Rate)</option>
+              </select>
+            </div>
+
+            <div className="col-span-2">
+              <label className="text-slate-400 font-semibold">Notional Amount ({getCurrencySymbol(currency)})</label>
+              <div className="relative mt-1">
+                <span className="absolute left-2.5 top-1.5 text-slate-400 font-bold">{getCurrencySymbol(currency)}</span>
+                <input
+                  type="number"
+                  value={notional}
+                  onChange={(e) => setNotional(parseFloat(e.target.value) || 0)}
+                  className="w-full bg-slate-950 border border-slate-700 rounded pl-7 pr-2.5 py-1.5 text-white font-mono font-bold"
+                />
+              </div>
+              <span className="text-[10px] text-emerald-400 font-mono mt-0.5 block">
+                Formatted: {formatMoney(notional, currency)}
+              </span>
             </div>
 
             <div>
-              <label className="text-slate-400">Fixed Rate (%)</label>
-              <input
-                type="number"
-                step="0.001"
-                value={fixedRate * 100}
-                onChange={(e) => setFixedRate(parseFloat(e.target.value) / 100)}
-                className="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-white font-mono"
-              />
+              <label className="text-slate-400 font-semibold">Fixed Rate (%)</label>
+              <div className="relative mt-1">
+                <input
+                  type="number"
+                  step="0.01"
+                  value={(fixedRate * 100).toFixed(3)}
+                  onChange={(e) => setFixedRate((parseFloat(e.target.value) || 0) / 100)}
+                  className="w-full bg-slate-950 border border-slate-700 rounded pr-6 pl-2.5 py-1.5 text-white font-mono font-bold"
+                />
+                <span className="absolute right-2.5 top-1.5 text-slate-400 font-bold">%</span>
+              </div>
             </div>
 
             <div>
-              <label className="text-slate-400">Pay / Receive</label>
+              <label className="text-slate-400 font-semibold">Pay / Receive</label>
               <select
                 value={payReceive}
                 onChange={(e) => setPayReceive(e.target.value)}
-                className="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-white"
+                className="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-white font-bold"
               >
                 <option value="PAYER">PAYER (Pay Fixed)</option>
                 <option value="RECEIVER">RECEIVER (Receive Fixed)</option>
@@ -241,7 +304,7 @@ export const QuantPricingTerminal: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-slate-400">Start Date</label>
+              <label className="text-slate-400 font-semibold">Start Date</label>
               <input
                 type="date"
                 value={startDate}
@@ -251,7 +314,7 @@ export const QuantPricingTerminal: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-slate-400">End Date</label>
+              <label className="text-slate-400 font-semibold">End Date</label>
               <input
                 type="date"
                 value={endDate}
@@ -261,11 +324,11 @@ export const QuantPricingTerminal: React.FC = () => {
             </div>
 
             <div>
-              <label className="text-slate-400">Fixed Day Count</label>
+              <label className="text-slate-400 font-semibold">Fixed Day Count</label>
               <select
                 value={fixedDayCount}
                 onChange={(e) => setFixedDayCount(e.target.value)}
-                className="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-white"
+                className="w-full mt-1 bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-white font-mono"
               >
                 <option value="30/360">30/360</option>
                 <option value="ACT/360">ACT/360</option>
@@ -278,11 +341,11 @@ export const QuantPricingTerminal: React.FC = () => {
         {/* Valuation Summary Cards */}
         <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-xl flex flex-col justify-between">
-            <span className="text-xs text-slate-400">Net Swap PV</span>
+            <span className="text-xs text-slate-400 font-semibold">Net Swap PV ({currency})</span>
             <div className={`text-2xl font-extrabold font-mono mt-2 ${
               (pricingResult?.net_pv || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'
             }`}>
-              ${pricingResult?.net_pv.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              {formatMoney(pricingResult?.net_pv || 0, currency)}
             </div>
             <span className="text-[11px] text-slate-400 mt-2 font-mono">
               Direction: <span className="text-white font-bold">{pricingResult?.pay_receive}</span>
@@ -290,7 +353,7 @@ export const QuantPricingTerminal: React.FC = () => {
           </div>
 
           <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-xl flex flex-col justify-between">
-            <span className="text-xs text-slate-400">Par Swap Rate</span>
+            <span className="text-xs text-slate-400 font-semibold">Par Swap Rate ({floatingIndex})</span>
             <div className="text-2xl font-extrabold text-cyan-400 font-mono mt-2">
               {pricingResult ? `${(pricingResult.par_rate * 100).toFixed(4)}%` : '0.0000%'}
             </div>
@@ -300,12 +363,12 @@ export const QuantPricingTerminal: React.FC = () => {
           </div>
 
           <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-5 shadow-xl flex flex-col justify-between">
-            <span className="text-xs text-slate-400">Parallel DV01 (+1bp)</span>
+            <span className="text-xs text-slate-400 font-semibold">Parallel DV01 (+1bp)</span>
             <div className="text-2xl font-extrabold text-purple-400 font-mono mt-2">
-              ${pricingResult?.dv01.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              {formatMoney(pricingResult?.dv01 || 0, currency)} / bp
             </div>
             <span className="text-[11px] text-slate-400 mt-2 font-mono">
-              Fixed PV: <span className="text-white">${pricingResult?.fixed_pv.toLocaleString()}</span>
+              Fixed PV: <span className="text-white">{formatMoney(pricingResult?.fixed_pv || 0, currency)}</span>
             </span>
           </div>
         </div>
@@ -316,7 +379,7 @@ export const QuantPricingTerminal: React.FC = () => {
         <div className="bg-slate-900/80 border border-slate-800 rounded-xl overflow-hidden shadow-2xl">
           <div className="flex justify-between items-center p-4 border-b border-slate-800 bg-slate-900">
             <div className="flex items-center gap-3">
-              <span className="text-sm font-bold text-white">Cashflow Schedule</span>
+              <span className="text-sm font-bold text-white">Cashflow Schedule ({currency} - {floatingIndex})</span>
               <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
                 <button
                   onClick={() => setActiveLeg('FIXED')}
@@ -324,7 +387,7 @@ export const QuantPricingTerminal: React.FC = () => {
                     activeLeg === 'FIXED' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  Fixed Leg
+                  Fixed Leg ({(fixedRate * 100).toFixed(2)}%)
                 </button>
                 <button
                   onClick={() => setActiveLeg('FLOATING')}
@@ -332,7 +395,7 @@ export const QuantPricingTerminal: React.FC = () => {
                     activeLeg === 'FLOATING' ? 'bg-emerald-500 text-slate-950' : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  Floating Leg (SOFR)
+                  Floating Leg ({floatingIndex})
                 </button>
               </div>
             </div>
@@ -355,12 +418,12 @@ export const QuantPricingTerminal: React.FC = () => {
                   <th className="py-3 px-4">End</th>
                   <th className="py-3 px-4">Fixing</th>
                   <th className="py-3 px-4">Payment</th>
-                  <th className="py-3 px-4 text-right">Notional</th>
+                  <th className="py-3 px-4 text-right">Notional ({getCurrencySymbol(currency)})</th>
                   <th className="py-3 px-4 text-right">Rate (%)</th>
                   <th className="py-3 px-4 text-right">Accrual</th>
-                  <th className="py-3 px-4 text-right">Cashflow ($)</th>
+                  <th className="py-3 px-4 text-right">Cashflow ({getCurrencySymbol(currency)})</th>
                   <th className="py-3 px-4 text-right">DF</th>
-                  <th className="py-3 px-4 text-right">PV ($)</th>
+                  <th className="py-3 px-4 text-right">PV ({getCurrencySymbol(currency)})</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
@@ -371,12 +434,12 @@ export const QuantPricingTerminal: React.FC = () => {
                     <td className="py-2.5 px-4 text-slate-300">{cf.adjusted_end}</td>
                     <td className="py-2.5 px-4 text-slate-400">{cf.fixing_date}</td>
                     <td className="py-2.5 px-4 text-slate-400">{cf.payment_date}</td>
-                    <td className="py-2.5 px-4 text-right text-slate-300">${cf.notional.toLocaleString()}</td>
+                    <td className="py-2.5 px-4 text-right text-slate-300">{formatMoney(cf.notional, currency)}</td>
                     <td className="py-2.5 px-4 text-right font-bold text-cyan-300">{(cf.rate * 100).toFixed(4)}%</td>
                     <td className="py-2.5 px-4 text-right text-slate-400">{cf.accrual_factor}</td>
-                    <td className="py-2.5 px-4 text-right text-emerald-300 font-bold">${cf.cashflow.toLocaleString()}</td>
+                    <td className="py-2.5 px-4 text-right text-emerald-300 font-bold">{formatMoney(cf.cashflow, currency)}</td>
                     <td className="py-2.5 px-4 text-right text-slate-400">{cf.discount_factor.toFixed(6)}</td>
-                    <td className="py-2.5 px-4 text-right font-bold text-white">${cf.pv.toLocaleString()}</td>
+                    <td className="py-2.5 px-4 text-right font-bold text-white">{formatMoney(cf.pv, currency)}</td>
                   </tr>
                 ))}
               </tbody>
