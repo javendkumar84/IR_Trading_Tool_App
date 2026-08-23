@@ -20,6 +20,18 @@ interface TradeVersion {
   json_payload: string;
 }
 
+async function safeFetchJson<T>(url: string, options?: RequestInit, fallback?: T): Promise<T> {
+  try {
+    const res = await fetch(url, options);
+    if (!res.ok) return fallback as T;
+    const text = await res.text();
+    if (!text || text.trim().startsWith('<')) return fallback as T;
+    return JSON.parse(text) as T;
+  } catch (_e) {
+    return fallback as T;
+  }
+}
+
 export default function TradeAmendment({ trades: externalTrades, onAmendmentComplete }: TradeAmendmentProps) {
   const [dbTradesList, setDbTradesList] = useState<IRSwapTrade[]>(externalTrades || []);
   const [tradeId, setTradeId] = useState<string>('');
@@ -39,12 +51,9 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
     if (externalTrades && externalTrades.length > 0) {
       setDbTradesList(externalTrades);
     } else {
-      fetch('/api/trades')
-        .then((r) => r.json())
-        .then((data) => {
-          if (Array.isArray(data)) setDbTradesList(data);
-        })
-        .catch((e) => console.error('Failed to fetch trades for Amend selector:', e));
+      safeFetchJson<IRSwapTrade[]>('/api/trades', undefined, []).then((data) => {
+        if (Array.isArray(data) && data.length > 0) setDbTradesList(data);
+      });
     }
   }, [externalTrades]);
 
@@ -388,20 +397,23 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
     setSuccess('');
 
     try {
-      const response = await fetch(`/api/trades/${tradeId}`);
-      if (!response.ok) {
+      const listToSearch = (externalTrades && externalTrades.length > 0) ? externalTrades : dbTradesList;
+      const found = listToSearch.find((t) => t.tradeId === tradeId.trim());
+
+      let trade: IRSwapTrade | null = found || null;
+      if (!trade) {
+        trade = await safeFetchJson<IRSwapTrade | null>(`/api/trades/${tradeId.trim()}`, undefined, null);
+      }
+
+      if (!trade) {
         throw new Error(`Trade not found: ${tradeId}`);
       }
 
-      const trade: IRSwapTrade = await response.json();
       populateFormFromTrade(trade);
 
-      // Load versions
-      const versionsResponse = await fetch(`/api/trades/${tradeId}/versions`);
-      if (versionsResponse.ok) {
-        const versionsData = await versionsResponse.json();
-        setVersions(versionsData);
-      }
+      // Load versions safely
+      const versionsData = await safeFetchJson<TradeVersion[]>(`/api/trades/${tradeId.trim()}/versions`, undefined, []);
+      setVersions(versionsData);
     } catch (err: any) {
       setError(err.message || 'Failed to load trade');
       setLoadedTrade(null);
@@ -586,10 +598,10 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
                 if (selectedId) {
                   const listToSearch = (externalTrades && externalTrades.length > 0) ? externalTrades : dbTradesList;
                   const found = listToSearch.find((t) => t.tradeId === selectedId);
-                  if (found) {
-                    populateFormFromTrade(found);
-                    fetch(`/api/trades/${selectedId}/versions`).then((r) => r.ok ? r.json() : []).then(setVersions);
-                  }
+                    if (found) {
+                      populateFormFromTrade(found);
+                      safeFetchJson<TradeVersion[]>(`/api/trades/${selectedId}/versions`, undefined, []).then(setVersions);
+                    }
                 }
               }}
               value={loadedTrade?.tradeId || tradeId}
