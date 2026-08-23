@@ -39,9 +39,17 @@ export default function App() {
 
   const wsRef = useRef<WebSocket | null>(null);
 
-  // Initial REST Fetch fallback
+  // Initial REST Fetch fallback + localStorage restore
   const fetchInitialData = async () => {
     try {
+      const savedTrades = localStorage.getItem('ir_trading_tool_trades');
+      if (savedTrades) {
+        const parsed = JSON.parse(savedTrades);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setTrades(parsed);
+        }
+      }
+
       const safeParse = async (url: string) => {
         try {
           const r = await fetch(url);
@@ -60,7 +68,9 @@ export default function App() {
         safeParse('/api/positions'),
       ]);
 
-      if (Array.isArray(tradesResp)) setTrades(tradesResp);
+      if (Array.isArray(tradesResp) && tradesResp.length > 0) {
+        setTrades(tradesResp);
+      }
       if (Array.isArray(logsResp)) setAuditLogs(logsResp);
       if (posResp && posResp.positions) setPositions(posResp.positions);
       if (posResp && posResp.tenorRisk) setTenorRisk(posResp.tenorRisk);
@@ -143,13 +153,23 @@ export default function App() {
   }, []);
 
   const handleTradeBooked = (bookedTrade: IRSwapTrade) => {
-    setTrades((prev) => [bookedTrade, ...prev.filter((t) => t.tradeId !== bookedTrade.tradeId)]);
+    setTrades((prev) => {
+      const updated = [bookedTrade, ...prev.filter((t) => t.tradeId !== bookedTrade.tradeId)];
+      try {
+        localStorage.setItem('ir_trading_tool_trades', JSON.stringify(updated));
+      } catch (_e) {}
+      return updated;
+    });
   };
 
   const handleTradeStatusUpdated = (tradeId: string, status: any) => {
-    setTrades((prev) =>
-      prev.map((t) => (t.tradeId === tradeId ? { ...t, status } : t))
-    );
+    setTrades((prev) => {
+      const updated = prev.map((t) => (t.tradeId === tradeId ? { ...t, status } : t));
+      try {
+        localStorage.setItem('ir_trading_tool_trades', JSON.stringify(updated));
+      } catch (_e) {}
+      return updated;
+    });
   };
 
   return (

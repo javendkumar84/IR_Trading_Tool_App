@@ -462,6 +462,8 @@ export interface IRSwapTrade {
   tenorYears: number; // Maturity - Effective Date in years
   
   rawXml?: string;
+  version?: number;
+  amendedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
