@@ -211,6 +211,9 @@ export const CashflowScheduleModal: React.FC<CashflowScheduleModalProps> = ({ tr
             {trade.marketData?.volSurfaceName && (
               <span>Vol Surface: <strong className="text-amber-300">{trade.marketData.volSurfaceName}</strong></span>
             )}
+            {trade.marketData?.fxCurveName && (
+              <span>FX Ref: <strong className="text-cyan-300">{trade.marketData.fxCurveName}</strong></span>
+            )}
           </div>
 
           <div className="flex items-center gap-2 bg-[#141722] px-3 py-1.5 rounded-lg border border-indigo-700/60 shrink-0">

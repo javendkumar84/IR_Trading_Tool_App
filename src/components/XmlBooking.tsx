@@ -1696,15 +1696,89 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
     marketEnv, yieldCurveName, discountCurveName, volSurfaceName, fxCurveName, benchmarkRatePct, impliedVolPct
   ]);
 
-  // Helper to dynamically synchronize market curves, benchmark rates, and vol surfaces based on Currency and Floating Index
-  const autoSyncMarketCurves = (ccy: Currency, indexVal?: FloatingIndex, isRealtime?: boolean) => {
-    const activeIndex = indexVal || (ccy === 'EUR' ? 'EURIBOR' : ccy === 'GBP' ? 'SONIA' : ccy === 'JPY' ? 'TONA' : 'SOFR');
-    
-    let yCurve = `${ccy}-${activeIndex}-CURVE`;
-    let dCurve = `${ccy}-${activeIndex === 'SOFR' || activeIndex === 'SONIA' || activeIndex === 'TONA' ? 'OIS-DISCOUNT' : 'DISCOUNT-CURVE'}`;
-    let volSurf = `${activeIndex}-VOL-SABR-SMILE`;
-    let fxCurve = `${ccy}USD-WMREF-FIX-1600`;
-    
+  // Helper to dynamically synchronize market curves, FX spot references, benchmark rates, and vol surfaces based on Product, Currency, and Floating Index
+  const autoSyncMarketCurves = (
+    targetProduct?: ProductType,
+    targetCcy?: string,
+    indexVal?: FloatingIndex,
+    overrideBaseCcy?: string,
+    overrideCounterCcy?: string
+  ) => {
+    const prod = targetProduct || selectedProduct;
+    const ccy = String(targetCcy || currency);
+    const activeIndex = indexVal || (ccy === 'EUR' ? 'EURIBOR' : ccy === 'GBP' ? 'SONIA' : ccy === 'JPY' ? 'TONA' : ccy === 'INR' ? 'MIBOR' : 'SOFR');
+
+    // 1. Discount Curve (OIS / Risk-Free Discounting per currency)
+    let dCurve = 'USD-SOFR-OIS-DISCOUNT';
+    if (ccy === 'EUR') dCurve = 'EUR-ESTR-OIS-DISCOUNT';
+    else if (ccy === 'GBP') dCurve = 'GBP-SONIA-OIS-DISCOUNT';
+    else if (ccy === 'INR') dCurve = 'INR-MIBOR-OIS-DISCOUNT';
+    else if (ccy === 'JPY') dCurve = 'JPY-TONA-OIS-DISCOUNT';
+    else if (ccy === 'CAD') dCurve = 'CAD-CORRA-OIS-DISCOUNT';
+    else if (ccy === 'AUD') dCurve = 'AUD-AONIA-OIS-DISCOUNT';
+    else if (ccy === 'CHF') dCurve = 'CHF-SARON-OIS-DISCOUNT';
+
+    // 2. Forecast Yield / Benchmark Curve per product
+    let yCurve = `${ccy}-${activeIndex}-OIS-CURVE`;
+    if (prod === 'CAP_FLOOR') {
+      yCurve = `${ccy}-${activeIndex}-CAPFLOOR-CURVE`;
+    } else if (prod === 'SWAPTION') {
+      yCurve = `${ccy}-SWAPTION-FORWARD-CURVE`;
+    } else if (prod === 'RANGE_ACCRUAL' || prod === 'SNOW_RANGE' || prod === 'TARN' || prod === 'SNOWBALL') {
+      yCurve = `${ccy}-${activeIndex}-EXOTIC-CURVE`;
+    } else if (prod === 'DUAL_DIGITAL') {
+      yCurve = `${ccy}-${ddIndex1 || 'SOFR'}-${ddIndex2 || 'EURIBOR'}-CORR-CURVE`;
+    } else if (prod === 'FX_FORWARD' || prod === 'FX_OPTION') {
+      const base = overrideBaseCcy || (prod === 'FX_FORWARD' ? fxBaseCurrency : fxOptCallCurrency);
+      const counter = overrideCounterCcy || (prod === 'FX_FORWARD' ? fxCounterCurrency : fxOptPutCurrency);
+      yCurve = `${base}-${counter}-FORWARD-POINTS-CURVE`;
+    } else if (prod === 'BOND' || prod === 'REPO') {
+      yCurve = `${ccy}-SOVEREIGN-GOVT-CURVE`;
+    } else if (prod === 'FRA') {
+      yCurve = `${ccy}-${fraIndex || activeIndex}-FRA-CURVE`;
+    } else if (prod === 'DEPOSIT') {
+      yCurve = `${ccy}-MONEY-MARKET-DISCOUNT`;
+    }
+
+    // 3. Vol Surface per product
+    let volSurf = `${activeIndex}-SABR-VOL-SMILE`;
+    if (prod === 'SWAPTION') {
+      volSurf = `${ccy}-SABR-SWAPTION-VOL-CUBE`;
+    } else if (prod === 'CAP_FLOOR') {
+      volSurf = `${activeIndex}-CAPFLOOR-SABR-SMILE`;
+    } else if (prod === 'FX_OPTION') {
+      const base = overrideBaseCcy || fxOptCallCurrency;
+      const counter = overrideCounterCcy || fxOptPutCurrency;
+      volSurf = `${base}${counter}-SABR-FX-OPTION-VOL`;
+    } else if (prod === 'RANGE_ACCRUAL' || prod === 'SNOW_RANGE' || prod === 'TARN' || prod === 'SNOWBALL') {
+      volSurf = `${activeIndex}-SABR-SKEW-SURFACE`;
+    }
+
+    // 4. FX Curve / Spot Reference
+    let fxCurve = 'USD/USD-DOMESTIC-OIS-PAR';
+    if (prod === 'FX_FORWARD' || prod === 'FX_OPTION') {
+      const base = String(overrideBaseCcy || (prod === 'FX_FORWARD' ? fxBaseCurrency : fxOptCallCurrency));
+      const counter = String(overrideCounterCcy || (prod === 'FX_FORWARD' ? fxCounterCurrency : fxOptPutCurrency));
+      if (base === 'EUR' && counter === 'USD') fxCurve = 'EUR/USD-WMREF-FIX-1600';
+      else if (base === 'USD' && counter === 'INR') fxCurve = 'USD/INR-FBIL-SPOT-1200';
+      else if (base === 'USD' && counter === 'JPY') fxCurve = 'USD/JPY-TOKYO-CLOSE-1500';
+      else if (base === 'GBP' && counter === 'USD') fxCurve = 'GBP/USD-WMREF-FIX-1600';
+      else if (base === 'USD' && counter === 'CAD') fxCurve = 'USD/CAD-BOFA-FIX-1630';
+      else if (base === 'AUD' && counter === 'USD') fxCurve = 'AUD/USD-WMREF-FIX-1600';
+      else if (base === 'USD' && counter === 'CHF') fxCurve = 'USD/CHF-WMREF-FIX-1600';
+      else fxCurve = `${base}/${counter}-WMREF-FIX-1600`;
+    } else {
+      if (ccy === 'EUR') fxCurve = 'EUR/USD-WMREF-FIX-1600';
+      else if (ccy === 'GBP') fxCurve = 'GBP/USD-WMREF-FIX-1600';
+      else if (ccy === 'INR') fxCurve = 'USD/INR-FBIL-SPOT-1200';
+      else if (ccy === 'JPY') fxCurve = 'USD/JPY-TOKYO-CLOSE-1500';
+      else if (ccy === 'CAD') fxCurve = 'USD/CAD-BOFA-FIX-1630';
+      else if (ccy === 'AUD') fxCurve = 'AUD/USD-WMREF-FIX-1600';
+      else if (ccy === 'CHF') fxCurve = 'USD/CHF-WMREF-FIX-1600';
+      else fxCurve = 'USD/USD-DOMESTIC-OIS-PAR';
+    }
+
+    // 5. Benchmark Rates & Volatilities
     let benchRate = 3.85;
     let volPct = 22.5;
 
@@ -1714,6 +1788,9 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
     } else if (ccy === 'GBP') {
       benchRate = 4.25;
       volPct = 21.0;
+    } else if (ccy === 'INR') {
+      benchRate = 6.50;
+      volPct = 12.8;
     } else if (ccy === 'JPY') {
       benchRate = 0.45;
       volPct = 14.5;
@@ -1734,8 +1811,8 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
     setFxCurveName(fxCurve);
     setBenchmarkRatePct(benchRate);
     setImpliedVolPct(volPct);
-    
-    if (isRealtime || marketEnv === 'REALTIME') {
+
+    if (marketEnv === 'REALTIME') {
       setMarketSnapshotTimestamp(`LIVE REAL-TIME INTRADAY (${new Date().toLocaleTimeString()})`);
     } else {
       setMarketSnapshotTimestamp(`EOD COB ${tradeDate} 17:00:00 EST`);
@@ -1764,6 +1841,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
       setFloatingDayCount('ACT/360');
       setFixedFreq('6M');
       setFloatingFreq('3M');
+      autoSyncMarketCurves('IRS', 'USD', 'SOFR');
     } else if (prod === 'CAP_FLOOR') {
       setCurrency('USD');
       setCapFloorType('CAP');
@@ -1774,6 +1852,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
       setCapFloorIndex('SOFR');
       setCapFloorDayCount('ACT/360');
       setCapFloorFreq('3M');
+      autoSyncMarketCurves('CAP_FLOOR', 'USD', 'SOFR');
     } else if (prod === 'SWAPTION') {
       setCurrency('EUR');
       setSwaptionType('PAYER');
@@ -1788,6 +1867,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
       setSwaptionFloatDayCount('ACT/360');
       setSwaptionFixedFreq('6M');
       setSwaptionFloatFreq('3M');
+      autoSyncMarketCurves('SWAPTION', 'EUR', 'EURIBOR');
     } else if (prod === 'RANGE_ACCRUAL') {
       setCurrency('USD');
       setRangeType('DUAL_BARRIER');
@@ -1799,6 +1879,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
       setRangeNotional(20000000);
       setRangeFreq('3M');
       setRangeDayCount('30/360');
+      autoSyncMarketCurves('RANGE_ACCRUAL', 'USD', 'SOFR');
     } else if (prod === 'FX_FORWARD') {
       setFxBaseCurrency('EUR');
       setFxCounterCurrency('USD');
@@ -1808,6 +1889,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
       setFxForwardRate(1.085);
       setFxSpotRate(1.082);
       setFxSettlementDate('2026-12-01');
+      autoSyncMarketCurves('FX_FORWARD', 'EUR', undefined, 'EUR', 'USD');
     } else if (prod === 'FX_OPTION') {
       setFxOptType('CALL');
       setFxOptDirection('BUY');
@@ -1820,6 +1902,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
       setFxOptExpiryDate('2026-11-01');
       setFxOptSettlementDate('2026-11-03');
       setFxOptPremium(180000);
+      autoSyncMarketCurves('FX_OPTION', 'EUR', undefined, 'EUR', 'USD');
     } else if (prod === 'SNOW_RANGE') {
       setCurrency('USD');
       setSnowLowerBarrier(2.00);
@@ -1832,6 +1915,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
       setSnowPayFreq('3M');
       setSnowDayCount('30/360');
       setSnowNotional(25000000);
+      autoSyncMarketCurves('SNOW_RANGE', 'USD', 'SOFR');
     } else if (prod === 'TARN') {
       setCurrency('USD');
       setTarnDirection('RECEIVE');
@@ -1845,6 +1929,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
       setTarnPayFreq('3M');
       setTarnDayCount('30/360');
       setTarnNotional(25000000);
+      autoSyncMarketCurves('TARN', 'USD', 'SOFR');
     } else if (prod === 'SNOWBALL') {
       setCurrency('USD');
       setSbDirection('RECEIVE');
@@ -1857,6 +1942,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
       setSbPayFreq('3M');
       setSbDayCount('30/360');
       setSbNotional(25000000);
+      autoSyncMarketCurves('SNOWBALL', 'USD', 'SOFR');
     }
   };
 
@@ -2213,6 +2299,17 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
         };
       }
 
+      tradePayload.marketData = {
+        environment: marketEnv,
+        yieldCurveName,
+        discountCurveName,
+        volSurfaceName,
+        fxCurveName,
+        marketSnapshotTimestamp,
+        benchmarkRatePct,
+        impliedVolPct,
+      };
+
       tradePayload.valuationModel = getValuationModelForProduct(selectedProduct, selectedValuationModelMap[selectedProduct]).name;
 
       if (Object.keys(scheduleDateOverrides).length > 0) {
@@ -2476,7 +2573,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   setLeg2Currency(newCcy);
                   setFxBaseCurrency(newCcy);
                   setFxOptCallCurrency(newCcy);
-                  autoSyncMarketCurves(newCcy);
+                  autoSyncMarketCurves(selectedProduct, newCcy);
                 }}
                 className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-400 cursor-pointer"
               >
@@ -2761,6 +2858,23 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
               </div>
             </div>
 
+            {/* Active Valuation Curve Summary Pill Bar */}
+            <div className="flex flex-wrap items-center gap-2 p-2.5 bg-slate-950/80 border border-indigo-900/40 rounded-lg text-[11px] font-mono">
+              <span className="text-indigo-400 font-bold uppercase text-[10px]">Active Valuation Environment:</span>
+              <span className="px-2 py-0.5 bg-indigo-950 text-indigo-300 rounded border border-indigo-800 text-[10px] font-bold">
+                PROD: {selectedProduct}
+              </span>
+              <span className="px-2 py-0.5 bg-cyan-950 text-cyan-300 rounded border border-cyan-800 text-[10px] font-bold">
+                FX REF: {fxCurveName}
+              </span>
+              <span className="px-2 py-0.5 bg-emerald-950 text-emerald-300 rounded border border-emerald-800 text-[10px] font-bold">
+                DISCOUNT: {discountCurveName}
+              </span>
+              <span className="px-2 py-0.5 bg-amber-950 text-amber-300 rounded border border-amber-800 text-[10px] font-bold">
+                YIELD: {yieldCurveName}
+              </span>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-xs">
               {/* Market Data Environment Source */}
               <div>
@@ -2961,7 +3075,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                         onChange={(e) => {
                           const idx = e.target.value as FloatingIndex;
                           setLeg1Index(idx);
-                          autoSyncMarketCurves(leg1Currency, idx);
+                          autoSyncMarketCurves(selectedProduct, leg1Currency, idx);
                         }}
                         className="w-full bg-[#16181d] border border-amber-500 rounded p-2 text-sm text-white font-bold"
                       >
@@ -3193,7 +3307,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                         onChange={(e) => {
                           const idx = e.target.value as FloatingIndex;
                           setFloatingIndex(idx);
-                          autoSyncMarketCurves(leg2Currency, idx);
+                          autoSyncMarketCurves(selectedProduct, leg2Currency, idx);
                         }}
                         className="w-full bg-[#16181d] border border-amber-500 rounded p-2 text-sm text-white font-bold"
                       >
