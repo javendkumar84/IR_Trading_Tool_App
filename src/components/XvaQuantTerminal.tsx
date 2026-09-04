@@ -186,18 +186,18 @@ export const XvaQuantTerminal: React.FC = () => {
     <div id="xva-quant-terminal-root" className="space-y-6 text-slate-100 font-sans">
       
       {/* Top Banner & Header */}
-      <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-5 shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#2563eb]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#0284c7]/5 rounded-full blur-3xl pointer-events-none" />
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div>
             <div className="flex items-center gap-2">
-              <span className="p-2 bg-[#2563eb]/20 text-[#2563eb] rounded-lg border border-[#2563eb]/30">
+              <span className="p-2 bg-[#0284c7]/20 text-[#0284c7] rounded-lg border border-[#0284c7]/30">
                 <ShieldAlert className="w-5 h-5" />
               </span>
               <h2 className="text-lg font-bold text-white tracking-wide">
                 XVA Quantitative Analytics Engine
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#2563eb]/10 border border-[#2563eb]/30 text-[#2563eb]">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#0284c7]/10 border border-[#0284c7]/30 text-[#0284c7]">
                 ISDA SIMM & CVA DESK v4.2
               </span>
             </div>
@@ -213,7 +213,7 @@ export const XvaQuantTerminal: React.FC = () => {
               id="netting-set-selector"
               value={selectedNsId}
               onChange={(e) => setSelectedNsId(e.target.value)}
-              className="bg-[#0b0f19] text-white border border-[#232d42] rounded-lg px-3 py-2 text-xs font-semibold focus:border-[#2563eb] focus:outline-none cursor-pointer"
+              className="bg-[#0f172a] text-white border border-[#334155] rounded-lg px-3 py-2 text-xs font-semibold focus:border-[#0284c7] focus:outline-none cursor-pointer"
             >
               {INITIAL_NETTING_SETS.map((ns) => (
                 <option key={ns.id} value={ns.id}>

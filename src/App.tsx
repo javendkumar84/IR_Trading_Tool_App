@@ -178,7 +178,7 @@ export default function App() {
   };
 
   return (
-    <div id="app-root-container" className="min-h-screen bg-[#0b0f19] text-[#f8fafc] font-sans">
+    <div id="app-root-container" className="min-h-screen bg-[#0f172a] text-[#f8fafc] font-sans">
       
       {/* Top Navigation */}
       <Navbar

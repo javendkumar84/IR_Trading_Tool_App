@@ -2,20 +2,35 @@
 
 @layer base {
   :root {
-    --bg-main: #0b0f19;      /* Primary Base Color: Deep Obsidian Charcoal */
-    --bg-card: #151b28;      /* Secondary Container Color: Dark Slate */
-    --bg-card-hover: #1c2436;
-    --border-color: #232d42; /* Strict border separation */
-    --text-primary: #f8fafc; /* Crisp Off-White */
-    --text-muted: #94a3b8;   /* Slate Gray */
-    --accent-blue: #2563eb;  /* Single Primary Accent: Precision Blue */
-    --accent-blue-hover: #1d4ed8;
+    --bg-main: #0f172a;        /* Slate Base Color: Deep Slate */
+    --bg-card: #1e293b;        /* Slate Container Color: Navy Slate */
+    --bg-card-hover: #334155;
+    --border-color: #334155;   /* Strict Slate Border */
+    --text-primary: #f8fafc;   /* Crisp Silver White */
+    --text-muted: #94a3b8;     /* Muted Slate Gray */
+    --accent-cyan: #0284c7;    /* Primary Accent: Electric Cyan */
+    --accent-cyan-hover: #0369a1;
   }
 }
 
-/* Custom Minimalist Two-Color Utilities */
 body {
-  background-color: #0b0f19;
+  background-color: #0f172a;
   color: #f8fafc;
   font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Custom Scrollbar for sleek slate look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #0284c7;
 }
