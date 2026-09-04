@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Navbar } from './components/Navbar';
+import { Navbar, TabType } from './components/Navbar';
 import { Dashboard } from './components/Dashboard';
 import { XmlBooking } from './components/XmlBooking';
 import { TradeBlotter } from './components/TradeBlotter';
@@ -22,11 +22,16 @@ import { QuantRiskTerminal } from './components/QuantRiskTerminal';
 import { QuantPnlTerminal } from './components/QuantPnlTerminal';
 import { QuantReportsTerminal } from './components/QuantReportsTerminal';
 import { ExoticQuantTerminal } from './components/ExoticQuantTerminal';
+import { XvaQuantTerminal } from './components/XvaQuantTerminal';
+import { FrtbRiskTerminal } from './components/FrtbRiskTerminal';
+import { CrossCurrencyInflationTerminal } from './components/CrossCurrencyInflationTerminal';
+import { MonteCarloQuantTerminal } from './components/MonteCarloQuantTerminal';
+import { AiTradeAssistantTerminal } from './components/AiTradeAssistantTerminal';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuditLogEntry, IRSwapTrade, MarketRateQuote, PositionSummary, TenorDv01Risk, WebSocketMessage } from './types';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'xml' | 'blotter' | 'amend' | 'eod-risk' | 'pnl' | 'var' | 'risk-calc' | 'audit' | 'dotnet' | 'qa' | 'validation' | 'market-data' | 'cash-explain' | 'quant-pricing' | 'curves' | 'quant-risk' | 'quant-pnl' | 'quant-reports' | 'exotics'>('dashboard');
+  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [traderUser, setTraderUser] = useState<string>('J. Doe (Head Rates Trader)');
 
   // Real-time State
@@ -288,6 +293,29 @@ export default function App() {
 
         {activeTab === 'exotics' && (
           <ExoticQuantTerminal />
+        )}
+
+        {activeTab === 'xva' && (
+          <XvaQuantTerminal />
+        )}
+
+        {activeTab === 'frtb' && (
+          <FrtbRiskTerminal />
+        )}
+
+        {activeTab === 'xccy-inflation' && (
+          <CrossCurrencyInflationTerminal />
+        )}
+
+        {activeTab === 'monte-carlo' && (
+          <MonteCarloQuantTerminal />
+        )}
+
+        {activeTab === 'ai-assistant' && (
+          <AiTradeAssistantTerminal
+            onTradeBooked={handleTradeBooked}
+            onOpenBlotter={() => setActiveTab('blotter')}
+          />
         )}
 
         {activeTab === 'cash-explain' && (

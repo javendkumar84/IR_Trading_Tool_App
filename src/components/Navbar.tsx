@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import {
   Activity, Database, FileCode, BarChart3, ReceiptText, Server, Edit3,
-  TestTubes, CheckSquare, ShieldAlert, Calculator, ShieldCheck, TrendingUp, Flame, Menu, X, ChevronDown
+  TestTubes, CheckSquare, ShieldAlert, Calculator, ShieldCheck, TrendingUp, Flame, Menu, X, ChevronDown,
+  Sparkles, Globe2, BarChart2
 } from 'lucide-react';
 
+export type TabType = 'dashboard' | 'xml' | 'blotter' | 'amend' | 'eod-risk' | 'pnl' | 'var' | 'risk-calc' | 'audit' | 'dotnet' | 'qa' | 'validation' | 'market-data' | 'cash-explain' | 'quant-pricing' | 'curves' | 'quant-risk' | 'quant-pnl' | 'quant-reports' | 'exotics' | 'xva' | 'frtb' | 'xccy-inflation' | 'monte-carlo' | 'ai-assistant';
+
 interface NavbarProps {
-  activeTab: 'dashboard' | 'xml' | 'blotter' | 'amend' | 'eod-risk' | 'pnl' | 'var' | 'risk-calc' | 'audit' | 'dotnet' | 'qa' | 'validation' | 'market-data' | 'cash-explain' | 'quant-pricing' | 'curves' | 'quant-risk' | 'quant-pnl' | 'quant-reports' | 'exotics';
-  setActiveTab: (tab: 'dashboard' | 'xml' | 'blotter' | 'amend' | 'eod-risk' | 'pnl' | 'var' | 'risk-calc' | 'audit' | 'dotnet' | 'qa' | 'validation' | 'market-data' | 'cash-explain' | 'quant-pricing' | 'curves' | 'quant-risk' | 'quant-pnl' | 'quant-reports' | 'exotics') => void;
+  activeTab: TabType;
+  setActiveTab: (tab: TabType) => void;
   isWsConnected: boolean;
   traderUser: string;
   setTraderUser: (user: string) => void;
@@ -26,10 +29,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   const navigationItems = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
     { id: 'xml', label: 'Trade Capture', icon: FileCode },
+    { id: 'ai-assistant', label: 'AI Trade Voice', icon: Sparkles },
     { id: 'quant-pricing', label: 'Quant Pricing', icon: Calculator },
     { id: 'quant-risk', label: 'Quant Risk', icon: ShieldAlert },
-    { id: 'quant-pnl', label: 'Quant PnL', icon: TrendingUp },
+    { id: 'xva', label: 'XVA Engine', icon: ShieldAlert },
+    { id: 'frtb', label: 'FRTB Capital', icon: BarChart2 },
+    { id: 'xccy-inflation', label: 'XCCY & Inflation', icon: Globe2 },
+    { id: 'monte-carlo', label: 'Monte Carlo', icon: Flame },
     { id: 'exotics', label: 'Exotic Quant', icon: Flame },
+    { id: 'quant-pnl', label: 'Quant PnL', icon: TrendingUp },
     { id: 'quant-reports', label: 'Quant Reports', icon: FileCode },
     { id: 'curves', label: 'Curve Engine', icon: Activity },
     { id: 'market-data', label: 'Market Data', icon: Database },
