@@ -764,7 +764,7 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
               </button>
               <button
                 onClick={() => setTradeAction('mature')}
-                className={`py-2 px-3 rounded-lg font-bold transition-all cursor-pointer ${tradeAction === 'mature' ? 'bg-blue-600 text-white shadow' : 'bg-[#16181d] text-slate-400 hover:text-white border border-slate-800'
+                className={`py-2 px-3 rounded-lg font-bold transition-all cursor-pointer ${tradeAction === 'mature' ? 'bg-cyan-600 text-white shadow' : 'bg-[#16181d] text-slate-400 hover:text-white border border-slate-800'
                   }`}
               >
                 Mark Matured
@@ -915,7 +915,7 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
                     <select
                       value={leg1Type}
                       onChange={(e) => setLeg1Type(e.target.value as LegType)}
-                      className="w-full bg-[#16181d] border border-blue-600 rounded p-2 text-sm text-white font-mono font-bold"
+                      className="w-full bg-[#16181d] border border-cyan-600 rounded p-2 text-sm text-white font-mono font-bold"
                     >
                       <option value="FIXED">FIXED RATE LEG</option>
                       <option value="FLOATING">FLOATING INDEX LEG</option>
@@ -959,7 +959,7 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
                     <FormattedNumberInput
                       value={leg1Notional}
                       onChange={setLeg1Notional}
-                      className="w-full bg-[#16181d] border border-slate-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-500"
+                      className="w-full bg-[#16181d] border border-slate-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-cyan-500"
                     />
                   </div>
 
@@ -972,7 +972,7 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
                         step="0.01"
                         value={leg1FixedRate}
                         onChange={(e) => setLeg1FixedRate(Number(e.target.value))}
-                        className="w-full bg-[#16181d] border border-blue-500 rounded p-2 text-sm text-white font-mono font-bold"
+                        className="w-full bg-[#16181d] border border-cyan-500 rounded p-2 text-sm text-white font-mono font-bold"
                       />
                     </div>
                   )}
@@ -1140,7 +1140,7 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
                     <FormattedNumberInput
                       value={leg2Notional}
                       onChange={setLeg2Notional}
-                      className="w-full bg-[#16181d] border border-slate-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-500"
+                      className="w-full bg-[#16181d] border border-slate-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-cyan-500"
                     />
                   </div>
 
@@ -1153,7 +1153,7 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
                         step="0.01"
                         value={leg2FixedRate}
                         onChange={(e) => setLeg2FixedRate(Number(e.target.value))}
-                        className="w-full bg-[#16181d] border border-blue-500 rounded p-2 text-sm text-white font-mono font-bold"
+                        className="w-full bg-[#16181d] border border-cyan-500 rounded p-2 text-sm text-white font-mono font-bold"
                       />
                     </div>
                   )}
@@ -1263,7 +1263,7 @@ export default function TradeAmendment({ trades: externalTrades, onAmendmentComp
 
           {/* Action Status Notice */}
           {tradeAction === 'mature' && (
-            <div className="p-4 bg-blue-950/40 border border-blue-700/60 rounded-xl text-blue-300 font-mono">
+            <div className="p-4 bg-blue-950/40 border border-cyan-700/60 rounded-xl text-blue-300 font-mono">
               ✓ Trade status will be updated to <strong>MATURED</strong>.
             </div>
           )}

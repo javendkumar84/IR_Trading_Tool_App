@@ -212,13 +212,13 @@ export const VarDashboard: React.FC<VarDashboardProps> = ({ trades, onRefresh })
                 onChange={(e) => setDisplayCurrency(e.target.value as Currency)}
                 className="bg-transparent text-white font-bold focus:outline-none cursor-pointer text-xs"
               >
-                <option value="USD" className="bg-[#0b0f19]">USD ($)</option>
-                <option value="EUR" className="bg-[#0b0f19]">EUR (€)</option>
-                <option value="GBP" className="bg-[#0b0f19]">GBP (£)</option>
-                <option value="JPY" className="bg-[#0b0f19]">JPY (¥)</option>
-                <option value="CAD" className="bg-[#0b0f19]">CAD (CA$)</option>
-                <option value="AUD" className="bg-[#0b0f19]">AUD (A$)</option>
-                <option value="CHF" className="bg-[#0b0f19]">CHF (CHF)</option>
+                <option value="USD" className="bg-[#0f172a]">USD ($)</option>
+                <option value="EUR" className="bg-[#0f172a]">EUR (€)</option>
+                <option value="GBP" className="bg-[#0f172a]">GBP (£)</option>
+                <option value="JPY" className="bg-[#0f172a]">JPY (¥)</option>
+                <option value="CAD" className="bg-[#0f172a]">CAD (CA$)</option>
+                <option value="AUD" className="bg-[#0f172a]">AUD (A$)</option>
+                <option value="CHF" className="bg-[#0f172a]">CHF (CHF)</option>
               </select>
             </div>
 
@@ -415,7 +415,7 @@ export const VarDashboard: React.FC<VarDashboardProps> = ({ trades, onRefresh })
                     if (active && payload && payload.length) {
                       const d = payload[0].payload;
                       return (
-                        <div className="bg-[#0b0f19] border border-rose-500/80 rounded-xl p-3 shadow-2xl font-mono text-xs space-y-1">
+                        <div className="bg-[#0f172a] border border-rose-500/80 rounded-xl p-3 shadow-2xl font-mono text-xs space-y-1">
                           <div className="font-bold text-white border-b border-gray-800 pb-1">PnL Shift: {label}</div>
                           <div className="text-gray-300">Simulated PnL: <strong className={d.pnlVal >= 0 ? 'text-emerald-400' : 'text-rose-400'}>{currSymbol}{d.pnlVal.toLocaleString()}</strong></div>
                           <div className="text-gray-400 text-[10px]">Probability Density: {d.density}%</div>

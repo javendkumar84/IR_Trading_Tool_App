@@ -38,7 +38,7 @@ interface FormattedNumberInputProps {
 export const FormattedNumberInput: React.FC<FormattedNumberInputProps> = ({
   value,
   onChange,
-  className = 'w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-500',
+  className = 'w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-cyan-500',
   placeholder = 'e.g. 10,000,000',
   id,
   disabled = false,

@@ -119,18 +119,18 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
     <div id="ai-trade-assistant-terminal-root" className="space-y-6 text-slate-100 font-sans">
       
       {/* Header Banner */}
-      <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-5 shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#2563eb]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#0284c7]/5 rounded-full blur-3xl pointer-events-none" />
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div>
             <div className="flex items-center gap-2">
-              <span className="p-2 bg-[#2563eb]/20 text-[#2563eb] rounded-lg border border-[#2563eb]/30">
+              <span className="p-2 bg-[#0284c7]/20 text-[#0284c7] rounded-lg border border-[#0284c7]/30">
                 <Sparkles className="w-5 h-5" />
               </span>
               <h2 className="text-lg font-bold text-white tracking-wide">
                 AI Voice & Natural Language Trade Capture Assistant
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#2563eb]/10 border border-[#2563eb]/30 text-[#2563eb]">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#0284c7]/10 border border-[#0284c7]/30 text-[#0284c7]">
                 GPT-4 STT & NLP DERIVATIVE PARSER
               </span>
             </div>
@@ -145,11 +145,11 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Left Col: Prompt & Voice Input Box */}
-        <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-5 shadow-sm space-y-4 flex flex-col justify-between">
+        <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm space-y-4 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between border-b border-[#232d42] pb-3">
+            <div className="flex items-center justify-between border-b border-[#334155] pb-3">
               <div className="flex items-center gap-2">
-                <Bot className="w-4 h-4 text-[#2563eb]" />
+                <Bot className="w-4 h-4 text-[#0284c7]" />
                 <h3 className="text-sm font-bold text-white">Trader Natural Language Terminal</h3>
               </div>
               
@@ -167,7 +167,7 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
                 className={`p-2 rounded-full border transition-all cursor-pointer ${
                   isRecording
                     ? 'bg-red-500 text-white border-red-400 animate-pulse'
-                    : 'bg-[#0b0f19] text-slate-300 border-[#232d42] hover:text-white hover:border-[#2563eb]'
+                    : 'bg-[#0f172a] text-slate-300 border-[#334155] hover:text-white hover:border-[#0284c7]'
                 }`}
                 title="Simulate Speech-to-Text Recording"
               >
@@ -184,7 +184,7 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 rows={4}
-                className="w-full bg-[#0b0f19] border border-[#232d42] text-white rounded-lg p-3 text-xs font-mono focus:border-[#2563eb] focus:outline-none"
+                className="w-full bg-[#0f172a] border border-[#334155] text-white rounded-lg p-3 text-xs font-mono focus:border-[#0284c7] focus:outline-none"
                 placeholder="e.g. Book $50M 5Y USD SOFR pay fixed 3.42% with BNP Paribas..."
               />
             </div>
@@ -200,7 +200,7 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
                       setInputText(prompt);
                       handleParseText(prompt);
                     }}
-                    className="w-full text-left p-2 rounded-lg bg-[#0b0f19] hover:bg-[#1f293d] border border-[#232d42] text-[11px] font-mono text-slate-300 transition-colors truncate cursor-pointer"
+                    className="w-full text-left p-2 rounded-lg bg-[#0f172a] hover:bg-[#1f293d] border border-[#334155] text-[11px] font-mono text-slate-300 transition-colors truncate cursor-pointer"
                   >
                     "{prompt}"
                   </button>
@@ -213,7 +213,7 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
           <button
             onClick={() => handleParseText(inputText)}
             disabled={isProcessing}
-            className="w-full py-2.5 bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
+            className="w-full py-2.5 bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
           >
             {isProcessing ? (
               <>
@@ -230,11 +230,11 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
         </div>
 
         {/* Right Col: Parsed Trade Ticket Preview */}
-        <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-5 shadow-sm space-y-4 flex flex-col justify-between">
+        <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm space-y-4 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between border-b border-[#232d42] pb-3">
+            <div className="flex items-center justify-between border-b border-[#334155] pb-3">
               <div className="flex items-center gap-2">
-                <FileCode className="w-4 h-4 text-[#2563eb]" />
+                <FileCode className="w-4 h-4 text-[#0284c7]" />
                 <h3 className="text-sm font-bold text-white">Parsed AI Trade Ticket Preview</h3>
               </div>
               {parsedTrade && (
@@ -247,25 +247,25 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
             {parsedTrade ? (
               <div className="mt-4 space-y-4">
                 {/* Trade Header */}
-                <div className="p-3 bg-[#0b0f19] rounded-lg border border-[#232d42] flex justify-between items-center">
+                <div className="p-3 bg-[#0f172a] rounded-lg border border-[#334155] flex justify-between items-center">
                   <div>
                     <span className="text-[10px] font-mono text-slate-400 block">GENERATED TRADE ID</span>
                     <strong className="text-sm font-mono text-white">{parsedTrade.tradeId}</strong>
                   </div>
                   <div className="text-right">
                     <span className="text-[10px] font-mono text-slate-400 block">COUNTERPARTY</span>
-                    <strong className="text-xs text-[#2563eb]">{parsedTrade.counterparty}</strong>
+                    <strong className="text-xs text-[#0284c7]">{parsedTrade.counterparty}</strong>
                   </div>
                 </div>
 
                 {/* Field Grid */}
                 <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-                  <div className="p-2.5 bg-[#0b0f19] rounded-lg border border-[#232d42]">
+                  <div className="p-2.5 bg-[#0f172a] rounded-lg border border-[#334155]">
                     <span className="text-slate-400 text-[10px] block font-sans">Product Type</span>
                     <strong className="text-white">Interest Rate Swap (IRS)</strong>
                   </div>
 
-                  <div className="p-2.5 bg-[#0b0f19] rounded-lg border border-[#232d42]">
+                  <div className="p-2.5 bg-[#0f172a] rounded-lg border border-[#334155]">
                     <span className="text-slate-400 text-[10px] block font-sans">Notional Amount</span>
                     <strong className="text-white">
                       {parsedTrade.fixedLeg.currency === 'EUR' ? '€' : parsedTrade.fixedLeg.currency === 'GBP' ? '£' : '$'}
@@ -273,22 +273,22 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
                     </strong>
                   </div>
 
-                  <div className="p-2.5 bg-[#0b0f19] rounded-lg border border-[#232d42]">
+                  <div className="p-2.5 bg-[#0f172a] rounded-lg border border-[#334155]">
                     <span className="text-slate-400 text-[10px] block font-sans">Fixed Rate</span>
                     <strong className="text-emerald-400">{parsedTrade.fixedLeg.fixedRate}% p.a.</strong>
                   </div>
 
-                  <div className="p-2.5 bg-[#0b0f19] rounded-lg border border-[#232d42]">
+                  <div className="p-2.5 bg-[#0f172a] rounded-lg border border-[#334155]">
                     <span className="text-slate-400 text-[10px] block font-sans">Floating Benchmark</span>
                     <strong className="text-amber-400">{parsedTrade.floatingLeg.index} ({parsedTrade.floatingLeg.indexTenor})</strong>
                   </div>
 
-                  <div className="p-2.5 bg-[#0b0f19] rounded-lg border border-[#232d42]">
+                  <div className="p-2.5 bg-[#0f172a] rounded-lg border border-[#334155]">
                     <span className="text-slate-400 text-[10px] block font-sans">Direction</span>
                     <strong className="text-white">{parsedTrade.fixedLeg.direction.replace('_', ' ')}</strong>
                   </div>
 
-                  <div className="p-2.5 bg-[#0b0f19] rounded-lg border border-[#232d42]">
+                  <div className="p-2.5 bg-[#0f172a] rounded-lg border border-[#334155]">
                     <span className="text-slate-400 text-[10px] block font-sans">Calculated DV01</span>
                     <strong className="text-purple-400">${parsedTrade.dv01?.toLocaleString()} / bp</strong>
                   </div>
@@ -323,7 +323,7 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
               {onOpenBlotter && (
                 <button
                   onClick={onOpenBlotter}
-                  className="px-4 py-2.5 bg-[#0b0f19] hover:bg-[#1f293d] text-slate-300 text-xs font-semibold rounded-lg border border-[#232d42] transition-colors cursor-pointer"
+                  className="px-4 py-2.5 bg-[#0f172a] hover:bg-[#1f293d] text-slate-300 text-xs font-semibold rounded-lg border border-[#334155] transition-colors cursor-pointer"
                 >
                   View Blotter
                 </button>

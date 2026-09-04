@@ -109,7 +109,7 @@ export const TradeBlotter: React.FC<TradeBlotterProps> = ({
               placeholder="Search Trade ID, Counterparty, Trader..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-[#16181d] border border-gray-700 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 font-mono"
+              className="w-full bg-[#16181d] border border-gray-700 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500 font-mono"
             />
           </div>
 
@@ -218,7 +218,7 @@ export const TradeBlotter: React.FC<TradeBlotterProps> = ({
                 onClick={() => setStatusFilter(st)}
                 className={`px-2.5 py-1 rounded-full border text-[10px] font-bold transition-all cursor-pointer shrink-0 ${
                   isActive
-                    ? 'bg-blue-600 text-white border-blue-400 shadow'
+                    ? 'bg-cyan-600 text-white border-blue-400 shadow'
                     : 'bg-[#16181d] text-gray-400 hover:text-white border-gray-800'
                 }`}
               >

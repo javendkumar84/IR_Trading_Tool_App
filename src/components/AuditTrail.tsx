@@ -56,7 +56,7 @@ export const AuditTrail: React.FC<AuditTrailProps> = ({ auditLogs, onRefresh }) 
             placeholder="Search Trade ID, User or Action..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#16181d] border border-gray-700 rounded pl-9 pr-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+            className="w-full bg-[#16181d] border border-gray-700 rounded pl-9 pr-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500"
           />
         </div>
 

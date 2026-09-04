@@ -262,7 +262,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           
           {/* Header Title */}
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-blue-950/80 border border-blue-700/60 rounded-xl text-blue-400">
+            <div className="p-2.5 bg-blue-950/80 border border-cyan-700/60 rounded-xl text-blue-400">
               <Globe className="w-5 h-5" />
             </div>
             <div>
@@ -282,7 +282,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowAddCpModal(true)}
-              className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer shadow-md"
+              className="px-3.5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer shadow-md"
             >
               <Plus className="w-4 h-4" /> Add Counterparty
             </button>
@@ -312,7 +312,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
 
           {/* 2. REPORTING CURRENCY SELECTOR */}
-          <div className="bg-[#141720] p-3 rounded-lg border border-blue-500/60 shadow-inner">
+          <div className="bg-[#141720] p-3 rounded-lg border border-cyan-500/60 shadow-inner">
             <label className="block text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1.5 flex items-center gap-1.5">
               <Globe className="w-3.5 h-3.5 text-blue-400" />
               Base Reporting Currency
@@ -320,7 +320,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <select
               value={portfolioCurrency}
               onChange={(e) => setPortfolioCurrency(e.target.value as Currency)}
-              className="w-full bg-[#1b1e27] border border-blue-500/80 rounded p-2 text-xs font-bold text-white focus:outline-none focus:border-blue-400 cursor-pointer"
+              className="w-full bg-[#1b1e27] border border-cyan-500/80 rounded p-2 text-xs font-bold text-white focus:outline-none focus:border-blue-400 cursor-pointer"
             >
               <option value="USD">USD ($ US Dollar)</option>
               <option value="EUR">EUR (€ Euro)</option>
@@ -341,7 +341,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <select
               value={selectedProductFilter}
               onChange={(e) => setSelectedProductFilter(e.target.value)}
-              className="w-full bg-[#1b1e27] border border-gray-700 rounded p-2 text-xs font-bold text-white focus:outline-none focus:border-blue-500 cursor-pointer"
+              className="w-full bg-[#1b1e27] border border-gray-700 rounded p-2 text-xs font-bold text-white focus:outline-none focus:border-cyan-500 cursor-pointer"
             >
               <option value="ALL">ALL DERIVATIVE PRODUCTS</option>
               <option value="IRS">IRS (Interest Rate Swaps)</option>
@@ -444,7 +444,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <div id="market-rate-ticker-bar" className="bg-[#0d0f12] border border-gray-800 rounded-xl p-3 shadow-inner">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-widest">
-            <Activity className="w-3.5 h-3.5 text-blue-500 animate-pulse" />
+            <Activity className="w-3.5 h-3.5 text-cyan-500 animate-pulse" />
             <span>Live Derivatives & Benchmark Rates (WS_FEED: ACTIVE)</span>
           </div>
           <span className="text-[11px] font-mono text-gray-500">Auto-updating over WebSockets</span>
@@ -486,7 +486,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div className="bg-[#0d0f12] border border-gray-800 rounded-xl p-5 shadow-sm relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">Portfolio Mark-to-Market ({portfolioCurrency})</span>
-            <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400 border border-blue-500/20">
+            <div className="p-2 bg-cyan-500/10 rounded-lg text-blue-400 border border-cyan-500/20">
               <DollarSign className="w-5 h-5" />
             </div>
           </div>
@@ -569,7 +569,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <div className="flex items-center justify-between border-b border-gray-800 pb-2">
             <div>
               <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
-                <BarChart2 className="w-4 h-4 text-blue-500" />
+                <BarChart2 className="w-4 h-4 text-cyan-500" />
                 Net Notional Exposure Breakdown by Currency ({portfolioCurrency})
               </h3>
               <p className="text-xs text-gray-400 mt-0.5 font-sans">
@@ -704,7 +704,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   <td className="py-2.5 px-3 text-center">
                     <button
                       onClick={() => setSelectedCounterparty(cp.name)}
-                      className="px-2 py-1 bg-blue-950 hover:bg-blue-900 text-blue-300 border border-blue-700 rounded text-[10px] font-bold cursor-pointer transition-colors"
+                      className="px-2 py-1 bg-blue-950 hover:bg-blue-900 text-blue-300 border border-cyan-700 rounded text-[10px] font-bold cursor-pointer transition-colors"
                     >
                       Filter CP
                     </button>

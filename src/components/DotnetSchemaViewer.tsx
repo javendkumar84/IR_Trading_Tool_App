@@ -48,7 +48,7 @@ export const DotnetSchemaViewer: React.FC = () => {
               onClick={() => setActiveTab('entity')}
               className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all border-b-2 cursor-pointer flex items-center gap-2 ${
                 activeTab === 'entity'
-                  ? 'border-blue-500 text-blue-400 bg-blue-950/20'
+                  ? 'border-cyan-500 text-blue-400 bg-blue-950/20'
                   : 'border-transparent text-gray-400 hover:text-gray-200'
               }`}
             >
@@ -59,7 +59,7 @@ export const DotnetSchemaViewer: React.FC = () => {
               onClick={() => setActiveTab('dbcontext')}
               className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all border-b-2 cursor-pointer flex items-center gap-2 ${
                 activeTab === 'dbcontext'
-                  ? 'border-blue-500 text-blue-400 bg-blue-950/20'
+                  ? 'border-cyan-500 text-blue-400 bg-blue-950/20'
                   : 'border-transparent text-gray-400 hover:text-gray-200'
               }`}
             >
@@ -70,7 +70,7 @@ export const DotnetSchemaViewer: React.FC = () => {
               onClick={() => setActiveTab('sql_server')}
               className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all border-b-2 cursor-pointer flex items-center gap-2 ${
                 activeTab === 'sql_server'
-                  ? 'border-blue-500 text-blue-400 bg-blue-950/20'
+                  ? 'border-cyan-500 text-blue-400 bg-blue-950/20'
                   : 'border-transparent text-gray-400 hover:text-gray-200'
               }`}
             >

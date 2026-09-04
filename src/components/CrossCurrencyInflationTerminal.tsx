@@ -75,18 +75,18 @@ export const CrossCurrencyInflationTerminal: React.FC = () => {
     <div id="xccy-inflation-terminal-root" className="space-y-6 text-slate-100 font-sans">
       
       {/* Top Banner & Sub-tab Mode Switch */}
-      <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-5 shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#2563eb]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#0284c7]/5 rounded-full blur-3xl pointer-events-none" />
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div>
             <div className="flex items-center gap-2">
-              <span className="p-2 bg-[#2563eb]/20 text-[#2563eb] rounded-lg border border-[#2563eb]/30">
+              <span className="p-2 bg-[#0284c7]/20 text-[#0284c7] rounded-lg border border-[#0284c7]/30">
                 <TrendingUp className="w-5 h-5" />
               </span>
               <h2 className="text-lg font-bold text-white tracking-wide">
                 Cross-Currency Basis & Inflation Swaps Engine
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#2563eb]/10 border border-[#2563eb]/30 text-[#2563eb]">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#0284c7]/10 border border-[#0284c7]/30 text-[#0284c7]">
                 MULTI-CURRENCY DUAL BOOTSTRAPPING
               </span>
             </div>
@@ -96,12 +96,12 @@ export const CrossCurrencyInflationTerminal: React.FC = () => {
           </div>
 
           {/* Sub-tab Toggle */}
-          <div className="flex items-center gap-2 bg-[#0b0f19] border border-[#232d42] p-1 rounded-xl">
+          <div className="flex items-center gap-2 bg-[#0f172a] border border-[#334155] p-1 rounded-xl">
             <button
               onClick={() => setActiveSubTab('XCCY')}
               className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeSubTab === 'XCCY'
-                  ? 'bg-[#2563eb] text-white shadow-md'
+                  ? 'bg-[#0284c7] text-white shadow-md'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -111,7 +111,7 @@ export const CrossCurrencyInflationTerminal: React.FC = () => {
               onClick={() => setActiveSubTab('INFLATION')}
               className={`px-4 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 activeSubTab === 'INFLATION'
-                  ? 'bg-[#2563eb] text-white shadow-md'
+                  ? 'bg-[#0284c7] text-white shadow-md'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
@@ -127,14 +127,14 @@ export const CrossCurrencyInflationTerminal: React.FC = () => {
           
           {/* XCCY Summary KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+            <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
               <span className="text-xs text-slate-400 font-semibold">Domestic Notional ({domesticCcy})</span>
               <div className="mt-2 text-xl font-bold font-mono text-white">
                 ${calculatedXccy.domesticNotional.toLocaleString()}
               </div>
             </div>
 
-            <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+            <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
               <span className="text-xs text-slate-400 font-semibold">Foreign Notional ({foreignCcy})</span>
               <div className="mt-2 text-xl font-bold font-mono text-white">
                 {foreignCcy === 'EUR' ? '€' : foreignCcy === 'GBP' ? '£' : '¥'}
@@ -142,16 +142,16 @@ export const CrossCurrencyInflationTerminal: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+            <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
               <span className="text-xs text-slate-400 font-semibold">XCCY Basis Spread</span>
               <div className="mt-2 text-xl font-bold font-mono text-amber-400">
                 {basisSpreadBps >= 0 ? `+${basisSpreadBps}` : basisSpreadBps} bps
               </div>
             </div>
 
-            <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+            <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
               <span className="text-xs text-slate-400 font-semibold">Estimated Net NPV Impact</span>
-              <div className="mt-2 text-xl font-bold font-mono text-[#2563eb]">
+              <div className="mt-2 text-xl font-bold font-mono text-[#0284c7]">
                 ${calculatedXccy.netNpvAdjustment.toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </div>
             </div>
@@ -161,9 +161,9 @@ export const CrossCurrencyInflationTerminal: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             {/* Left 2 Cols: XCCY Parameter Controls */}
-            <div className="lg:col-span-2 bg-[#151b28] border border-[#232d42] rounded-xl p-5 shadow-sm space-y-5">
-              <div className="flex items-center gap-2 border-b border-[#232d42] pb-3">
-                <Globe2 className="w-4 h-4 text-[#2563eb]" />
+            <div className="lg:col-span-2 bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm space-y-5">
+              <div className="flex items-center gap-2 border-b border-[#334155] pb-3">
+                <Globe2 className="w-4 h-4 text-[#0284c7]" />
                 <h3 className="text-sm font-bold text-white">Cross-Currency Swap Parameters</h3>
               </div>
 
@@ -174,7 +174,7 @@ export const CrossCurrencyInflationTerminal: React.FC = () => {
                   <select
                     value={domesticCcy}
                     onChange={(e) => setDomesticCcy(e.target.value as Currency)}
-                    className="w-full bg-[#0b0f19] border border-[#232d42] text-white rounded-lg p-2 text-xs font-semibold"
+                    className="w-full bg-[#0f172a] border border-[#334155] text-white rounded-lg p-2 text-xs font-semibold"
                   >
                     <option value="USD">USD - SOFR OIS</option>
                   </select>
@@ -186,7 +186,7 @@ export const CrossCurrencyInflationTerminal: React.FC = () => {
                   <select
                     value={foreignCcy}
                     onChange={(e) => setForeignCcy(e.target.value as Currency)}
-                    className="w-full bg-[#0b0f19] border border-[#232d42] text-white rounded-lg p-2 text-xs font-semibold"
+                    className="w-full bg-[#0f172a] border border-[#334155] text-white rounded-lg p-2 text-xs font-semibold"
                   >
                     <option value="EUR">EUR - €STR / EURIBOR</option>
                     <option value="GBP">GBP - SONIA</option>
@@ -202,7 +202,7 @@ export const CrossCurrencyInflationTerminal: React.FC = () => {
                     type="number"
                     value={xccyNotionalMillions}
                     onChange={(e) => setXccyNotionalMillions(Number(e.target.value))}
-                    className="w-full bg-[#0b0f19] border border-[#232d42] text-white rounded-lg p-2 text-xs font-mono font-bold"
+                    className="w-full bg-[#0f172a] border border-[#334155] text-white rounded-lg p-2 text-xs font-mono font-bold"
                   />
                 </div>
 
@@ -212,7 +212,7 @@ export const CrossCurrencyInflationTerminal: React.FC = () => {
                   <select
                     value={tenorYears}
                     onChange={(e) => setTenorYears(Number(e.target.value))}
-                    className="w-full bg-[#0b0f19] border border-[#232d42] text-white rounded-lg p-2 text-xs font-semibold"
+                    className="w-full bg-[#0f172a] border border-[#334155] text-white rounded-lg p-2 text-xs font-semibold"
                   >
                     <option value={1}>1 Year</option>
                     <option value={2}>2 Years</option>
@@ -226,7 +226,7 @@ export const CrossCurrencyInflationTerminal: React.FC = () => {
               </div>
 
               {/* Slider for XCCY Basis Spread */}
-              <div className="space-y-2 pt-2 border-t border-[#232d42]">
+              <div className="space-y-2 pt-2 border-t border-[#334155]">
                 <div className="flex justify-between text-xs">
                   <span className="text-slate-300 font-medium">FX Basis Spread (bps):</span>
                   <span className="font-mono text-amber-400 font-bold">{basisSpreadBps} bps</span>
@@ -238,26 +238,26 @@ export const CrossCurrencyInflationTerminal: React.FC = () => {
                   step="0.5"
                   value={basisSpreadBps}
                   onChange={(e) => setBasisSpreadBps(Number(e.target.value))}
-                  className="w-full h-1.5 bg-[#0b0f19] rounded-lg appearance-none cursor-pointer accent-amber-400"
+                  className="w-full h-1.5 bg-[#0f172a] rounded-lg appearance-none cursor-pointer accent-amber-400"
                 />
               </div>
             </div>
 
             {/* Right Col: Leg Structure Comparison */}
-            <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-5 shadow-sm space-y-4">
-              <h3 className="text-sm font-bold text-white border-b border-[#232d42] pb-3">
+            <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm space-y-4">
+              <h3 className="text-sm font-bold text-white border-b border-[#334155] pb-3">
                 Leg Cashflow Breakdown
               </h3>
 
               {/* Leg 1 */}
-              <div className="p-3 bg-[#0b0f19] rounded-lg border border-[#232d42] space-y-1">
-                <span className="text-[11px] font-bold text-[#2563eb]">LEG 1 (USD SOFR Float)</span>
+              <div className="p-3 bg-[#0f172a] rounded-lg border border-[#334155] space-y-1">
+                <span className="text-[11px] font-bold text-[#0284c7]">LEG 1 (USD SOFR Float)</span>
                 <div className="text-xs text-slate-300 font-mono">Notional: ${calculatedXccy.domesticNotional.toLocaleString()}</div>
                 <div className="text-xs text-slate-300 font-mono">Benchmark: SOFR + 0 bps</div>
               </div>
 
               {/* Leg 2 */}
-              <div className="p-3 bg-[#0b0f19] rounded-lg border border-[#232d42] space-y-1">
+              <div className="p-3 bg-[#0f172a] rounded-lg border border-[#334155] space-y-1">
                 <span className="text-[11px] font-bold text-amber-400">LEG 2 ({foreignCcy} Float + Basis)</span>
                 <div className="text-xs text-slate-300 font-mono">
                   Notional: {foreignCcy === 'EUR' ? '€' : '£'}{calculatedXccy.foreignNotional.toLocaleString(undefined, { maximumFractionDigits: 0 })}
@@ -277,38 +277,38 @@ export const CrossCurrencyInflationTerminal: React.FC = () => {
           
           {/* Inflation Summary KPI Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+            <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
               <span className="text-xs text-slate-400 font-semibold">Inflation Index & Lag</span>
               <div className="mt-2 text-xl font-bold font-mono text-white">
                 {inflationIndex} (3M Lag)
               </div>
             </div>
 
-            <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+            <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
               <span className="text-xs text-slate-400 font-semibold">Base Index Level</span>
               <div className="mt-2 text-xl font-bold font-mono text-slate-300">
                 {calculatedInflation.baseCpi}
               </div>
             </div>
 
-            <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+            <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
               <span className="text-xs text-slate-400 font-semibold">Projected Final Index Level</span>
               <div className="mt-2 text-xl font-bold font-mono text-emerald-400">
                 {calculatedInflation.projectedFinalCpi.toFixed(2)}
               </div>
             </div>
 
-            <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+            <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
               <span className="text-xs text-slate-400 font-semibold">Compounded Inflation Payoff</span>
-              <div className="mt-2 text-xl font-bold font-mono text-[#2563eb]">
+              <div className="mt-2 text-xl font-bold font-mono text-[#0284c7]">
                 ${calculatedInflation.inflationPayoffAmount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
               </div>
             </div>
           </div>
 
           {/* Controls & Breakdown */}
-          <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-5 shadow-sm space-y-5">
-            <h3 className="text-sm font-bold text-white border-b border-[#232d42] pb-3">
+          <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm space-y-5">
+            <h3 className="text-sm font-bold text-white border-b border-[#334155] pb-3">
               Inflation Swap Calibration & Seasonality Adjustments
             </h3>
 
@@ -318,7 +318,7 @@ export const CrossCurrencyInflationTerminal: React.FC = () => {
                 <select
                   value={inflationIndex}
                   onChange={(e) => setInflationIndex(e.target.value as any)}
-                  className="w-full bg-[#0b0f19] border border-[#232d42] text-white rounded-lg p-2 text-xs font-semibold"
+                  className="w-full bg-[#0f172a] border border-[#334155] text-white rounded-lg p-2 text-xs font-semibold"
                 >
                   <option value="US_CPI">US CPI-U (Urban Consumers)</option>
                   <option value="EUR_HICP">EUR HICP (Ex-Tobacco)</option>
@@ -331,7 +331,7 @@ export const CrossCurrencyInflationTerminal: React.FC = () => {
                 <select
                   value={inflationType}
                   onChange={(e) => setInflationType(e.target.value as any)}
-                  className="w-full bg-[#0b0f19] border border-[#232d42] text-white rounded-lg p-2 text-xs font-semibold"
+                  className="w-full bg-[#0f172a] border border-[#334155] text-white rounded-lg p-2 text-xs font-semibold"
                 >
                   <option value="ZERO_COUPON">Zero-Coupon Inflation Swap (ZCIS)</option>
                   <option value="YEAR_ON_YEAR">Year-on-Year Inflation Swap (YoYIS)</option>
@@ -345,7 +345,7 @@ export const CrossCurrencyInflationTerminal: React.FC = () => {
                   step="0.05"
                   value={breakevenInflationRate}
                   onChange={(e) => setBreakevenInflationRate(Number(e.target.value))}
-                  className="w-full bg-[#0b0f19] border border-[#232d42] text-white rounded-lg p-2 text-xs font-mono font-bold"
+                  className="w-full bg-[#0f172a] border border-[#334155] text-white rounded-lg p-2 text-xs font-mono font-bold"
                 />
               </div>
             </div>

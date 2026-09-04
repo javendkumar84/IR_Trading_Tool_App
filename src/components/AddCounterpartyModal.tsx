@@ -59,7 +59,7 @@ export const AddCounterpartyModal: React.FC<AddCounterpartyModalProps> = ({ onCl
               placeholder="e.g., Bank of America, N.A."
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-[#16181d] border border-gray-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-blue-500 font-semibold"
+              className="w-full bg-[#16181d] border border-gray-700 rounded p-2.5 text-sm text-white focus:outline-none focus:border-cyan-500 font-semibold"
               required
             />
           </div>
@@ -73,7 +73,7 @@ export const AddCounterpartyModal: React.FC<AddCounterpartyModalProps> = ({ onCl
               placeholder="e.g., BFA5QOO68Y59C24R5804"
               value={lei}
               onChange={(e) => setLei(e.target.value)}
-              className="w-full bg-[#16181d] border border-gray-700 rounded p-2.5 text-sm text-white font-mono uppercase focus:outline-none focus:border-blue-500"
+              className="w-full bg-[#16181d] border border-gray-700 rounded p-2.5 text-sm text-white font-mono uppercase focus:outline-none focus:border-cyan-500"
               required
             />
           </div>
@@ -141,7 +141,7 @@ export const AddCounterpartyModal: React.FC<AddCounterpartyModalProps> = ({ onCl
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-lg"
+              className="px-5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer shadow-lg"
             >
               <PlusCircle className="w-4 h-4" />
               Save Counterparty

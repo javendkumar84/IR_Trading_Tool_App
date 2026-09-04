@@ -419,7 +419,7 @@ export const CashExplainTab: React.FC<CashExplainTabProps> = ({ trades }) => {
                     ? st === 'Paid'
                       ? 'bg-emerald-600 text-white'
                       : st === 'Expected'
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-cyan-600 text-white'
                       : st === 'Unknown'
                       ? 'bg-amber-600 text-white'
                       : 'bg-cyan-600 text-white'
@@ -526,7 +526,7 @@ export const CashExplainTab: React.FC<CashExplainTabProps> = ({ trades }) => {
                           </span>
                         )}
                         {r.state === 'Expected' && (
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-blue-950 text-blue-300 border border-blue-700 flex items-center justify-center gap-1">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-blue-950 text-blue-300 border border-cyan-700 flex items-center justify-center gap-1">
                             <Clock className="w-3 h-3 text-blue-400" /> Expected
                           </span>
                         )}
@@ -640,7 +640,7 @@ export const CashExplainTab: React.FC<CashExplainTabProps> = ({ trades }) => {
                           </span>
                         )}
                         {r.state === 'Expected' && (
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-blue-950 text-blue-300 border border-blue-700 flex items-center justify-center gap-1">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] bg-blue-950 text-blue-300 border border-cyan-700 flex items-center justify-center gap-1">
                             <Clock className="w-3 h-3 text-blue-400" /> Expected
                           </span>
                         )}

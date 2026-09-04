@@ -297,13 +297,13 @@ export const PnlDashboard: React.FC<PnlDashboardProps> = ({ trades, onRefresh })
                 onChange={(e) => setDisplayCurrency(e.target.value as Currency)}
                 className="bg-transparent text-white font-bold focus:outline-none cursor-pointer text-xs"
               >
-                <option value="USD" className="bg-[#0b0f19]">USD ($)</option>
-                <option value="EUR" className="bg-[#0b0f19]">EUR (€)</option>
-                <option value="GBP" className="bg-[#0b0f19]">GBP (£)</option>
-                <option value="JPY" className="bg-[#0b0f19]">JPY (¥)</option>
-                <option value="CAD" className="bg-[#0b0f19]">CAD (CA$)</option>
-                <option value="AUD" className="bg-[#0b0f19]">AUD (A$)</option>
-                <option value="CHF" className="bg-[#0b0f19]">CHF (CHF)</option>
+                <option value="USD" className="bg-[#0f172a]">USD ($)</option>
+                <option value="EUR" className="bg-[#0f172a]">EUR (€)</option>
+                <option value="GBP" className="bg-[#0f172a]">GBP (£)</option>
+                <option value="JPY" className="bg-[#0f172a]">JPY (¥)</option>
+                <option value="CAD" className="bg-[#0f172a]">CAD (CA$)</option>
+                <option value="AUD" className="bg-[#0f172a]">AUD (A$)</option>
+                <option value="CHF" className="bg-[#0f172a]">CHF (CHF)</option>
               </select>
             </div>
 
@@ -478,7 +478,7 @@ export const PnlDashboard: React.FC<PnlDashboardProps> = ({ trades, onRefresh })
               <span className="w-3 h-3 bg-emerald-500 rounded-sm"></span> Actual PnL
             </span>
             <span className="flex items-center gap-1.5 text-blue-400">
-              <span className="w-3 h-3 bg-blue-500 rounded-sm"></span> IR Delta PnL
+              <span className="w-3 h-3 bg-cyan-500 rounded-sm"></span> IR Delta PnL
             </span>
             <span className="flex items-center gap-1.5 text-amber-400">
               <span className="w-3 h-3 bg-amber-500 rounded-sm"></span> Curve Residual PnL
@@ -496,7 +496,7 @@ export const PnlDashboard: React.FC<PnlDashboardProps> = ({ trades, onRefresh })
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     return (
-                      <div className="bg-[#0b0f19] border border-emerald-500/80 rounded-xl p-3 shadow-2xl font-mono text-xs space-y-1.5">
+                      <div className="bg-[#0f172a] border border-emerald-500/80 rounded-xl p-3 shadow-2xl font-mono text-xs space-y-1.5">
                         <div className="font-bold text-white border-b border-gray-800 pb-1">{label} PnL Attribution</div>
                         {payload.map((entry, idx) => (
                           <div key={idx} className="flex justify-between gap-4">
@@ -599,7 +599,7 @@ export const PnlDashboard: React.FC<PnlDashboardProps> = ({ trades, onRefresh })
         const explain = computeTradePnlExplain(selectedTradeModal);
         return (
           <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto font-sans">
-            <div className="bg-[#0b0f19] border border-emerald-800/80 rounded-2xl max-w-4xl w-full p-6 space-y-5 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto font-mono scrollbar-thin">
+            <div className="bg-[#0f172a] border border-emerald-800/80 rounded-2xl max-w-4xl w-full p-6 space-y-5 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto font-mono scrollbar-thin">
               
               {/* Modal Header */}
               <div className="flex items-center justify-between border-b border-slate-800 pb-4">

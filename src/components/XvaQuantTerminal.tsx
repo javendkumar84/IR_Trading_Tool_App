@@ -228,10 +228,10 @@ export const XvaQuantTerminal: React.FC = () => {
       {/* KPI Cards Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Total Net XVA Adjustment */}
-        <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+        <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
           <div className="flex items-center justify-between text-slate-400">
             <span className="text-xs font-semibold">Net XVA Adjustment</span>
-            <Layers className="w-4 h-4 text-[#2563eb]" />
+            <Layers className="w-4 h-4 text-[#0284c7]" />
           </div>
           <div className="mt-2">
             <div className="text-xl font-bold font-mono text-white">
@@ -245,7 +245,7 @@ export const XvaQuantTerminal: React.FC = () => {
         </div>
 
         {/* CVA (Credit Valuation Adjustment) */}
-        <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+        <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
           <div className="flex items-center justify-between text-slate-400">
             <span className="text-xs font-semibold">CVA (Counterparty Credit)</span>
             <ShieldAlert className="w-4 h-4 text-red-400" />
@@ -262,7 +262,7 @@ export const XvaQuantTerminal: React.FC = () => {
         </div>
 
         {/* DVA (Debit Valuation Adjustment) */}
-        <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+        <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
           <div className="flex items-center justify-between text-slate-400">
             <span className="text-xs font-semibold">DVA (Own Credit Benefit)</span>
             <TrendingDown className="w-4 h-4 text-emerald-400" />
@@ -279,7 +279,7 @@ export const XvaQuantTerminal: React.FC = () => {
         </div>
 
         {/* FVA (Funding Valuation Adjustment) */}
-        <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+        <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
           <div className="flex items-center justify-between text-slate-400">
             <span className="text-xs font-semibold">FVA (Funding Cost)</span>
             <DollarSign className="w-4 h-4 text-amber-400" />
@@ -296,7 +296,7 @@ export const XvaQuantTerminal: React.FC = () => {
         </div>
 
         {/* KVA (Capital Valuation Adjustment) */}
-        <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+        <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
           <div className="flex items-center justify-between text-slate-400">
             <span className="text-xs font-semibold">KVA (Regulatory Capital)</span>
             <Lock className="w-4 h-4 text-purple-400" />
@@ -317,10 +317,10 @@ export const XvaQuantTerminal: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left 2 Cols: 30Y Simulated Exposure Profile Graph (EE / PFE 95%) */}
-        <div className="lg:col-span-2 bg-[#151b28] border border-[#232d42] rounded-xl p-5 shadow-sm space-y-4">
+        <div className="lg:col-span-2 bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-[#2563eb]" />
+              <Activity className="w-4 h-4 text-[#0284c7]" />
               <h3 className="text-sm font-bold text-white">
                 30Y Counterparty Exposure Profile (PFE 95% & EE)
               </h3>
@@ -331,7 +331,7 @@ export const XvaQuantTerminal: React.FC = () => {
                 <span className="text-slate-300">PFE 95% ({currencySymbol}M)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-3 h-0.5 bg-[#2563eb] rounded" />
+                <span className="w-3 h-0.5 bg-[#0284c7] rounded" />
                 <span className="text-slate-300">EE ({currencySymbol}M)</span>
               </div>
               <div className="flex items-center gap-1.5">
@@ -342,7 +342,7 @@ export const XvaQuantTerminal: React.FC = () => {
           </div>
 
           {/* SVG Canvas Graph */}
-          <div className="bg-[#0b0f19] border border-[#232d42] rounded-lg p-4 h-64 relative flex flex-col justify-between">
+          <div className="bg-[#0f172a] border border-[#334155] rounded-lg p-4 h-64 relative flex flex-col justify-between">
             <svg className="w-full h-full overflow-visible" viewBox="0 0 500 180" preserveAspectRatio="none">
               
               {/* Grid Lines */}
@@ -353,7 +353,7 @@ export const XvaQuantTerminal: React.FC = () => {
                   y1={yVal}
                   x2="500"
                   y2={yVal}
-                  stroke="#232d42"
+                  stroke="#334155"
                   strokeDasharray="3 3"
                   strokeWidth="1"
                 />
@@ -385,7 +385,7 @@ export const XvaQuantTerminal: React.FC = () => {
               {/* Line: Expected Exposure (EE) */}
               <polyline
                 fill="none"
-                stroke="#2563eb"
+                stroke="#0284c7"
                 strokeWidth="2"
                 points={exposurePoints.map((p, idx) => `${(idx / (exposurePoints.length - 1)) * 500},${180 - (p.ee / maxExposure) * 160}`).join(' ')}
               />
@@ -407,14 +407,14 @@ export const XvaQuantTerminal: React.FC = () => {
                 return (
                   <g key={idx}>
                     <circle cx={cx} cy={cyPfe} r="3" fill="#f87171" />
-                    <circle cx={cx} cy={cyEe} r="3" fill="#2563eb" />
+                    <circle cx={cx} cy={cyEe} r="3" fill="#0284c7" />
                   </g>
                 );
               })}
             </svg>
 
             {/* X-Axis Labels (Tenors) */}
-            <div className="flex justify-between text-[10px] font-mono text-slate-400 mt-2 border-t border-[#232d42] pt-1">
+            <div className="flex justify-between text-[10px] font-mono text-slate-400 mt-2 border-t border-[#334155] pt-1">
               {exposurePoints.map((p) => (
                 <span key={p.year}>{p.year}Y</span>
               ))}
@@ -423,19 +423,19 @@ export const XvaQuantTerminal: React.FC = () => {
 
           {/* Exposure Summary Footer */}
           <div className="grid grid-cols-3 gap-3 pt-2 text-xs">
-            <div className="p-3 bg-[#0b0f19] rounded-lg border border-[#232d42]">
+            <div className="p-3 bg-[#0f172a] rounded-lg border border-[#334155]">
               <span className="text-slate-400 block text-[11px]">Peak 95% PFE Exposure</span>
               <strong className="text-red-400 font-mono text-sm mt-0.5 block">
                 {currencySymbol}{Math.max(...exposurePoints.map((p) => p.pfe95)).toFixed(2)}M
               </strong>
             </div>
-            <div className="p-3 bg-[#0b0f19] rounded-lg border border-[#232d42]">
+            <div className="p-3 bg-[#0f172a] rounded-lg border border-[#334155]">
               <span className="text-slate-400 block text-[11px]">Average Expected Exposure (EE)</span>
-              <strong className="text-[#2563eb] font-mono text-sm mt-0.5 block">
+              <strong className="text-[#0284c7] font-mono text-sm mt-0.5 block">
                 {currencySymbol}{(exposurePoints.reduce((acc, p) => acc + p.ee, 0) / exposurePoints.length).toFixed(2)}M
               </strong>
             </div>
-            <div className="p-3 bg-[#0b0f19] rounded-lg border border-[#232d42]">
+            <div className="p-3 bg-[#0f172a] rounded-lg border border-[#334155]">
               <span className="text-slate-400 block text-[11px]">Collateral Mitigation Impact</span>
               <strong className="text-emerald-400 font-mono text-sm mt-0.5 block">
                 {activeNs.csaType === 'UNCOLLATERALIZED' ? '0% (Uncollateralized)' : '-78.4% Exposure Reduction'}
@@ -445,10 +445,10 @@ export const XvaQuantTerminal: React.FC = () => {
         </div>
 
         {/* Right Col: Stress Testing & CSA Parameter Controls */}
-        <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-5 shadow-sm space-y-5 flex flex-col justify-between">
+        <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm space-y-5 flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-2 border-b border-[#232d42] pb-3">
-              <Sliders className="w-4 h-4 text-[#2563eb]" />
+            <div className="flex items-center gap-2 border-b border-[#334155] pb-3">
+              <Sliders className="w-4 h-4 text-[#0284c7]" />
               <h3 className="text-sm font-bold text-white">Credit & Funding Stress Sliders</h3>
             </div>
 
@@ -456,7 +456,7 @@ export const XvaQuantTerminal: React.FC = () => {
             <div className="mt-4 space-y-2">
               <div className="flex justify-between text-xs">
                 <span className="text-slate-300 font-medium">CDS Spread Shock:</span>
-                <span className="font-mono text-[#2563eb] font-bold">
+                <span className="font-mono text-[#0284c7] font-bold">
                   {cdsShiftBps >= 0 ? `+${cdsShiftBps}` : cdsShiftBps} bps
                 </span>
               </div>
@@ -467,7 +467,7 @@ export const XvaQuantTerminal: React.FC = () => {
                 step="5"
                 value={cdsShiftBps}
                 onChange={(e) => setCdsShiftBps(Number(e.target.value))}
-                className="w-full h-1.5 bg-[#0b0f19] rounded-lg appearance-none cursor-pointer accent-[#2563eb]"
+                className="w-full h-1.5 bg-[#0f172a] rounded-lg appearance-none cursor-pointer accent-[#0284c7]"
               />
               <div className="flex justify-between text-[10px] text-slate-400 font-mono">
                 <span>-20 bps</span>
@@ -491,7 +491,7 @@ export const XvaQuantTerminal: React.FC = () => {
                 step="5"
                 value={fundingSpreadShiftBps}
                 onChange={(e) => setFundingSpreadShiftBps(Number(e.target.value))}
-                className="w-full h-1.5 bg-[#0b0f19] rounded-lg appearance-none cursor-pointer accent-amber-400"
+                className="w-full h-1.5 bg-[#0f172a] rounded-lg appearance-none cursor-pointer accent-amber-400"
               />
               <div className="flex justify-between text-[10px] text-slate-400 font-mono">
                 <span>-10 bps</span>
@@ -513,7 +513,7 @@ export const XvaQuantTerminal: React.FC = () => {
                 step="5"
                 value={recoveryRate}
                 onChange={(e) => setRecoveryRate(Number(e.target.value))}
-                className="w-full h-1.5 bg-[#0b0f19] rounded-lg appearance-none cursor-pointer accent-emerald-400"
+                className="w-full h-1.5 bg-[#0f172a] rounded-lg appearance-none cursor-pointer accent-emerald-400"
               />
               <div className="flex justify-between text-[10px] text-slate-400 font-mono">
                 <span>10% (Distressed)</span>
@@ -535,7 +535,7 @@ export const XvaQuantTerminal: React.FC = () => {
                 step="1"
                 value={csaThresholdOverride}
                 onChange={(e) => setCsaThresholdOverride(Number(e.target.value))}
-                className="w-full h-1.5 bg-[#0b0f19] rounded-lg appearance-none cursor-pointer accent-purple-400"
+                className="w-full h-1.5 bg-[#0f172a] rounded-lg appearance-none cursor-pointer accent-purple-400"
               />
             </div>
           </div>
@@ -548,7 +548,7 @@ export const XvaQuantTerminal: React.FC = () => {
               setRecoveryRate(40);
               setCsaThresholdOverride(0);
             }}
-            className="w-full py-2 bg-[#0b0f19] hover:bg-[#1f293d] border border-[#232d42] text-xs font-semibold text-slate-300 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            className="w-full py-2 bg-[#0f172a] hover:bg-[#1f293d] border border-[#334155] text-xs font-semibold text-slate-300 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             Reset Stress Shocks
@@ -557,10 +557,10 @@ export const XvaQuantTerminal: React.FC = () => {
       </div>
 
       {/* Netting Sets Breakdown Table */}
-      <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-5 shadow-sm space-y-4">
+      <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-[#2563eb]" />
+            <Building2 className="w-4 h-4 text-[#0284c7]" />
             <h3 className="text-sm font-bold text-white">Active Counterparty Netting Sets</h3>
           </div>
           <span className="text-xs text-slate-400">Showing {INITIAL_NETTING_SETS.length} onboarded netting sets</span>
@@ -569,7 +569,7 @@ export const XvaQuantTerminal: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-[#232d42] text-slate-400 font-semibold bg-[#0b0f19]/60">
+              <tr className="border-b border-[#334155] text-slate-400 font-semibold bg-[#0f172a]/60">
                 <th className="py-3 px-3">Netting Set ID</th>
                 <th className="py-3 px-3">Counterparty Name</th>
                 <th className="py-3 px-3">Rating</th>
@@ -582,7 +582,7 @@ export const XvaQuantTerminal: React.FC = () => {
                 <th className="py-3 px-3 text-center">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#232d42]">
+            <tbody className="divide-y divide-[#334155]">
               {INITIAL_NETTING_SETS.map((ns) => {
                 const isSelected = ns.id === selectedNsId;
                 const sym = ns.currency === 'EUR' ? '€' : ns.currency === 'GBP' ? '£' : '$';
@@ -590,14 +590,14 @@ export const XvaQuantTerminal: React.FC = () => {
                   <tr
                     key={ns.id}
                     className={`hover:bg-[#1f293d]/50 transition-colors cursor-pointer ${
-                      isSelected ? 'bg-[#2563eb]/10 border-l-2 border-l-[#2563eb]' : ''
+                      isSelected ? 'bg-[#0284c7]/10 border-l-2 border-l-[#0284c7]' : ''
                     }`}
                     onClick={() => setSelectedNsId(ns.id)}
                   >
                     <td className="py-3 px-3 font-mono font-bold text-slate-200">{ns.id}</td>
                     <td className="py-3 px-3 font-medium text-white">{ns.counterparty}</td>
                     <td className="py-3 px-3">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#0b0f19] border border-[#232d42] text-slate-300">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#0f172a] border border-[#334155] text-slate-300">
                         {ns.rating}
                       </span>
                     </td>
@@ -613,7 +613,7 @@ export const XvaQuantTerminal: React.FC = () => {
                           e.stopPropagation();
                           setSelectedNsId(ns.id);
                         }}
-                        className="px-2.5 py-1 text-[11px] font-bold rounded bg-[#2563eb] text-white hover:bg-[#1d4ed8] transition-colors"
+                        className="px-2.5 py-1 text-[11px] font-bold rounded bg-[#0284c7] text-white hover:bg-[#0369a1] transition-colors"
                       >
                         Inspect
                       </button>

@@ -91,7 +91,7 @@ export const CashflowScheduleModal: React.FC<CashflowScheduleModalProps> = ({ tr
       case 'PREMIUM':
         return 'bg-purple-950/80 text-purple-300 border-purple-700';
       case 'INTEREST':
-        return 'bg-blue-950/80 text-blue-300 border-blue-700';
+        return 'bg-blue-950/80 text-blue-300 border-cyan-700';
       case 'OPTION_EXERCISE':
         return 'bg-amber-950/80 text-amber-300 border-amber-700';
       case 'EXCHANGE':
@@ -110,7 +110,7 @@ export const CashflowScheduleModal: React.FC<CashflowScheduleModalProps> = ({ tr
         {/* Modal Header */}
         <div className="bg-[#0a0b0d] px-6 py-4 border-b border-gray-800 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-950/80 border border-blue-700/60 rounded-lg text-blue-400">
+            <div className="p-2 bg-blue-950/80 border border-cyan-700/60 rounded-lg text-blue-400">
               <Calendar className="w-5 h-5" />
             </div>
             <div>
@@ -242,7 +242,7 @@ export const CashflowScheduleModal: React.FC<CashflowScheduleModalProps> = ({ tr
             <button
               onClick={() => setActiveTab('SCHEDULE')}
               className={`pb-2.5 px-3 text-xs font-bold font-mono tracking-wider transition-colors border-b-2 cursor-pointer ${activeTab === 'SCHEDULE'
-                ? 'text-blue-400 border-blue-500'
+                ? 'text-blue-400 border-cyan-500'
                 : 'text-gray-400 border-transparent hover:text-white'
                 }`}
             >
@@ -261,7 +261,7 @@ export const CashflowScheduleModal: React.FC<CashflowScheduleModalProps> = ({ tr
             <button
               onClick={() => setActiveTab('CHART_ANALYTICS')}
               className={`pb-2.5 px-3 text-xs font-bold font-mono tracking-wider transition-colors border-b-2 cursor-pointer ${activeTab === 'CHART_ANALYTICS'
-                ? 'text-blue-400 border-blue-500'
+                ? 'text-blue-400 border-cyan-500'
                 : 'text-gray-400 border-transparent hover:text-white'
                 }`}
             >
@@ -337,7 +337,7 @@ export const CashflowScheduleModal: React.FC<CashflowScheduleModalProps> = ({ tr
 
                           {/* Reset Type Badge */}
                           <td className="py-3 px-3">
-                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase border ${rType === 'ARREARS' ? 'bg-amber-950 text-amber-300 border-amber-700' : 'bg-blue-950 text-blue-300 border-blue-700'}`}>
+                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase border ${rType === 'ARREARS' ? 'bg-amber-950 text-amber-300 border-amber-700' : 'bg-blue-950 text-blue-300 border-cyan-700'}`}>
                               {rType}
                             </span>
                           </td>
@@ -372,7 +372,7 @@ export const CashflowScheduleModal: React.FC<CashflowScheduleModalProps> = ({ tr
                                 </span>
 
                                 {/* Fixed Rate Calculation Popover */}
-                                <div className="absolute right-0 bottom-full mb-2 hidden group-hover/fixedTooltip:block w-80 p-3 bg-[#0d1017] border border-blue-500/50 rounded-xl shadow-2xl z-50 text-left font-mono text-[10px] text-gray-200 backdrop-blur-md">
+                                <div className="absolute right-0 bottom-full mb-2 hidden group-hover/fixedTooltip:block w-80 p-3 bg-[#0d1017] border border-cyan-500/50 rounded-xl shadow-2xl z-50 text-left font-mono text-[10px] text-gray-200 backdrop-blur-md">
                                   <div className="font-bold text-blue-400 border-b border-gray-800 pb-1 mb-1.5 flex items-center justify-between">
                                     <span>Fixed Coupon Calculation</span>
                                     <span className="text-[9px] text-gray-400">P-{p.periodNumber}</span>
@@ -529,7 +529,7 @@ export const CashflowScheduleModal: React.FC<CashflowScheduleModalProps> = ({ tr
                   </div>
                 </div>
 
-                <div className="bg-[#12151f] border border-blue-700/60 rounded-xl p-4 space-y-1">
+                <div className="bg-[#12151f] border border-cyan-700/60 rounded-xl p-4 space-y-1">
                   <div className="text-gray-400 text-[10px] uppercase font-sans font-bold flex items-center gap-1.5">
                     <Percent className="w-3.5 h-3.5 text-amber-400" /> Average Forward Rate & DF
                   </div>

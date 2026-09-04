@@ -130,18 +130,18 @@ export const FrtbRiskTerminal: React.FC = () => {
     <div id="frtb-risk-terminal-root" className="space-y-6 text-slate-100 font-sans">
       
       {/* Header Banner */}
-      <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-5 shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#2563eb]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#0284c7]/5 rounded-full blur-3xl pointer-events-none" />
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div>
             <div className="flex items-center gap-2">
-              <span className="p-2 bg-[#2563eb]/20 text-[#2563eb] rounded-lg border border-[#2563eb]/30">
+              <span className="p-2 bg-[#0284c7]/20 text-[#0284c7] rounded-lg border border-[#0284c7]/30">
                 <BarChart3 className="w-5 h-5" />
               </span>
               <h2 className="text-lg font-bold text-white tracking-wide">
                 FRTB Market Risk & Capital Requirements Terminal
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#2563eb]/10 border border-[#2563eb]/30 text-[#2563eb]">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#0284c7]/10 border border-[#0284c7]/30 text-[#0284c7]">
                 BASEL III / IV MAR20 - MAR22
               </span>
             </div>
@@ -157,7 +157,7 @@ export const FrtbRiskTerminal: React.FC = () => {
               id="frtb-currency-selector"
               value={selectedCurrency}
               onChange={(e) => setSelectedCurrency(e.target.value as Currency)}
-              className="bg-[#0b0f19] text-white border border-[#232d42] rounded-lg px-3 py-2 text-xs font-semibold focus:border-[#2563eb] focus:outline-none cursor-pointer"
+              className="bg-[#0f172a] text-white border border-[#334155] rounded-lg px-3 py-2 text-xs font-semibold focus:border-[#0284c7] focus:outline-none cursor-pointer"
             >
               <option value="USD">USD ($)</option>
               <option value="EUR">EUR (€)</option>
@@ -174,10 +174,10 @@ export const FrtbRiskTerminal: React.FC = () => {
       {/* Capital Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total FRTB Capital Requirement */}
-        <div className="bg-[#151b28] border border-[#2563eb]/40 rounded-xl p-4 flex flex-col justify-between shadow-md relative overflow-hidden">
+        <div className="bg-[#1e293b] border border-[#0284c7]/40 rounded-xl p-4 flex flex-col justify-between shadow-md relative overflow-hidden">
           <div className="flex items-center justify-between text-slate-300">
             <span className="text-xs font-bold text-white">Total FRTB Capital Requirement</span>
-            <ShieldCheck className="w-5 h-5 text-[#2563eb]" />
+            <ShieldCheck className="w-5 h-5 text-[#0284c7]" />
           </div>
           <div className="mt-2">
             <div className="text-2xl font-bold font-mono text-white">
@@ -190,13 +190,13 @@ export const FrtbRiskTerminal: React.FC = () => {
         </div>
 
         {/* SBM Capital Charge */}
-        <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+        <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
           <div className="flex items-center justify-between text-slate-400">
             <span className="text-xs font-semibold">Sensitivities-Based Method (SBM)</span>
-            <Layers className="w-4 h-4 text-[#2563eb]" />
+            <Layers className="w-4 h-4 text-[#0284c7]" />
           </div>
           <div className="mt-2">
-            <div className="text-xl font-bold font-mono text-[#2563eb]">
+            <div className="text-xl font-bold font-mono text-[#0284c7]">
               {currencySymbol}{calculatedFrtb.totalSbmCharge.toLocaleString()}
             </div>
             <div className="text-[11px] text-slate-400 mt-1">
@@ -206,7 +206,7 @@ export const FrtbRiskTerminal: React.FC = () => {
         </div>
 
         {/* DRC (Default Risk Charge) */}
-        <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+        <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
           <div className="flex items-center justify-between text-slate-400">
             <span className="text-xs font-semibold">Default Risk Charge (DRC)</span>
             <AlertTriangle className="w-4 h-4 text-amber-400" />
@@ -222,7 +222,7 @@ export const FrtbRiskTerminal: React.FC = () => {
         </div>
 
         {/* Expected Shortfall (ES 97.5%) */}
-        <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+        <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
           <div className="flex items-center justify-between text-slate-400">
             <span className="text-xs font-semibold">Expected Shortfall (ES 97.5%)</span>
             <Activity className="w-4 h-4 text-purple-400" />
@@ -242,10 +242,10 @@ export const FrtbRiskTerminal: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left 2 Cols: SBM Risk Class Breakdown Table */}
-        <div className="lg:col-span-2 bg-[#151b28] border border-[#232d42] rounded-xl p-5 shadow-sm space-y-4">
+        <div className="lg:col-span-2 bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Layers className="w-4 h-4 text-[#2563eb]" />
+              <Layers className="w-4 h-4 text-[#0284c7]" />
               <h3 className="text-sm font-bold text-white">SBM Risk Class Capital Charges</h3>
             </div>
             <span className="text-xs text-slate-400">Delta / Vega / Curvature Decomposition</span>
@@ -254,7 +254,7 @@ export const FrtbRiskTerminal: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-[#232d42] text-slate-400 font-semibold bg-[#0b0f19]/60">
+                <tr className="border-b border-[#334155] text-slate-400 font-semibold bg-[#0f172a]/60">
                   <th className="py-3 px-3">Risk Class</th>
                   <th className="py-3 px-3 text-right">Delta Charge</th>
                   <th className="py-3 px-3 text-right">Vega Charge</th>
@@ -263,7 +263,7 @@ export const FrtbRiskTerminal: React.FC = () => {
                   <th className="py-3 px-3 text-center">Liquidity Horizon</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#232d42]">
+              <tbody className="divide-y divide-[#334155]">
                 {calculatedFrtb.riskClasses.map((rc) => (
                   <tr key={rc.code} className="hover:bg-[#1f293d]/50 transition-colors">
                     <td className="py-3 px-3">
@@ -273,9 +273,9 @@ export const FrtbRiskTerminal: React.FC = () => {
                     <td className="py-3 px-3 text-right font-mono text-slate-200">{currencySymbol}{rc.deltaCharge.toLocaleString()}</td>
                     <td className="py-3 px-3 text-right font-mono text-slate-300">{currencySymbol}{rc.vegaCharge.toLocaleString()}</td>
                     <td className="py-3 px-3 text-right font-mono text-slate-300">{currencySymbol}{rc.curvatureCharge.toLocaleString()}</td>
-                    <td className="py-3 px-3 text-right font-mono font-bold text-[#2563eb]">{currencySymbol}{rc.totalSbm.toLocaleString()}</td>
+                    <td className="py-3 px-3 text-right font-mono font-bold text-[#0284c7]">{currencySymbol}{rc.totalSbm.toLocaleString()}</td>
                     <td className="py-3 px-3 text-center">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-[#0b0f19] border border-[#232d42] text-slate-300">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-[#0f172a] border border-[#334155] text-slate-300">
                         {rc.liquidityHorizon}
                       </span>
                     </td>
@@ -283,7 +283,7 @@ export const FrtbRiskTerminal: React.FC = () => {
                 ))}
               </tbody>
               <tfoot>
-                <tr className="border-t border-[#232d42] bg-[#0b0f19] font-bold text-xs text-white">
+                <tr className="border-t border-[#334155] bg-[#0f172a] font-bold text-xs text-white">
                   <td className="py-3 px-3">Aggregated SBM Total</td>
                   <td className="py-3 px-3 text-right font-mono">
                     {currencySymbol}{calculatedFrtb.riskClasses.reduce((a, b) => a + b.deltaCharge, 0).toLocaleString()}
@@ -294,7 +294,7 @@ export const FrtbRiskTerminal: React.FC = () => {
                   <td className="py-3 px-3 text-right font-mono">
                     {currencySymbol}{calculatedFrtb.riskClasses.reduce((a, b) => a + b.curvatureCharge, 0).toLocaleString()}
                   </td>
-                  <td className="py-3 px-3 text-right font-mono text-[#2563eb] text-sm">
+                  <td className="py-3 px-3 text-right font-mono text-[#0284c7] text-sm">
                     {currencySymbol}{calculatedFrtb.totalSbmCharge.toLocaleString()}
                   </td>
                   <td className="py-3 px-3 text-center text-[10px] text-slate-400 font-normal">SBM Sum</td>
@@ -305,10 +305,10 @@ export const FrtbRiskTerminal: React.FC = () => {
         </div>
 
         {/* Right Col: Stress Controls & Aggregation Scenario Panel */}
-        <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-5 shadow-sm space-y-5 flex flex-col justify-between">
+        <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm space-y-5 flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-2 border-b border-[#232d42] pb-3">
-              <Sliders className="w-4 h-4 text-[#2563eb]" />
+            <div className="flex items-center gap-2 border-b border-[#334155] pb-3">
+              <Sliders className="w-4 h-4 text-[#0284c7]" />
               <h3 className="text-sm font-bold text-white">FRTB Stress & Aggregation Controls</h3>
             </div>
 
@@ -316,7 +316,7 @@ export const FrtbRiskTerminal: React.FC = () => {
             <div className="mt-4 space-y-2">
               <div className="flex justify-between text-xs">
                 <span className="text-slate-300 font-medium">Market Volatility Stress Factor:</span>
-                <span className="font-mono text-[#2563eb] font-bold">{stressFactor.toFixed(2)}x</span>
+                <span className="font-mono text-[#0284c7] font-bold">{stressFactor.toFixed(2)}x</span>
               </div>
               <input
                 type="range"
@@ -325,7 +325,7 @@ export const FrtbRiskTerminal: React.FC = () => {
                 step="0.1"
                 value={stressFactor}
                 onChange={(e) => setStressFactor(Number(e.target.value))}
-                className="w-full h-1.5 bg-[#0b0f19] rounded-lg appearance-none cursor-pointer accent-[#2563eb]"
+                className="w-full h-1.5 bg-[#0f172a] rounded-lg appearance-none cursor-pointer accent-[#0284c7]"
               />
               <div className="flex justify-between text-[10px] text-slate-400 font-mono">
                 <span>0.8x (Calm)</span>
@@ -346,8 +346,8 @@ export const FrtbRiskTerminal: React.FC = () => {
                     onClick={() => setCorrelationScenario(scen)}
                     className={`py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
                       correlationScenario === scen
-                        ? 'bg-[#2563eb] text-white border-[#2563eb]'
-                        : 'bg-[#0b0f19] text-slate-400 border-[#232d42] hover:text-white'
+                        ? 'bg-[#0284c7] text-white border-[#0284c7]'
+                        : 'bg-[#0f172a] text-slate-400 border-[#334155] hover:text-white'
                     }`}
                   >
                     {scen}
@@ -357,7 +357,7 @@ export const FrtbRiskTerminal: React.FC = () => {
             </div>
 
             {/* Checkbox: Residual Risk Add-On (RRAO) */}
-            <div className="mt-5 flex items-center justify-between p-3 bg-[#0b0f19] rounded-lg border border-[#232d42]">
+            <div className="mt-5 flex items-center justify-between p-3 bg-[#0f172a] rounded-lg border border-[#334155]">
               <div>
                 <span className="text-xs font-semibold text-white block">Residual Risk Add-On (RRAO)</span>
                 <span className="text-[10px] text-slate-400">Exotic payoffs & path-dependent risks</span>
@@ -366,7 +366,7 @@ export const FrtbRiskTerminal: React.FC = () => {
                 type="checkbox"
                 checked={includeRrao}
                 onChange={(e) => setIncludeRrao(e.target.checked)}
-                className="w-4 h-4 accent-[#2563eb] rounded cursor-pointer"
+                className="w-4 h-4 accent-[#0284c7] rounded cursor-pointer"
               />
             </div>
           </div>
@@ -378,7 +378,7 @@ export const FrtbRiskTerminal: React.FC = () => {
               setCorrelationScenario('MEDIUM');
               setIncludeRrao(true);
             }}
-            className="w-full py-2 bg-[#0b0f19] hover:bg-[#1f293d] border border-[#232d42] text-xs font-semibold text-slate-300 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            className="w-full py-2 bg-[#0f172a] hover:bg-[#1f293d] border border-[#334155] text-xs font-semibold text-slate-300 rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             Reset FRTB Parameters

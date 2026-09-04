@@ -96,7 +96,7 @@ export const ModelValidationTab: React.FC<ModelValidationTabProps> = ({ trades, 
         <button
           type="button"
           onClick={() => handleQuickBookPreset(0)}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg text-xs font-mono shadow"
+          className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg text-xs font-mono shadow"
         >
           Book Sample 5Y SOFR IRS
         </button>
@@ -127,7 +127,7 @@ export const ModelValidationTab: React.FC<ModelValidationTabProps> = ({ trades, 
               <select
                 value={selectedTradeId}
                 onChange={(e) => setSelectedTradeId(e.target.value)}
-                className="bg-[#161d2f] border border-blue-600/80 rounded px-3 py-1.5 text-xs text-white font-mono font-bold"
+                className="bg-[#161d2f] border border-cyan-600/80 rounded px-3 py-1.5 text-xs text-white font-mono font-bold"
               >
                 {trades.map((t) => (
                   <option key={t.tradeId} value={t.tradeId}>
@@ -170,7 +170,7 @@ export const ModelValidationTab: React.FC<ModelValidationTabProps> = ({ trades, 
                 type="button"
                 disabled={isBookingPreset}
                 onClick={() => handleQuickBookPreset(idx)}
-                className="p-2 bg-[#1b2338] hover:bg-blue-900/50 border border-slate-700/80 hover:border-blue-500 rounded text-left transition-all cursor-pointer group"
+                className="p-2 bg-[#1b2338] hover:bg-blue-900/50 border border-slate-700/80 hover:border-cyan-500 rounded text-left transition-all cursor-pointer group"
               >
                 <div className="text-[11px] font-bold text-white group-hover:text-blue-300 truncate">
                   + {preset.label}
@@ -239,7 +239,7 @@ export const ModelValidationTab: React.FC<ModelValidationTabProps> = ({ trades, 
               validationResult.status === 'PASSED'
                 ? 'bg-emerald-950/80 border border-emerald-700 text-emerald-300'
                 : validationResult.status === 'ALIGNED'
-                ? 'bg-blue-950/80 border border-blue-700 text-blue-300'
+                ? 'bg-blue-950/80 border border-cyan-700 text-blue-300'
                 : 'bg-rose-950/80 border border-rose-700 text-rose-300'
             }`}>
               <CheckCircle2 className="w-3.5 h-3.5" />

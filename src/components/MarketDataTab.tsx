@@ -111,7 +111,7 @@ export const MarketDataTab: React.FC<MarketDataTabProps> = ({
       {/* Header Banner */}
       <div className="bg-[#0c101d] border border-blue-900/60 rounded-2xl p-6 shadow-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-6 font-sans">
         <div className="flex items-center gap-4">
-          <div className="p-3.5 bg-blue-950/80 border border-blue-700/80 rounded-2xl text-blue-400 shadow-inner">
+          <div className="p-3.5 bg-blue-950/80 border border-cyan-700/80 rounded-2xl text-blue-400 shadow-inner">
             <Globe className="w-7 h-7 animate-pulse" />
           </div>
           <div>
@@ -119,7 +119,7 @@ export const MarketDataTab: React.FC<MarketDataTabProps> = ({
               <h2 className="text-xl font-extrabold text-white tracking-wide font-sans">
                 Market Data & Pricing Model Parameter Repository
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-blue-950 text-blue-300 border border-blue-700 uppercase">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold font-mono bg-blue-950 text-blue-300 border border-cyan-700 uppercase">
                 INDEPENDENT MODEL GOVERNANCE
               </span>
             </div>
@@ -138,7 +138,7 @@ export const MarketDataTab: React.FC<MarketDataTabProps> = ({
                 onClick={() => setSelectedCurrency(ccy)}
                 className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
                   selectedCurrency === ccy
-                    ? 'bg-blue-600 text-white shadow'
+                    ? 'bg-cyan-600 text-white shadow'
                     : 'text-gray-400 hover:text-white'
                 }`}
               >
@@ -150,7 +150,7 @@ export const MarketDataTab: React.FC<MarketDataTabProps> = ({
           <select
             value={snapshotMode}
             onChange={(e) => setSnapshotMode(e.target.value as any)}
-            className="bg-[#141824] border border-blue-700/80 text-blue-300 font-bold rounded-xl px-3 py-2 text-xs focus:outline-none cursor-pointer"
+            className="bg-[#141824] border border-cyan-700/80 text-blue-300 font-bold rounded-xl px-3 py-2 text-xs focus:outline-none cursor-pointer"
           >
             <option value="EOD_NY_CLOSE">EOD NY Close Snapshot (17:00 EST)</option>
             <option value="REALTIME">⚡ Real-Time Intraday Live Feed</option>
@@ -166,7 +166,7 @@ export const MarketDataTab: React.FC<MarketDataTabProps> = ({
           onClick={() => setSelectedCategory('DISCOUNT_YIELD')}
           className={`px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-all cursor-pointer whitespace-nowrap ${
             selectedCategory === 'DISCOUNT_YIELD'
-              ? 'bg-blue-600 text-white shadow-lg border border-blue-400'
+              ? 'bg-cyan-600 text-white shadow-lg border border-blue-400'
               : 'bg-[#101420] text-gray-400 hover:text-white border border-gray-800'
           }`}
         >
@@ -270,7 +270,7 @@ export const MarketDataTab: React.FC<MarketDataTabProps> = ({
                   {curvePoints.map((pt) => (
                     <tr key={pt.tenor} className="hover:bg-[#121626]/80 transition-colors">
                       <td className="py-3 px-4 font-bold text-white flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                        <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
                         {pt.tenor}
                       </td>
                       <td className="py-3 px-4 text-center text-gray-300">

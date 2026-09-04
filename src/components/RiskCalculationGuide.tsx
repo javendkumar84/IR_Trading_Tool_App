@@ -45,7 +45,7 @@ export const RiskCalculationGuide: React.FC = () => {
             onClick={() => setSelectedRiskCategory('FIRST_ORDER')}
             className={`px-3 py-1.5 rounded-lg border font-bold transition-all cursor-pointer whitespace-nowrap ${
               selectedRiskCategory === 'FIRST_ORDER'
-                ? 'bg-blue-600 text-white border-blue-400 shadow'
+                ? 'bg-cyan-600 text-white border-blue-400 shadow'
                 : 'bg-[#141722] text-slate-400 hover:text-white border-slate-800'
             }`}
           >
@@ -170,7 +170,7 @@ export const RiskCalculationGuide: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-[#121624] p-3 rounded-xl border border-blue-700/60 font-mono text-xs space-y-1.5">
+              <div className="bg-[#121624] p-3 rounded-xl border border-cyan-700/60 font-mono text-xs space-y-1.5">
                 <span className="text-[10px] font-bold text-blue-300 uppercase block">Formula:</span>
                 <div className="text-blue-300 bg-[#08090d] p-2 rounded border border-slate-800 font-bold">
                   DV01 = ∂PV / ∂r × 0.0001<br/>

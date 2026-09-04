@@ -89,18 +89,18 @@ export const MonteCarloQuantTerminal: React.FC = () => {
     <div id="monte-carlo-terminal-root" className="space-y-6 text-slate-100 font-sans">
       
       {/* Header Banner */}
-      <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-5 shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-[#2563eb]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-[#0284c7]/5 rounded-full blur-3xl pointer-events-none" />
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div>
             <div className="flex items-center gap-2">
-              <span className="p-2 bg-[#2563eb]/20 text-[#2563eb] rounded-lg border border-[#2563eb]/30">
+              <span className="p-2 bg-[#0284c7]/20 text-[#0284c7] rounded-lg border border-[#0284c7]/30">
                 <Flame className="w-5 h-5" />
               </span>
               <h2 className="text-lg font-bold text-white tracking-wide">
                 Interactive 10,000-Path Monte Carlo Simulation Engine
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#2563eb]/10 border border-[#2563eb]/30 text-[#2563eb]">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#0284c7]/10 border border-[#0284c7]/30 text-[#0284c7]">
                 HULL-WHITE 1F/2F & HESTON-SABR
               </span>
             </div>
@@ -116,7 +116,7 @@ export const MonteCarloQuantTerminal: React.FC = () => {
               id="mc-model-selector"
               value={modelType}
               onChange={(e) => setModelType(e.target.value as any)}
-              className="bg-[#0b0f19] text-white border border-[#232d42] rounded-lg px-3 py-2 text-xs font-semibold focus:border-[#2563eb] focus:outline-none cursor-pointer"
+              className="bg-[#0f172a] text-white border border-[#334155] rounded-lg px-3 py-2 text-xs font-semibold focus:border-[#0284c7] focus:outline-none cursor-pointer"
             >
               <option value="HW1F">Hull-White 1-Factor (HW1F)</option>
               <option value="HW2F">Hull-White 2-Factor (HW2F)</option>
@@ -128,35 +128,35 @@ export const MonteCarloQuantTerminal: React.FC = () => {
 
       {/* Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+        <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
           <span className="text-xs text-slate-400 font-semibold">Simulated Paths</span>
           <div className="mt-2 text-xl font-bold font-mono text-white">
             {numPaths.toLocaleString()} Paths
           </div>
         </div>
 
-        <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+        <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
           <span className="text-xs text-slate-400 font-semibold">Mean Terminal Rate</span>
-          <div className="mt-2 text-xl font-bold font-mono text-[#2563eb]">
+          <div className="mt-2 text-xl font-bold font-mono text-[#0284c7]">
             {simulationData.terminalMetrics.mean}%
           </div>
         </div>
 
-        <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+        <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
           <span className="text-xs text-slate-400 font-semibold">Terminal 95% Quantile</span>
           <div className="mt-2 text-xl font-bold font-mono text-purple-400">
             {(simulationData.quantiles[simulationData.quantiles.length - 1].p95 * 100).toFixed(2)}%
           </div>
         </div>
 
-        <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+        <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
           <span className="text-xs text-slate-400 font-semibold">99% Downside Rate (VaR)</span>
           <div className="mt-2 text-xl font-bold font-mono text-amber-400">
             {simulationData.terminalMetrics.var99}%
           </div>
         </div>
 
-        <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-4 flex flex-col justify-between shadow-sm">
+        <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-4 flex flex-col justify-between shadow-sm">
           <span className="text-xs text-slate-400 font-semibold">97.5% Expected Shortfall</span>
           <div className="mt-2 text-xl font-bold font-mono text-red-400">
             {simulationData.terminalMetrics.cvar975}%
@@ -168,20 +168,20 @@ export const MonteCarloQuantTerminal: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Left 2 Cols: Interactive Trajectory Graph */}
-        <div className="lg:col-span-2 bg-[#151b28] border border-[#232d42] rounded-xl p-5 shadow-sm space-y-4">
+        <div className="lg:col-span-2 bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Activity className="w-4 h-4 text-[#2563eb]" />
+              <Activity className="w-4 h-4 text-[#0284c7]" />
               <h3 className="text-sm font-bold text-white">Stochastic Rate Trajectories & Quantile Envelope</h3>
             </div>
             <div className="flex items-center gap-3 text-[10px] font-mono">
-              <span className="flex items-center gap-1"><span className="w-2.5 h-0.5 bg-[#2563eb]" /> Median (50%)</span>
+              <span className="flex items-center gap-1"><span className="w-2.5 h-0.5 bg-[#0284c7]" /> Median (50%)</span>
               <span className="flex items-center gap-1"><span className="w-2.5 h-0.5 bg-purple-400" /> 95% Band</span>
               <span className="flex items-center gap-1"><span className="w-2.5 h-0.5 bg-emerald-400" /> 5% Band</span>
             </div>
           </div>
 
-          <div className="bg-[#0b0f19] border border-[#232d42] rounded-lg p-4 h-72 relative flex flex-col justify-between">
+          <div className="bg-[#0f172a] border border-[#334155] rounded-lg p-4 h-72 relative flex flex-col justify-between">
             <svg className="w-full h-full overflow-visible" viewBox="0 0 500 200" preserveAspectRatio="none">
               
               {/* Individual Sample Paths */}
@@ -203,7 +203,7 @@ export const MonteCarloQuantTerminal: React.FC = () => {
               {/* Line: Median 50th Percentile */}
               <polyline
                 fill="none"
-                stroke="#2563eb"
+                stroke="#0284c7"
                 strokeWidth="2.5"
                 points={simulationData.quantiles.map((q, stepIdx) => {
                   const x = (stepIdx / simulationData.timeSteps) * 500;
@@ -240,7 +240,7 @@ export const MonteCarloQuantTerminal: React.FC = () => {
             </svg>
 
             {/* X-Axis Labels */}
-            <div className="flex justify-between text-[10px] font-mono text-slate-400 border-t border-[#232d42] pt-1">
+            <div className="flex justify-between text-[10px] font-mono text-slate-400 border-t border-[#334155] pt-1">
               <span>0Y (Spot)</span>
               <span>{(timeHorizonYears * 0.25).toFixed(1)}Y</span>
               <span>{(timeHorizonYears * 0.5).toFixed(1)}Y</span>
@@ -251,9 +251,9 @@ export const MonteCarloQuantTerminal: React.FC = () => {
         </div>
 
         {/* Right Col: Controls & Resimulation Button */}
-        <div className="bg-[#151b28] border border-[#232d42] rounded-xl p-5 shadow-sm space-y-5 flex flex-col justify-between">
+        <div className="bg-[#1e293b] border border-[#334155] rounded-xl p-5 shadow-sm space-y-5 flex flex-col justify-between">
           <div>
-            <h3 className="text-sm font-bold text-white border-b border-[#232d42] pb-3">
+            <h3 className="text-sm font-bold text-white border-b border-[#334155] pb-3">
               Stochastic Parameters
             </h3>
 
@@ -265,7 +265,7 @@ export const MonteCarloQuantTerminal: React.FC = () => {
                 step="0.1"
                 value={initialRatePercent}
                 onChange={(e) => setInitialRatePercent(Number(e.target.value))}
-                className="w-full bg-[#0b0f19] border border-[#232d42] text-white rounded-lg p-2 text-xs font-mono font-bold"
+                className="w-full bg-[#0f172a] border border-[#334155] text-white rounded-lg p-2 text-xs font-mono font-bold"
               />
             </div>
 
@@ -273,7 +273,7 @@ export const MonteCarloQuantTerminal: React.FC = () => {
             <div className="mt-4 space-y-1">
               <div className="flex justify-between text-xs">
                 <span className="text-slate-300">Mean Reversion (a):</span>
-                <span className="font-mono text-[#2563eb]">{meanReversionAlpha}</span>
+                <span className="font-mono text-[#0284c7]">{meanReversionAlpha}</span>
               </div>
               <input
                 type="range"
@@ -282,7 +282,7 @@ export const MonteCarloQuantTerminal: React.FC = () => {
                 step="0.005"
                 value={meanReversionAlpha}
                 onChange={(e) => setMeanReversionAlpha(Number(e.target.value))}
-                className="w-full h-1.5 bg-[#0b0f19] rounded-lg appearance-none cursor-pointer accent-[#2563eb]"
+                className="w-full h-1.5 bg-[#0f172a] rounded-lg appearance-none cursor-pointer accent-[#0284c7]"
               />
             </div>
 
@@ -299,14 +299,14 @@ export const MonteCarloQuantTerminal: React.FC = () => {
                 step="0.001"
                 value={volatilitySigma}
                 onChange={(e) => setVolatilitySigma(Number(e.target.value))}
-                className="w-full h-1.5 bg-[#0b0f19] rounded-lg appearance-none cursor-pointer accent-purple-400"
+                className="w-full h-1.5 bg-[#0f172a] rounded-lg appearance-none cursor-pointer accent-purple-400"
               />
             </div>
           </div>
 
           <button
             onClick={() => setSeed(Math.floor(Math.random() * 100000))}
-            className="w-full py-2.5 bg-[#2563eb] hover:bg-[#1d4ed8] text-white text-xs font-bold rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
+            className="w-full py-2.5 bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
           >
             <Play className="w-4 h-4 fill-white" />
             Re-Run 10,000 Monte Carlo Paths

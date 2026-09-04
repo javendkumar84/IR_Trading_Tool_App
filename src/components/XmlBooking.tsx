@@ -2382,7 +2382,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
             <button
               type="button"
               onClick={() => setShowPvLogModal(true)}
-              className="px-3 py-1.5 bg-blue-950/80 hover:bg-blue-900 border border-blue-700/80 text-blue-300 rounded text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow"
+              className="px-3 py-1.5 bg-blue-950/80 hover:bg-blue-900 border border-cyan-700/80 text-blue-300 rounded text-xs font-mono font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow"
               title="View step-by-step PV valuation audit log & mathematical steps"
             >
               <Terminal className="w-3.5 h-3.5 text-blue-400" />
@@ -2404,7 +2404,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
         {/* Product Type Selector Tabs */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-14 gap-2 pt-2 border-t border-gray-800/60">
           {[
-            { type: 'IRS', label: '1. IR Swap', desc: 'Interest Rate Swap', color: 'border-blue-500 text-blue-400' },
+            { type: 'IRS', label: '1. IR Swap', desc: 'Interest Rate Swap', color: 'border-cyan-500 text-blue-400' },
             { type: 'CAP_FLOOR', label: '2. Cap / Floor', desc: 'IR Option', color: 'border-emerald-500 text-emerald-400' },
             { type: 'SWAPTION', label: '3. Swaption', desc: 'Option on IRS', color: 'border-amber-500 text-amber-400' },
             { type: 'RANGE_ACCRUAL', label: '4. Range Accrual', desc: 'Structured IR', color: 'border-teal-500 text-teal-300' },
@@ -2463,7 +2463,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   [selectedProduct]: e.target.value,
                 }))
               }
-              className="w-full bg-[#090a0c] border border-blue-700/60 text-white rounded-lg px-3 py-2 text-xs font-mono font-semibold focus:outline-none focus:border-blue-400 shadow-inner cursor-pointer"
+              className="w-full bg-[#090a0c] border border-cyan-700/60 text-white rounded-lg px-3 py-2 text-xs font-mono font-semibold focus:outline-none focus:border-blue-400 shadow-inner cursor-pointer"
             >
               {PRODUCT_VALUATION_MODELS[selectedProduct].map((model) => (
                 <option key={model.id} value={model.id}>
@@ -2537,7 +2537,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                     setCounterpartyLei(found.lei);
                   }
                 }}
-                className="w-full bg-[#16181d] border border-blue-500/80 rounded p-2 text-sm text-white font-semibold focus:outline-none focus:border-blue-400 cursor-pointer"
+                className="w-full bg-[#16181d] border border-cyan-500/80 rounded p-2 text-sm text-white font-semibold focus:outline-none focus:border-blue-400 cursor-pointer"
               >
                 {counterparties.map((cp) => (
                   <option key={cp.id} value={cp.name}>
@@ -2553,7 +2553,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                 type="text"
                 value={counterpartyLei}
                 onChange={(e) => setCounterpartyLei(e.target.value)}
-                className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono focus:outline-none focus:border-blue-500"
+                className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono focus:outline-none focus:border-cyan-500"
                 required
               />
             </div>
@@ -2575,7 +2575,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   setFxOptCallCurrency(newCcy);
                   autoSyncMarketCurves(selectedProduct, newCcy);
                 }}
-                className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-400 cursor-pointer"
+                className="w-full bg-[#16181d] border border-cyan-600/80 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-400 cursor-pointer"
               >
                 <option value="USD">USD (US Dollar $)</option>
                 <option value="EUR">EUR (Euro €)</option>
@@ -2674,7 +2674,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   type="date"
                   value={effectiveDate}
                   onChange={(e) => setEffectiveDate(e.target.value)}
-                  className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-xs text-white font-mono focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-xs text-white font-mono focus:outline-none focus:border-cyan-500"
                   required
                 />
               </div>
@@ -2687,7 +2687,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   type="date"
                   value={maturityDate}
                   onChange={(e) => setMaturityDate(e.target.value)}
-                  className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-xs text-white font-mono focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-xs text-white font-mono focus:outline-none focus:border-cyan-500"
                   required
                 />
               </div>
@@ -2695,16 +2695,16 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
           </div>
 
           {/* LIVE TRADE PRESENT VALUE (PV) & QUANTITATIVE PRICING MODEL PANEL */}
-          <div className="bg-gradient-to-r from-[#0d1322] via-[#0f172a] to-[#0d1322] p-4 rounded-xl border border-blue-600/60 font-mono shadow-xl space-y-3">
+          <div className="bg-gradient-to-r from-[#0d1322] via-[#0f172a] to-[#0d1322] p-4 rounded-xl border border-cyan-600/60 font-mono shadow-xl space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-800 pb-2">
               <div className="flex items-center gap-2.5">
-                <div className="p-1.5 bg-blue-950/80 border border-blue-700/60 rounded-lg text-blue-400">
+                <div className="p-1.5 bg-blue-950/80 border border-cyan-700/60 rounded-lg text-blue-400">
                   <Calculator className="w-5 h-5 text-blue-400" />
                 </div>
                 <div>
                   <h3 className="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2 font-sans">
                     Live Trade Valuation & Quantitative Pricing Model
-                    <span className="px-2 py-0.5 bg-blue-950 text-blue-300 text-[10px] rounded border border-blue-700 font-mono">
+                    <span className="px-2 py-0.5 bg-blue-950 text-blue-300 text-[10px] rounded border border-cyan-700 font-mono">
                       {selectedProduct}
                     </span>
                   </h3>
@@ -2718,7 +2718,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                 <button
                   type="button"
                   onClick={() => setShowPvLogModal(true)}
-                  className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded text-xs font-sans font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow border border-blue-400 animate-pulse"
+                  className="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white rounded text-xs font-sans font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow border border-blue-400 animate-pulse"
                   title="Open Step-by-Step Present Value (PV) Valuation Audit Log & Formula Breakdown"
                 >
                   <Terminal className="w-3.5 h-3.5 text-white" />
@@ -2736,7 +2736,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 text-xs pt-1">
               {/* 1. Calculated Present Value (PV) Field */}
-              <div className="bg-[#121624] p-3 rounded-lg border border-blue-700/80 space-y-1.5">
+              <div className="bg-[#121624] p-3 rounded-lg border border-cyan-700/80 space-y-1.5">
                 <label className="block text-[10px] uppercase font-bold text-blue-300 font-sans flex items-center justify-between">
                   <span>Calculated PV (Total)</span>
                   <span className="text-[9px] text-amber-300 font-bold bg-amber-950/80 px-1 rounded border border-amber-800">
@@ -3006,7 +3006,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   <select
                     value={leg1Type}
                     onChange={(e) => setLeg1Type(e.target.value as LegType)}
-                    className="w-full bg-[#16181d] border border-blue-600 rounded p-2 text-sm text-white font-bold"
+                    className="w-full bg-[#16181d] border border-cyan-600 rounded p-2 text-sm text-white font-bold"
                   >
                     <option value="FIXED">FIXED RATE LEG</option>
                     <option value="FLOATING">FLOATING INDEX LEG</option>
@@ -3047,7 +3047,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   <FormattedNumberInput
                     value={notional}
                     onChange={setNotional}
-                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-500"
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-cyan-500"
                     required
                   />
                 </div>
@@ -3060,7 +3060,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                       step="0.0001"
                       value={fixedRate}
                       onChange={(e) => setFixedRate(Number(e.target.value))}
-                      className="w-full bg-[#16181d] border border-blue-500 rounded p-2 text-sm text-white font-mono font-bold"
+                      className="w-full bg-[#16181d] border border-cyan-500 rounded p-2 text-sm text-white font-mono font-bold"
                       required
                     />
                   </div>
@@ -3166,7 +3166,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   <select
                     value={leg1AccrualCalendar}
                     onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
-                    className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                    className="w-full bg-[#16181d] border border-cyan-600/80 rounded p-2 text-sm text-white font-bold"
                   >
                     <option value="USNY">USNY (New York)</option>
                     <option value="GBLO">GBLO (London)</option>
@@ -3281,7 +3281,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   <FormattedNumberInput
                     value={floatingNotional}
                     onChange={setFloatingNotional}
-                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-500"
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-cyan-500"
                   />
                 </div>
 
@@ -3293,7 +3293,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                       step="0.0001"
                       value={leg2FixedRate}
                       onChange={(e) => setLeg2FixedRate(Number(e.target.value))}
-                      className="w-full bg-[#16181d] border border-blue-500 rounded p-2 text-sm text-white font-mono font-bold"
+                      className="w-full bg-[#16181d] border border-cyan-500 rounded p-2 text-sm text-white font-mono font-bold"
                     />
                   </div>
                 )}
@@ -3398,7 +3398,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   <select
                     value={leg2AccrualCalendar}
                     onChange={(e) => setLeg2AccrualCalendar(e.target.value as any)}
-                    className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                    className="w-full bg-[#16181d] border border-cyan-600/80 rounded p-2 text-sm text-white font-bold"
                   >
                     <option value="USNY">USNY (New York)</option>
                     <option value="GBLO">GBLO (London)</option>
@@ -3593,7 +3593,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   <select
                     value={leg1AccrualCalendar}
                     onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
-                    className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                    className="w-full bg-[#16181d] border border-cyan-600/80 rounded p-2 text-sm text-white font-bold"
                   >
                     <option value="USNY">USNY (New York)</option>
                     <option value="GBLO">GBLO (London)</option>
@@ -3740,7 +3740,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   <FormattedNumberInput
                     value={swaptionNotional}
                     onChange={setSwaptionNotional}
-                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-500"
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-cyan-500"
                     required
                   />
                 </div>
@@ -3831,7 +3831,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   <select
                     value={leg1AccrualCalendar}
                     onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
-                    className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                    className="w-full bg-[#16181d] border border-cyan-600/80 rounded p-2 text-sm text-white font-bold"
                   >
                     <option value="USNY">USNY (New York)</option>
                     <option value="GBLO">GBLO (London)</option>
@@ -3999,7 +3999,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                     <FormattedNumberInput
                       value={rangeNotional}
                       onChange={setRangeNotional}
-                      className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-500"
+                      className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-cyan-500"
                       required
                     />
                   </div>
@@ -4036,7 +4036,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                     <select
                       value={leg1AccrualCalendar}
                       onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
-                      className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                      className="w-full bg-[#16181d] border border-cyan-600/80 rounded p-2 text-sm text-white font-bold"
                     >
                       <option value="USNY">USNY (New York)</option>
                       <option value="GBLO">GBLO (London)</option>
@@ -4103,7 +4103,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
               <div className="p-4 bg-[#12141a] border border-blue-900/60 rounded-xl space-y-4">
                 <h3 className="text-xs font-bold text-blue-300 uppercase tracking-widest flex items-center justify-between border-b border-gray-800 pb-2">
                   <span>3. Leg 2 — Funding Stream (Counter Leg)</span>
-                  <span className="text-[10px] font-normal text-blue-400 bg-blue-950/80 px-2 py-0.5 rounded border border-blue-700/60">Floating/Fixed Funding</span>
+                  <span className="text-[10px] font-normal text-blue-400 bg-blue-950/80 px-2 py-0.5 rounded border border-cyan-700/60">Floating/Fixed Funding</span>
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -4189,7 +4189,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                         step="0.05"
                         value={rangeFundingFixedRate}
                         onChange={(e) => setRangeFundingFixedRate(Number(e.target.value))}
-                        className="w-full bg-[#16181d] border border-blue-500/80 rounded p-2 text-sm text-white font-mono font-bold"
+                        className="w-full bg-[#16181d] border border-cyan-500/80 rounded p-2 text-sm text-white font-mono font-bold"
                       />
                     </div>
                   )}
@@ -4225,7 +4225,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                     <select
                       value={leg2AccrualCalendar}
                       onChange={(e) => setLeg2AccrualCalendar(e.target.value as any)}
-                      className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                      className="w-full bg-[#16181d] border border-cyan-600/80 rounded p-2 text-sm text-white font-bold"
                     >
                       <option value="USNY">USNY (New York)</option>
                       <option value="GBLO">GBLO (London)</option>
@@ -4416,7 +4416,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                     <select
                       value={leg1AccrualCalendar}
                       onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
-                      className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                      className="w-full bg-[#16181d] border border-cyan-600/80 rounded p-2 text-sm text-white font-bold"
                     >
                       <option value="USNY">USNY (New York)</option>
                       <option value="GBLO">GBLO (London)</option>
@@ -4483,7 +4483,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
               <div className="p-4 bg-[#12141a] border border-blue-900/60 rounded-xl space-y-4">
                 <h3 className="text-xs font-bold text-blue-300 uppercase tracking-widest flex items-center justify-between border-b border-gray-800 pb-2">
                   <span>3. Leg 2 — Funding Stream</span>
-                  <span className="text-[10px] font-normal text-blue-400 bg-blue-950/80 px-2 py-0.5 rounded border border-blue-700/60">Funding Leg</span>
+                  <span className="text-[10px] font-normal text-blue-400 bg-blue-950/80 px-2 py-0.5 rounded border border-cyan-700/60">Funding Leg</span>
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
@@ -4524,7 +4524,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                     <select
                       value={leg2AccrualCalendar}
                       onChange={(e) => setLeg2AccrualCalendar(e.target.value as any)}
-                      className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                      className="w-full bg-[#16181d] border border-cyan-600/80 rounded p-2 text-sm text-white font-bold"
                     >
                       <option value="USNY">USNY (New York)</option>
                       <option value="GBLO">GBLO (London)</option>
@@ -4655,7 +4655,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                       step="0.1"
                       value={tarnLeverage}
                       onChange={(e) => setTarnLeverage(Number(e.target.value))}
-                      className="w-full bg-[#16181d] border border-blue-500/80 rounded p-2 text-sm text-white font-mono font-bold"
+                      className="w-full bg-[#16181d] border border-cyan-500/80 rounded p-2 text-sm text-white font-mono font-bold"
                       required
                     />
                   </div>
@@ -4715,7 +4715,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                     <select
                       value={leg1AccrualCalendar}
                       onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
-                      className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                      className="w-full bg-[#16181d] border border-cyan-600/80 rounded p-2 text-sm text-white font-bold"
                     >
                       <option value="USNY">USNY (New York)</option>
                       <option value="GBLO">GBLO (London)</option>
@@ -4782,7 +4782,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
               <div className="p-4 bg-[#12141a] border border-blue-900/60 rounded-xl space-y-4">
                 <h3 className="text-xs font-bold text-blue-300 uppercase tracking-widest flex items-center justify-between border-b border-gray-800 pb-2">
                   <span>3. Leg 2 — Funding Stream</span>
-                  <span className="text-[10px] font-normal text-blue-400 bg-blue-950/80 px-2 py-0.5 rounded border border-blue-700/60">Funding Leg</span>
+                  <span className="text-[10px] font-normal text-blue-400 bg-blue-950/80 px-2 py-0.5 rounded border border-cyan-700/60">Funding Leg</span>
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
@@ -4823,7 +4823,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                     <select
                       value={leg2AccrualCalendar}
                       onChange={(e) => setLeg2AccrualCalendar(e.target.value as any)}
-                      className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                      className="w-full bg-[#16181d] border border-cyan-600/80 rounded p-2 text-sm text-white font-bold"
                     >
                       <option value="USNY">USNY (New York)</option>
                       <option value="GBLO">GBLO (London)</option>
@@ -4941,7 +4941,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                       step="0.1"
                       value={sbLeverage}
                       onChange={(e) => setSbLeverage(Number(e.target.value))}
-                      className="w-full bg-[#16181d] border border-blue-500/80 rounded p-2 text-sm text-white font-mono font-bold"
+                      className="w-full bg-[#16181d] border border-cyan-500/80 rounded p-2 text-sm text-white font-mono font-bold"
                       required
                     />
                   </div>
@@ -5001,7 +5001,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                     <select
                       value={leg1AccrualCalendar}
                       onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
-                      className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                      className="w-full bg-[#16181d] border border-cyan-600/80 rounded p-2 text-sm text-white font-bold"
                     >
                       <option value="USNY">USNY (New York)</option>
                       <option value="GBLO">GBLO (London)</option>
@@ -5068,7 +5068,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
               <div className="p-4 bg-[#12141a] border border-blue-900/60 rounded-xl space-y-4">
                 <h3 className="text-xs font-bold text-blue-300 uppercase tracking-widest flex items-center justify-between border-b border-gray-800 pb-2">
                   <span>3. Leg 2 — Funding Stream</span>
-                  <span className="text-[10px] font-normal text-blue-400 bg-blue-950/80 px-2 py-0.5 rounded border border-blue-700/60">Funding Leg</span>
+                  <span className="text-[10px] font-normal text-blue-400 bg-blue-950/80 px-2 py-0.5 rounded border border-cyan-700/60">Funding Leg</span>
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
@@ -5109,7 +5109,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                     <select
                       value={leg2AccrualCalendar}
                       onChange={(e) => setLeg2AccrualCalendar(e.target.value as any)}
-                      className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                      className="w-full bg-[#16181d] border border-cyan-600/80 rounded p-2 text-sm text-white font-bold"
                     >
                       <option value="USNY">USNY (New York)</option>
                       <option value="GBLO">GBLO (London)</option>
@@ -5233,7 +5233,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   <FormattedNumberInput
                     value={fxBaseAmount}
                     onChange={setFxBaseAmount}
-                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-500"
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-cyan-500"
                     required
                   />
                 </div>
@@ -5426,7 +5426,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   <select
                     value={leg1AccrualCalendar}
                     onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
-                    className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                    className="w-full bg-[#16181d] border border-cyan-600/80 rounded p-2 text-sm text-white font-bold"
                   >
                     <option value="USNY">USNY (New York)</option>
                     <option value="GBLO">GBLO (London)</option>
@@ -5577,7 +5577,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   <select
                     value={leg1AccrualCalendar}
                     onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
-                    className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                    className="w-full bg-[#16181d] border border-cyan-600/80 rounded p-2 text-sm text-white font-bold"
                   >
                     <option value="USNY">USNY (New York)</option>
                     <option value="GBLO">GBLO (London)</option>
@@ -5731,7 +5731,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   <select
                     value={leg1AccrualCalendar}
                     onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
-                    className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                    className="w-full bg-[#16181d] border border-cyan-600/80 rounded p-2 text-sm text-white font-bold"
                   >
                     <option value="USNY">USNY (New York)</option>
                     <option value="GBLO">GBLO (London)</option>
@@ -5884,7 +5884,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   <FormattedNumberInput
                     value={repoNotional}
                     onChange={setRepoNotional}
-                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-500"
+                    className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-cyan-500"
                     required
                   />
                 </div>
@@ -5894,7 +5894,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                   <select
                     value={leg1AccrualCalendar}
                     onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
-                    className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                    className="w-full bg-[#16181d] border border-cyan-600/80 rounded p-2 text-sm text-white font-bold"
                   >
                     <option value="USNY">USNY (New York)</option>
                     <option value="GBLO">GBLO (London)</option>
@@ -6204,7 +6204,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                           step="0.05"
                           value={ddTrigger1Rate}
                           onChange={(e) => setDdTrigger1Rate(Number(e.target.value))}
-                          className="w-full bg-[#16181d] border border-blue-500/80 rounded p-1.5 text-xs text-blue-300 font-mono font-bold"
+                          className="w-full bg-[#16181d] border border-cyan-500/80 rounded p-1.5 text-xs text-blue-300 font-mono font-bold"
                           required
                         />
                       </div>
@@ -6304,7 +6304,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                     <FormattedNumberInput
                       value={ddNotional}
                       onChange={setDdNotional}
-                      className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-blue-500"
+                      className="w-full bg-[#16181d] border border-gray-700 rounded p-2 text-sm text-white font-mono font-bold focus:outline-none focus:border-cyan-500"
                       required
                     />
                   </div>
@@ -6314,7 +6314,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                     <select
                       value={leg1AccrualCalendar}
                       onChange={(e) => setLeg1AccrualCalendar(e.target.value as any)}
-                      className="w-full bg-[#16181d] border border-blue-600/80 rounded p-2 text-sm text-white font-bold"
+                      className="w-full bg-[#16181d] border border-cyan-600/80 rounded p-2 text-sm text-white font-bold"
                     >
                       <option value="USNY">USNY (New York)</option>
                       <option value="GBLO">GBLO (London)</option>
@@ -6413,7 +6413,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                 onClick={recalculatePreviewTrade}
                 className={`px-5 py-2.5 rounded-xl font-bold font-mono text-xs flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg w-full sm:w-auto ${
                   hasPendingChanges
-                    ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-amber-600 hover:from-blue-500 hover:to-amber-500 text-white border border-blue-400 animate-pulse'
+                    ? 'bg-gradient-to-r from-cyan-600 via-indigo-600 to-amber-600 hover:from-cyan-500 hover:to-amber-500 text-white border border-blue-400 animate-pulse'
                     : 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700/80'
                 }`}
               >
@@ -6443,7 +6443,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
               <button
                 type="button"
                 onClick={() => setShowPvLogModal(true)}
-                className="w-full sm:w-auto px-5 py-3 bg-blue-950/80 hover:bg-blue-900 text-blue-300 border border-blue-700 hover:border-blue-400 rounded font-bold uppercase tracking-wider text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
+                className="w-full sm:w-auto px-5 py-3 bg-blue-950/80 hover:bg-blue-900 text-blue-300 border border-cyan-700 hover:border-blue-400 rounded font-bold uppercase tracking-wider text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md"
               >
                 <Terminal className="w-4 h-4 text-blue-400" />
                 View PV Audit Log
@@ -6461,7 +6461,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
               <button
                 type="submit"
                 disabled={isLoading}
-                className="flex-1 w-full py-3 bg-blue-600 hover:bg-blue-500 text-white rounded font-bold uppercase tracking-widest text-xs transition-colors shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="flex-1 w-full py-3 bg-cyan-600 hover:bg-cyan-500 text-white rounded font-bold uppercase tracking-widest text-xs transition-colors shadow-lg flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <CheckCircle2 className="w-4 h-4" />
                 {isLoading ? 'Persisting Trade to SQLite...' : `Book ${selectedProduct} & Save to SQLite`}
@@ -6496,7 +6496,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-gray-800 pb-3 gap-2">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-blue-950/80 border border-blue-700/60 rounded-lg text-blue-400">
+                <div className="p-2 bg-blue-950/80 border border-cyan-700/60 rounded-lg text-blue-400">
                   <Calendar className="w-4 h-4" />
                 </div>
                 <div>
@@ -6646,7 +6646,7 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
                                 </span>
 
                                 {/* Fixed Rate Calculation Popover */}
-                                <div className="absolute right-0 bottom-full mb-2 hidden group-hover/fixedTooltip:block w-72 p-3 bg-[#0d1017] border border-blue-500/50 rounded-xl shadow-2xl z-50 text-left font-mono text-[10px] text-gray-200 backdrop-blur-md">
+                                <div className="absolute right-0 bottom-full mb-2 hidden group-hover/fixedTooltip:block w-72 p-3 bg-[#0d1017] border border-cyan-500/50 rounded-xl shadow-2xl z-50 text-left font-mono text-[10px] text-gray-200 backdrop-blur-md">
                                   <div className="font-bold text-blue-400 border-b border-gray-800 pb-1 mb-1.5 flex items-center justify-between">
                                     <span>Fixed Coupon Calculation</span>
                                     <span className="text-[9px] text-gray-400">P-{p.periodNumber}</span>
@@ -7079,13 +7079,13 @@ export const XmlBooking: React.FC<XmlBookingProps> = ({ traderUser, onTradeBooke
             {/* Modal Header */}
             <div className="px-6 py-4 bg-[#111420] border-b border-gray-800 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-blue-950/80 border border-blue-700/80 rounded-xl text-blue-400">
+                <div className="p-2.5 bg-blue-950/80 border border-cyan-700/80 rounded-xl text-blue-400">
                   <Terminal className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-white flex items-center gap-2 font-sans">
                     Step-by-Step Present Value (PV) Valuation Audit Log
-                    <span className="px-2.5 py-0.5 bg-blue-950 text-blue-300 text-[10px] rounded-full border border-blue-700 font-mono font-bold">
+                    <span className="px-2.5 py-0.5 bg-blue-950 text-blue-300 text-[10px] rounded-full border border-cyan-700 font-mono font-bold">
                       {selectedProduct} | {currency}
                     </span>
                   </h3>
@@ -7249,7 +7249,7 @@ IR Delta (DV01)     : Δ_k       = Notional × DayCountFraction × DF(T_k) × 0.
                               <span>#{p.periodNumber}</span>
 
                               {/* Hover Tooltip showing Period Calculation Breakdown */}
-                              <div className="hidden group-hover:block absolute left-12 top-0 z-50 w-96 p-3.5 bg-[#0b0f19] border border-blue-600/90 rounded-xl shadow-2xl text-[11px] font-mono text-gray-200 pointer-events-none space-y-2">
+                              <div className="hidden group-hover:block absolute left-12 top-0 z-50 w-96 p-3.5 bg-[#0f172a] border border-cyan-600/90 rounded-xl shadow-2xl text-[11px] font-mono text-gray-200 pointer-events-none space-y-2">
                                 <div className="text-xs font-bold text-blue-300 border-b border-blue-900/60 pb-1 flex items-center justify-between font-sans">
                                   <span>Period #{p.periodNumber} Exact Mathematical Steps</span>
                                   <span className="text-[10px] text-gray-400 font-mono">Days: {p.numberOfDays} (α={p.dayCountFraction})</span>
@@ -7338,7 +7338,7 @@ IR Delta (DV01)     : Δ_k       = Notional × DayCountFraction × DF(T_k) × 0.
               <button
                 type="button"
                 onClick={() => setShowPvLogModal(false)}
-                className="px-5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold transition-colors cursor-pointer"
+                className="px-5 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg font-bold transition-colors cursor-pointer"
               >
                 Close Audit Log
               </button>

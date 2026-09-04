@@ -137,7 +137,7 @@ export const EodRiskDashboard: React.FC<EodRiskDashboardProps> = ({ trades, onRe
   const getTradeStateBadge = (status: TradeStatus) => {
     switch (status) {
       case 'BOOKED':
-        return 'bg-blue-950/80 text-blue-300 border-blue-700/80';
+        return 'bg-blue-950/80 text-blue-300 border-cyan-700/80';
       case 'CONFIRMED':
         return 'bg-emerald-950/80 text-emerald-300 border-emerald-700/80';
       case 'AMENDED':
