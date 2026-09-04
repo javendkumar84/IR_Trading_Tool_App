@@ -284,7 +284,7 @@ export default function App() {
         )}
 
         {activeTab === 'quant-pnl' && (
-          <QuantPnlTerminal />
+          <QuantPnlTerminal trades={trades} />
         )}
 
         {activeTab === 'quant-reports' && (
