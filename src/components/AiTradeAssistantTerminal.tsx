@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import {
-  Sparkles, Mic, Send, CheckCircle2, ArrowRight, Bot, User, FileCode, RefreshCw, Volume2, ShieldCheck
+  Sparkles, Mic, Send, CheckCircle2, ArrowRight, Bot, User, FileCode, RefreshCw, Volume2, ShieldCheck, Flame, ShieldAlert, Layers
 } from 'lucide-react';
-import { IRSwapTrade } from '../types';
+import { IRSwapTrade, ProductType } from '../types';
 
 interface AiTradeAssistantTerminalProps {
   onTradeBooked?: (trade: IRSwapTrade) => void;
@@ -20,10 +20,12 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
   const [bookedStatus, setBookedStatus] = useState<boolean>(false);
 
   const samplePrompts = [
-    'Book a $50M 5Y USD SOFR pay fixed 3.42% vs float starting next Monday with BNP Paribas',
-    'Book €100M 10Y EURIBOR receive fixed 2.85% vs 6M EURIBOR with Deutsche Bank starting spot',
-    'Book £25M 3Y SONIA pay fixed 4.15% with Barclays Bank PLC',
-    'Book $75M 2Y USD SOFR pay fixed 3.95% with Goldman Sachs',
+    { label: 'IRS Swap', text: 'Book a $50M 5Y USD SOFR pay fixed 3.42% vs float with BNP Paribas' },
+    { label: 'Swaption', text: 'Book a $25M 1Yx5Y Payer Swaption strike 3.85% premium $125k with Goldman Sachs' },
+    { label: 'Cap / Floor', text: 'Book a €50M 3Y EURIBOR Cap strike 3.50% premium 45 bps with Barclays Bank' },
+    { label: 'FRA Trade', text: 'Book a $30M 3x6 FRA fixed 4.10% vs 3M SOFR with Citigroup' },
+    { label: 'Bond', text: 'Book a $10M 10Y US Treasury Bond yield 4.25% coupon 4.0% with JPMorgan' },
+    { label: 'Range Accrual', text: 'Book a $15M 5Y Range Accrual 3.5% - 4.5% SOFR Corridor with Deutsche Bank' },
   ];
 
   const handleParseText = (textToParse: string) => {
@@ -31,55 +33,126 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
     setBookedStatus(false);
 
     setTimeout(() => {
-      // Intelligent NLP Parsing Logic
       const lower = textToParse.toLowerCase();
 
-      // Currency
+      // 1. Detect Product Type
+      let detectedProductType: ProductType = 'IRS';
+      if (lower.includes('swaption') || lower.includes('payer swaption') || lower.includes('receiver swaption')) {
+        detectedProductType = 'SWAPTION';
+      } else if (lower.includes('cap') || lower.includes('floor') || lower.includes('caplet') || lower.includes('floorlet')) {
+        detectedProductType = 'CAP_FLOOR';
+      } else if (lower.includes('fra') || lower.includes('forward rate agreement') || lower.includes('3x6') || lower.includes('6x12')) {
+        detectedProductType = 'FRA';
+      } else if (lower.includes('bond') || lower.includes('treasury') || lower.includes('gilt') || lower.includes('bund')) {
+        detectedProductType = 'BOND';
+      } else if (lower.includes('range accrual') || lower.includes('corridor')) {
+        detectedProductType = 'RANGE_ACCRUAL';
+      } else if (lower.includes('snow range') || lower.includes('snowrange')) {
+        detectedProductType = 'SNOW_RANGE';
+      } else if (lower.includes('tarn') || lower.includes('target redemption')) {
+        detectedProductType = 'TARN';
+      } else if (lower.includes('snowball')) {
+        detectedProductType = 'SNOWBALL';
+      } else if (lower.includes('dual digital')) {
+        detectedProductType = 'DUAL_DIGITAL';
+      } else if (lower.includes('fx forward') || lower.includes('forward points')) {
+        detectedProductType = 'FX_FORWARD';
+      } else if (lower.includes('fx option')) {
+        detectedProductType = 'FX_OPTION';
+      } else if (lower.includes('deposit')) {
+        detectedProductType = 'DEPOSIT';
+      } else if (lower.includes('repo')) {
+        detectedProductType = 'REPO';
+      }
+
+      // 2. Currency
       let ccy: any = 'USD';
       if (lower.includes('eur') || lower.includes('€')) ccy = 'EUR';
       else if (lower.includes('gbp') || lower.includes('£')) ccy = 'GBP';
       else if (lower.includes('jpy') || lower.includes('¥')) ccy = 'JPY';
+      else if (lower.includes('inr') || lower.includes('₹')) ccy = 'INR';
 
-      // Notional
+      // 3. Notional
       let notional = 50000000;
-      const notionalMatch = textToParse.match(/(\$|€|£|¥)?\s*(\d+(\.\d+)?)\s*(m|mn|million|cr)/i);
+      const notionalMatch = textToParse.match(/(\$|€|£|¥|₹)?\s*(\d+(\.\d+)?)\s*(m|mn|million|cr|k)/i);
       if (notionalMatch) {
         const val = parseFloat(notionalMatch[2]);
-        if (notionalMatch[4].toLowerCase().startsWith('m')) notional = val * 1000000;
-        else if (notionalMatch[4].toLowerCase().startsWith('c')) notional = val * 10000000;
+        const unit = notionalMatch[4].toLowerCase();
+        if (unit.startsWith('m')) notional = val * 1000000;
+        else if (unit.startsWith('c')) notional = val * 10000000; // 1 Cr = 10M
+        else if (unit.startsWith('k')) notional = val * 1000;
       }
 
-      // Direction
-      const direction = lower.includes('receive') ? 'RECEIVE_FIXED' : 'PAY_FIXED';
+      // 4. Direction
+      const direction = (lower.includes('receive') || lower.includes('sell')) ? 'RECEIVE_FIXED' : 'PAY_FIXED';
 
-      // Rate
+      // 5. Rate / Strike / Yield
       let fixedRate = 3.42;
       const rateMatch = textToParse.match(/(\d+(\.\d+)?)\s*%/);
       if (rateMatch) fixedRate = parseFloat(rateMatch[1]);
+      else {
+        const strikeMatch = textToParse.match(/strike\s*(\d+(\.\d+)?)/i);
+        if (strikeMatch) fixedRate = parseFloat(strikeMatch[1]);
+      }
 
-      // Floating Index
+      // 6. Floating Index
       let index: any = 'SOFR';
       if (lower.includes('euribor')) index = 'EURIBOR';
       else if (lower.includes('sonia')) index = 'SONIA';
+      else if (lower.includes('mibor')) index = 'MIBOR';
 
-      // Counterparty
+      // 7. Counterparty
       let counterparty = 'BNP Paribas S.A.';
       if (lower.includes('goldman')) counterparty = 'Goldman Sachs International';
       else if (lower.includes('deutsche')) counterparty = 'Deutsche Bank AG';
       else if (lower.includes('barclays')) counterparty = 'Barclays Bank PLC';
+      else if (lower.includes('jpmorgan') || lower.includes('jpm')) counterparty = 'JPMorgan Chase Bank N.A.';
+      else if (lower.includes('citi')) counterparty = 'Citigroup Global Markets';
 
-      const tradeId = `IRS-2026-AI${Math.floor(1000 + Math.random() * 9000)}`;
+      // 8. Product-Specific Fields
+      let swaptionDetails;
+      let capFloorDetails;
+
+      if (detectedProductType === 'SWAPTION') {
+        swaptionDetails = {
+          swaptionType: lower.includes('receiver') ? 'RECEIVER' : 'PAYER',
+          direction: lower.includes('sell') ? 'SELL' : 'BUY',
+          strikeRate: fixedRate,
+          optionExpiryDate: '2027-09-08',
+          underlyingTenor: '5Y' as any,
+          settlementType: 'CASH' as any,
+          premiumAmount: Math.round(notional * 0.005),
+          underlyingIndex: index,
+          dayCount: '30/360' as any,
+        };
+      } else if (detectedProductType === 'CAP_FLOOR') {
+        capFloorDetails = {
+          capFloorType: lower.includes('floor') ? 'FLOOR' : 'CAP',
+          direction: lower.includes('sell') ? 'SELL' : 'BUY',
+          strikeRate: fixedRate,
+          underlyingIndex: index,
+          indexTenor: '3M' as any,
+          currency: ccy,
+          notional,
+          premiumAmount: Math.round(notional * 0.0035),
+          paymentFrequency: '3M' as any,
+          dayCount: 'ACT/360' as any,
+        };
+      }
+
+      const pfx = detectedProductType === 'SWAPTION' ? 'SWP' : detectedProductType === 'CAP_FLOOR' ? 'CAP' : detectedProductType === 'FRA' ? 'FRA' : detectedProductType === 'BOND' ? 'BND' : detectedProductType === 'RANGE_ACCRUAL' ? 'RGA' : 'IRS';
+      const tradeId = `${pfx}-2026-AI${Math.floor(1000 + Math.random() * 9000)}`;
 
       const newTrade: IRSwapTrade = {
         tradeId,
-        productType: 'IRS',
+        productType: detectedProductType,
         status: 'BOOKED',
         tradeDate: new Date().toISOString().split('T')[0],
         effectiveDate: '2026-09-08',
         maturityDate: '2031-09-08',
         traderUser: 'J. Doe (Head Rates Trader)',
         counterparty,
-        book: 'RATES-OIS-BOOK',
+        book: detectedProductType === 'BOND' ? 'BOND-TRADING-DESK' : detectedProductType === 'SWAPTION' ? 'EXOTICS-DESK' : 'RATES-OIS-BOOK',
         fixedLeg: {
           direction,
           notional,
@@ -100,8 +173,10 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
           frequency: index === 'SOFR' ? '1Y' : '6M',
           businessDayConvention: 'MODFOLLOWING',
         },
-        pv: 0,
-        dv01: Math.round(notional * 0.00046),
+        swaptionDetails,
+        capFloorDetails,
+        pv: Math.round(notional * 0.0015),
+        dv01: Math.round(notional * (detectedProductType === 'FRA' ? 0.0001 : 0.00046)),
       };
 
       setParsedTrade(newTrade);
@@ -113,6 +188,25 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
     if (!parsedTrade) return;
     if (onTradeBooked) onTradeBooked(parsedTrade);
     setBookedStatus(true);
+  };
+
+  const getProductTypeLabel = (pType: ProductType) => {
+    switch (pType) {
+      case 'SWAPTION': return 'Swaption (Option on Swap)';
+      case 'CAP_FLOOR': return 'Interest Rate Cap / Floor';
+      case 'FRA': return 'Forward Rate Agreement (FRA)';
+      case 'BOND': return 'Government / Corporate Bond';
+      case 'RANGE_ACCRUAL': return 'Range Accrual Corridor';
+      case 'SNOW_RANGE': return 'Snow Range Structured Note';
+      case 'TARN': return 'Target Redemption Note (TARN)';
+      case 'SNOWBALL': return 'Snowball Swap';
+      case 'DUAL_DIGITAL': return 'Dual Digital Option';
+      case 'FX_FORWARD': return 'FX Forward';
+      case 'FX_OPTION': return 'FX Option';
+      case 'DEPOSIT': return 'Money Market Deposit';
+      case 'REPO': return 'Repo / Reverse Repo';
+      default: return 'Interest Rate Swap (IRS)';
+    }
   };
 
   return (
@@ -128,14 +222,14 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
                 <Sparkles className="w-5 h-5" />
               </span>
               <h2 className="text-lg font-bold text-white tracking-wide">
-                AI Voice & Natural Language Trade Capture Assistant
+                AI Voice & Multi-Product Natural Language Capture Assistant
               </h2>
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#0284c7]/10 border border-[#0284c7]/30 text-[#0284c7]">
-                GPT-4 STT & NLP DERIVATIVE PARSER
+                MULTI-PRODUCT INTENT RECOGNITION (14 DERIVATIVES)
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              Speak or type unstructured trader execution voice notes to instantly generate, validate, and book trade tickets.
+              Supports IRS, Swaptions, Caps/Floors, FRAs, Bonds, Range Accruals, TARNs, and FX Forwards with instant intent classification.
             </p>
           </div>
         </div>
@@ -178,31 +272,32 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
             {/* Input Box */}
             <div className="mt-4 space-y-3">
               <label className="text-xs text-slate-300 font-medium block">
-                Type or paste execution instruction:
+                Type or paste execution voice note across any product type:
               </label>
               <textarea
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
                 rows={4}
                 className="w-full bg-[#0f172a] border border-[#334155] text-white rounded-lg p-3 text-xs font-mono focus:border-[#0284c7] focus:outline-none"
-                placeholder="e.g. Book $50M 5Y USD SOFR pay fixed 3.42% with BNP Paribas..."
+                placeholder="e.g. Book a $25M 1Yx5Y Payer Swaption strike 3.85% with Goldman Sachs..."
               />
             </div>
 
-            {/* Sample Prompts */}
+            {/* Multi-Product Sample Prompts Grid */}
             <div className="mt-4 space-y-2">
-              <span className="text-[11px] text-slate-400 font-medium">Quick Trader Examples:</span>
-              <div className="space-y-1.5">
-                {samplePrompts.map((prompt, idx) => (
+              <span className="text-[11px] text-slate-400 font-medium">Try Multi-Product Trader Voice Notes:</span>
+              <div className="grid grid-cols-2 gap-2">
+                {samplePrompts.map((item, idx) => (
                   <button
                     key={idx}
                     onClick={() => {
-                      setInputText(prompt);
-                      handleParseText(prompt);
+                      setInputText(item.text);
+                      handleParseText(item.text);
                     }}
-                    className="w-full text-left p-2 rounded-lg bg-[#0f172a] hover:bg-[#1f293d] border border-[#334155] text-[11px] font-mono text-slate-300 transition-colors truncate cursor-pointer"
+                    className="p-2 rounded-lg bg-[#0f172a] hover:bg-[#1f293d] border border-[#334155] text-[11px] text-left transition-colors cursor-pointer space-y-0.5"
                   >
-                    "{prompt}"
+                    <span className="text-[#0284c7] font-bold block">{item.label}</span>
+                    <span className="text-slate-400 font-mono text-[10px] block truncate">"{item.text}"</span>
                   </button>
                 ))}
               </div>
@@ -213,17 +308,17 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
           <button
             onClick={() => handleParseText(inputText)}
             disabled={isProcessing}
-            className="w-full py-2.5 bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50"
+            className="w-full py-2.5 bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:opacity-50 mt-4"
           >
             {isProcessing ? (
               <>
                 <RefreshCw className="w-4 h-4 animate-spin" />
-                Parsing Derivative Parameters...
+                Classifying Intent & Extracting Product Attributes...
               </>
             ) : (
               <>
                 <Sparkles className="w-4 h-4" />
-                Parse Trade Ticket with AI
+                Parse & Extract Trade Ticket with AI
               </>
             )}
           </button>
@@ -239,7 +334,7 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
               </div>
               {parsedTrade && (
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                  NLP VERIFIED
+                  PRODUCT CLASSIFIED: {parsedTrade.productType}
                 </span>
               )}
             </div>
@@ -261,20 +356,20 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
                 {/* Field Grid */}
                 <div className="grid grid-cols-2 gap-3 text-xs font-mono">
                   <div className="p-2.5 bg-[#0f172a] rounded-lg border border-[#334155]">
-                    <span className="text-slate-400 text-[10px] block font-sans">Product Type</span>
-                    <strong className="text-white">Interest Rate Swap (IRS)</strong>
+                    <span className="text-slate-400 text-[10px] block font-sans">Detected Product Type</span>
+                    <strong className="text-[#0284c7] font-bold">{getProductTypeLabel(parsedTrade.productType)}</strong>
                   </div>
 
                   <div className="p-2.5 bg-[#0f172a] rounded-lg border border-[#334155]">
                     <span className="text-slate-400 text-[10px] block font-sans">Notional Amount</span>
                     <strong className="text-white">
-                      {parsedTrade.fixedLeg.currency === 'EUR' ? '€' : parsedTrade.fixedLeg.currency === 'GBP' ? '£' : '$'}
+                      {parsedTrade.fixedLeg.currency === 'EUR' ? '€' : parsedTrade.fixedLeg.currency === 'GBP' ? '£' : parsedTrade.fixedLeg.currency === 'INR' ? '₹' : '$'}
                       {parsedTrade.fixedLeg.notional.toLocaleString()}
                     </strong>
                   </div>
 
                   <div className="p-2.5 bg-[#0f172a] rounded-lg border border-[#334155]">
-                    <span className="text-slate-400 text-[10px] block font-sans">Fixed Rate</span>
+                    <span className="text-slate-400 text-[10px] block font-sans">Fixed Rate / Strike / Yield</span>
                     <strong className="text-emerald-400">{parsedTrade.fixedLeg.fixedRate}% p.a.</strong>
                   </div>
 
@@ -284,8 +379,8 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
                   </div>
 
                   <div className="p-2.5 bg-[#0f172a] rounded-lg border border-[#334155]">
-                    <span className="text-slate-400 text-[10px] block font-sans">Direction</span>
-                    <strong className="text-white">{parsedTrade.fixedLeg.direction.replace('_', ' ')}</strong>
+                    <span className="text-slate-400 text-[10px] block font-sans">Assigned Book</span>
+                    <strong className="text-white">{parsedTrade.book}</strong>
                   </div>
 
                   <div className="p-2.5 bg-[#0f172a] rounded-lg border border-[#334155]">
@@ -294,16 +389,41 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
                   </div>
                 </div>
 
+                {/* Additional Product Details Badge */}
+                {parsedTrade.swaptionDetails && (
+                  <div className="p-3 bg-[#0284c7]/10 border border-[#0284c7]/30 rounded-lg text-xs space-y-1">
+                    <span className="text-[#0284c7] font-bold block">Swaption Execution Parameters</span>
+                    <div className="text-slate-300 font-mono text-[11px] grid grid-cols-2 gap-2">
+                      <span>Type: <strong>{parsedTrade.swaptionDetails.swaptionType}</strong></span>
+                      <span>Premium: <strong>${parsedTrade.swaptionDetails.premiumAmount.toLocaleString()}</strong></span>
+                      <span>Expiry: <strong>{parsedTrade.swaptionDetails.optionExpiryDate}</strong></span>
+                      <span>Underlying: <strong>{parsedTrade.swaptionDetails.underlyingTenor} Swap</strong></span>
+                    </div>
+                  </div>
+                )}
+
+                {parsedTrade.capFloorDetails && (
+                  <div className="p-3 bg-[#0284c7]/10 border border-[#0284c7]/30 rounded-lg text-xs space-y-1">
+                    <span className="text-[#0284c7] font-bold block">Cap / Floor Parameters</span>
+                    <div className="text-slate-300 font-mono text-[11px] grid grid-cols-2 gap-2">
+                      <span>Type: <strong>{parsedTrade.capFloorDetails.capFloorType}</strong></span>
+                      <span>Premium: <strong>${parsedTrade.capFloorDetails.premiumAmount.toLocaleString()}</strong></span>
+                      <span>Strike Rate: <strong>{parsedTrade.capFloorDetails.strikeRate}%</strong></span>
+                      <span>Frequency: <strong>{parsedTrade.capFloorDetails.paymentFrequency}</strong></span>
+                    </div>
+                  </div>
+                )}
+
                 {bookedStatus && (
                   <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-center gap-2 text-xs font-semibold text-emerald-400 animate-in fade-in">
                     <CheckCircle2 className="w-4 h-4 shrink-0" />
-                    <span>Trade {parsedTrade.tradeId} successfully booked to live blotter!</span>
+                    <span>Trade {parsedTrade.tradeId} ({parsedTrade.productType}) successfully booked to live blotter!</span>
                   </div>
                 )}
               </div>
             ) : (
               <div className="mt-8 text-center py-12 text-slate-500 text-xs font-mono">
-                No parsed trade yet. Type or pick a prompt above and click "Parse Trade Ticket with AI".
+                No parsed trade yet. Type or pick a prompt above and click "Parse & Extract Trade Ticket with AI".
               </div>
             )}
           </div>
@@ -317,7 +437,7 @@ export const AiTradeAssistantTerminal: React.FC<AiTradeAssistantTerminalProps> =
                 className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-bold rounded-lg flex items-center justify-center gap-2 transition-colors cursor-pointer"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                {bookedStatus ? 'Trade Booked' : 'Confirm 1-Click Booking'}
+                {bookedStatus ? 'Trade Booked' : `Confirm 1-Click Booking (${parsedTrade.productType})`}
               </button>
 
               {onOpenBlotter && (
